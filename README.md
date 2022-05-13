@@ -26,6 +26,8 @@ If the above does not work, install by downloading:
 install.packages("C:/my_repos/RtoSQLServerVersioning", repos = NULL, type="source")
 ```
 
+**IMPORTANT:** The [ODBC library](https://CRAN.R-project.org/package=odbc) version should be at least 1.3.3 as crashing issues were found when using 1.3.2.
+
 ## Example Usage
 A work in progress, here is an example using the main functions:
 ```r
@@ -41,7 +43,7 @@ write_dataframe_to_db(database=database, server=server, schema=schema, table_nam
 read_df <- read_table_from_db(database=database, server=server, schema=schema, table_name="test_iris")
 
 #Drop the table from the database
-drop_table_from_db(database=database, server=server, schema=schema, table_name="test_iris")
+drop_versioned_table_from_db(database=database, server=server, schema=schema, table_name="test_iris")
 
 ```
 
