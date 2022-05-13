@@ -23,7 +23,7 @@ If the above does not work, install by downloading:
 3. Save the file locally and unzip.
 4. Install with install.packages():
 ```
-install.packages("C:/my_repos/RtoSQLServerVersioning", repos = NULL, type="source")
+install.packages("C:/my_repos/RtoSQLServerVersioning@main", repos = NULL, type="source")
 ```
 
 ## Example Usage
