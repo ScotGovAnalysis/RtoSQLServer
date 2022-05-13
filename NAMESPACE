@@ -2,4 +2,4 @@
 
 export(write_dataframe_to_db)
 export(read_table_from_db)
-export(drop_table_from_db)
+export(drop_versioned_table_from_db)
