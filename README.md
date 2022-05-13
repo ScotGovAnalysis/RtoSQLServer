@@ -13,7 +13,7 @@ While this repo is private, to install directly from Github will need to create 
 
 ```r
 # install.packages("devtools")
-devtools::install_github("datasciencescotland/rtosqlserverversioning", auth_token = "<my personal access token>")
+devtools::install_github("datasciencescotland/rtosqlserverversioning@main", auth_token = "<my personal access token>")
 ```
 
 If the above does not work, install by downloading:
@@ -25,6 +25,8 @@ If the above does not work, install by downloading:
 ```
 install.packages("C:/my_repos/RtoSQLServerVersioning", repos = NULL, type="source")
 ```
+
+**IMPORTANT:** The [ODBC library](https://CRAN.R-project.org/package=odbc) version should be at least 1.3.3 as crashing issues were found when using 1.3.2.
 
 ## Example Usage
 A work in progress, here is an example using the main functions:
@@ -41,8 +43,8 @@ write_dataframe_to_db(database=database, server=server, schema=schema, table_nam
 read_df <- read_table_from_db(database=database, server=server, schema=schema, table_name="test_iris")
 
 #Drop the table from the database
-drop_table_from_db(database=database, server=server, schema=schema, table_name"test_iris")
+drop_versioned_table_from_db(database=database, server=server, schema=schema, table_name="test_iris")
 
 ```
 
-An important point about the current functionality is that this tool can be used to replace an existing records by using the `write_dataframe_to_db` function. In this case the previously existing records will be placed in the `<table name>History` table and all records are replaced in the table with the current date time stamp.
+An important point about the current functionality is that this tool can be used to replace an existing records by using the `write_dataframe_to_db` function. In this case the previously existing records will be placed in the `<table name>History` table and all input dataframe records are placed in the table with the current date time stamp.

@@ -58,15 +58,32 @@ delete_staging_table <- function(database, server, schema, table) {
 
 
 
-write_dataframe_to_db <- function(database, server, schema, table_name, dataframe, versioned=TRUE) {
+create_versioned_table <- function(database, server, schema, table) {
+  metadata <- db_table_metadata(database = database, server = server, schema = schema, table = paste0(table, "_staging_"))
+  sql <- paste0("CREATE TABLE [", schema, "].[", table, "] (", table, "ID INT NOT NULL IDENTITY PRIMARY KEY,")
+  for (row in seq_len(nrow(metadata))) {
+    column_name <- metadata[row, "ColumnName"]
+    data_type <- metadata[row, "DataType"]
+    sql <- paste0(sql, " [", column_name, "] ", data_type, ", ")
+  }
+  sql <- paste0(sql,
+                "SysStartTime DATETIME2 GENERATED ALWAYS AS ROW START NOT NULL, ",
+                "SysEndTime DATETIME2 GENERATED ALWAYS AS ROW END NOT NULL, ",
+                "PERIOD FOR SYSTEM_TIME (SysStartTime, SysEndTime)) ",
+                "WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE = [", schema, "].[", table, "History]));")
+  connection <- create_sqlserver_connection(database = database, server = server)
+  DBI::dbGetQuery(connection, sql)
+  DBI::dbDisconnect(connection)
+}
+
+
+
+write_dataframe_to_db <- function(database, server, schema, table_name, dataframe) {
   populate_staging_table(database = database, server = server, schema = schema, table = table_name, dataframe = dataframe)
   connection <- create_sqlserver_connection(database = database, server = server)
   tables <- get_db_tables(database = database, server = server)
   if (nrow(tables[tables$Schema == schema & tables$Name == table_name, ]) == 0) {
-    if (versioned){
     create_versioned_table(database = database, server = server, schema = schema, table = table_name)}
-    else {create_table(database = database, server = server, schema = schema, table = table_name)}
-  }
   tryCatch({
     populate_table_from_staging(database = database, server = server, schema = schema, table = table_name)
     message(paste0("Dataframe successfully written to: '", table_name, "'"))
