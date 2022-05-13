@@ -13,7 +13,7 @@ While this repo is private, to install directly from Github will need to create 
 
 ```r
 # install.packages("devtools")
-devtools::install_github("datasciencescotland/rtosqlserverversioning", auth_token = "<my personal access token>")
+devtools::install_github("datasciencescotland/rtosqlserverversioning@main", auth_token = "<my personal access token>")
 ```
 
 If the above does not work, install by downloading:
@@ -23,7 +23,7 @@ If the above does not work, install by downloading:
 3. Save the file locally and unzip.
 4. Install with install.packages():
 ```
-install.packages("C:/my_repos/RtoSQLServerVersioning@main", repos = NULL, type="source")
+install.packages("C:/my_repos/RtoSQLServerVersioning", repos = NULL, type="source")
 ```
 
 ## Example Usage
