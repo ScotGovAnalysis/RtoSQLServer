@@ -1,13 +1,15 @@
 Package: RtoSQLServerVersioning
-Title: What the Package Does (One Line, Title Case)
+Title: Load R Dataframes into SQL Server Database Tables with System Versioning
 Version: 0.0.0.9000
-Authors@R: 
-    person(given = "First",
-           family = "Last",
-           role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+Authors@R: c(
+    person("Tom", "Wilson", email = "thomas.wilson@gov.scot", role = "cre"),
+    person("Miles", "Drake", email = "miles.drake@gov.scot", role = "aut"),
+    person("Tom", "Crines", email = "thomas.crines@gov.scot", role = "aut"))
 Description: What the package does (one paragraph).
-License: What license it uses
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
+Imports: odbc, DBI
+Language: en-GB
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.2
