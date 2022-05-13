@@ -1,4 +1,4 @@
-drop_table_from_db <- function(database, server, schema, table_name) {
+drop_versioned_table_from_db <- function(database, server, schema, table_name) {
   drop_sql <- list(
     paste0("ALTER TABLE [", schema, "].[", table_name, "] SET ( SYSTEM_VERSIONING = OFF )"),
     paste0("DROP TABLE [", schema, "].[", table_name, "]"),
