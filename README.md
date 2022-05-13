@@ -41,8 +41,8 @@ write_dataframe_to_db(database=database, server=server, schema=schema, table_nam
 read_df <- read_table_from_db(database=database, server=server, schema=schema, table_name="test_iris")
 
 #Drop the table from the database
-drop_table_from_db(database=database, server=server, schema=schema, table_name"test_iris")
+drop_table_from_db(database=database, server=server, schema=schema, table_name="test_iris")
 
 ```
 
-An important point about the current functionality is that this tool can be used to replace an existing records by using the `write_dataframe_to_db` function. In this case the previously existing records will be placed in the `<table name>History` table and all records are replaced in the table with the current date time stamp.
+An important point about the current functionality is that this tool can be used to replace an existing records by using the `write_dataframe_to_db` function. In this case the previously existing records will be placed in the `<table name>History` table and all input dataframe records are placed in the table with the current date time stamp.
