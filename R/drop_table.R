@@ -1,4 +1,4 @@
-#' Drop versioned SQL Server table from database
+#' Drop versioned SQL Server table from database.
 #'
 #' @param database Database containing the table to be dropped.
 #' @param server Server and instance where SQL Server database found.

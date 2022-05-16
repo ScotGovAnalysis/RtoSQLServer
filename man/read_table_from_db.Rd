@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_table.R
 \name{read_table_from_db}
 \alias{read_table_from_db}
-\title{Read a SQL Server table to R dataframe,}
+\title{Read a SQL Server table into an R dataframe,}
 \usage{
 read_table_from_db(database, server, schema, table_name, columns = NULL)
 }
@@ -21,7 +21,7 @@ read_table_from_db(database, server, schema, table_name, columns = NULL)
 Dataframe of table.
 }
 \description{
-Read a SQL Server table to R dataframe,
+Read a SQL Server table into an R dataframe,
 }
 \examples{
 read_table_from_db(database = "my_database", server = "my_server", table_name = "my_table", columns = c("column1", "column2"))

@@ -1,4 +1,4 @@
-#' Read a SQL Server table to R dataframe,
+#' Read a SQL Server table into an R dataframe,
 #'
 #' @param database Database containing table to read.
 #' @param server Server instance where SQL Server database running.
