@@ -2,7 +2,7 @@
 % Please edit documentation in R/drop_table.R
 \name{drop_versioned_table_from_db}
 \alias{drop_versioned_table_from_db}
-\title{Drop versioned SQL Server table from database}
+\title{Drop versioned SQL Server table from database.}
 \usage{
 drop_versioned_table_from_db(database, server, schema, table_name)
 }
@@ -16,7 +16,7 @@ drop_versioned_table_from_db(database, server, schema, table_name)
 \item{table_name}{Name of the table to be dropped.}
 }
 \description{
-Drop versioned SQL Server table from database
+Drop versioned SQL Server table from database.
 }
 \examples{
 drop_versioned_table_from_db(database = "my_database", server = "my_server", schema = "my_schema", table_name = "table_to_drop")

@@ -17,7 +17,7 @@ create_sqlserver_connection <- function(database, server) {
 
 
 
-#' Create a connection to SQL Server database, execute SQL and then (optionally) disconnect from database.
+#' Connect, execute SQL in SQL Server database and then (optionally) disconnect from database.
 #'
 #' @param database SQL Server database in which SQL executed.
 #' @param server Server instance where SQL Server database running.
