@@ -88,7 +88,7 @@ create_versioned_table <- function(database, server, schema, table) {
 
 #' Write an R dataframe to SQL Server table with system versioning
 #'
-#' @param database Name of SQL Server database where table written.
+#' @param database Name of SQL Server database where table will be written.
 #' @param server Server instance where SQL Server database running.
 #' @param schema Name of schema in SQL Server database where table will be created.
 #' @param table_name Name of table to be created in SQL Server database.
