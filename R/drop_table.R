@@ -1,9 +1,9 @@
 #' Drop versioned SQL Server table from database
 #'
-#' @param database
-#' @param server
-#' @param schema
-#' @param table_name
+#' @param database Database containing table to be dropped
+#' @param server SServer and instance where SQL Server database found
+#' @param schema Name of schema containing table to be dropped
+#' @param table_name Name of the table to be dropped
 #'
 #' @export
 #'
