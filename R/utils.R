@@ -1,30 +1,49 @@
-create_sqlserver_connection <- function(database, server){
-  tryCatch({
-    odbc::dbConnect(
-      odbc::odbc(),
-      Driver = "SQL Server",
-      Trusted_Connection = "True",
-      DATABASE = database,
-      SERVER = server)},
+create_sqlserver_connection <- function(database, server) {
+  tryCatch(
+    {
+      odbc::dbConnect(
+        odbc::odbc(),
+        Driver = "SQL Server",
+        Trusted_Connection = "True",
+        DATABASE = database,
+        SERVER = server
+      )
+    },
     error = function(cond) {
       stop(paste0("Failed to create connection to database: '", database, "' on server: '", server, "'\nOriginal error message: '", cond, "'"))
-    })
+    }
+  )
 }
 
 
 
+#' Create a connection to SQL Server database, execute SQL and then (optionally) disconnect from database.
+#'
+#' @param database SQL Server database in which SQL executed.
+#' @param server Server instance where SQL Server database running.
+#' @param sql SQL to be executed in the database.
+#' @param output If TRUE write output of SQL to Dataframe. Defaults to FALSE.
+#' @param disconnect If TRUE disconnect from SQL Server database at end. Defaults to TRUE.
+#'
+#' @return Dataframe or NULL depending on SQL executed.
+#' @export
+#'
+#' @examples
+#' sql_to_run <- "select test_column, other_column from my_test_table where other_column > 10"
+#' execute_sql(database = my_database, server = my_server, sql = sql_to_run, output = TRUE, disconnect = TRUE)
 execute_sql <- function(database, server, sql, output = FALSE, disconnect = TRUE) {
   output_data <- NULL
-  if (! exists("connection")) {
-       connection <- create_sqlserver_connection(database = database, server = server)}
-  for(i in 1:length(sql)){
-    if(output){
+  if (!exists("connection")) {
+    connection <- create_sqlserver_connection(database = database, server = server)
+  }
+  for (i in 1:length(sql)) {
+    if (output) {
       output_data <- DBI::dbGetQuery(connection, sql[i])
     } else {
       DBI::dbGetQuery(connection, sql[i])
     }
   }
-  if(disconnect) DBI::dbDisconnect(connection)
+  if (disconnect) DBI::dbDisconnect(connection)
   return(output_data)
 }
 
@@ -160,12 +179,13 @@ get_db_tables <- function(database, server) {
 
 r_to_sql_data_type <- function(r_data_type) {
   sql_data_type <- switch(r_data_type,
-                          "numeric" = "float",
-                          "logical" = "bit",
-                          "character" = "varchar(255)",
-                          "factor" = "varchar(255)",
-                          "POSIXct" = "datetime2(3)",
-                          "POSIXlt" = "datetime2(3)",
-                          "integer" = "int")
+    "numeric" = "float",
+    "logical" = "bit",
+    "character" = "varchar(255)",
+    "factor" = "varchar(255)",
+    "POSIXct" = "datetime2(3)",
+    "POSIXlt" = "datetime2(3)",
+    "integer" = "int"
+  )
   sql_data_type
 }
