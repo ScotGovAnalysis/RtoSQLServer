@@ -64,7 +64,7 @@ delete_staging_table <- function(database, server, schema, table) {
 
 
 
-create_versioned_table <- function(database, server, schema, table) {
+create_table <- function(database, server, schema, table, versioned_table = TRUE) {
   metadata <- db_table_metadata(database = database, server = server, schema = schema, table = paste0(table, "_staging_"))
   sql <- paste0("CREATE TABLE [", schema, "].[", table, "] (", table, "ID INT NOT NULL IDENTITY PRIMARY KEY,")
   for (row in seq_len(nrow(metadata))) {
@@ -72,39 +72,42 @@ create_versioned_table <- function(database, server, schema, table) {
     data_type <- metadata[row, "DataType"]
     sql <- paste0(sql, " [", column_name, "] ", data_type, ", ")
   }
-  sql <- paste0(
-    sql,
-    "SysStartTime DATETIME2 GENERATED ALWAYS AS ROW START NOT NULL, ",
-    "SysEndTime DATETIME2 GENERATED ALWAYS AS ROW END NOT NULL, ",
-    "PERIOD FOR SYSTEM_TIME (SysStartTime, SysEndTime)) ",
-    "WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE = [", schema, "].[", table, "History]));"
-  )
-  connection <- create_sqlserver_connection(database = database, server = server)
-  DBI::dbGetQuery(connection, sql)
-  DBI::dbDisconnect(connection)
+  if (versioned_table) {
+    sql <- paste0(
+      sql,
+      "SysStartTime DATETIME2 GENERATED ALWAYS AS ROW START NOT NULL, ",
+      "SysEndTime DATETIME2 GENERATED ALWAYS AS ROW END NOT NULL, ",
+      "PERIOD FOR SYSTEM_TIME (SysStartTime, SysEndTime)) ",
+      "WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE = [", schema, "].[", table, "History]));"
+    )
+  }
+  else {
+    sql <- paste0(substr(sql, 1, nchar(sql) - 2), ");")
+  }
+  execute_sql(database = database, server = server, sql = sql, output = FALSE, disconnect = TRUE)
 }
 
 
-
-#' Write an R dataframe to SQL Server table with system versioning.
+#' Write an R dataframe to SQL Server table optionally with system versioning on.
 #'
 #' @param database Name of SQL Server database where table will be written.
 #' @param server Server instance where SQL Server database running.
 #' @param schema Name of schema in SQL Server database where table will be created.
 #' @param table_name Name of table to be created in SQL Server database.
 #' @param dataframe Source R dataframe that will be written to SQL Server database.
+#' @param versioned_table Create table with SQL Server system versioning. Defaults to TRUE. If table already exists in DB will not change existing versioning status.
 #'
 #'
 #' @export
 #'
 #' @examples
-#' write_dataframe_to_db(database = "my_database", server = "my_server", schema = "my_schema", table_name = "output_table", dataframe = my_df)
-write_dataframe_to_db <- function(database, server, schema, table_name, dataframe) {
+#' write_dataframe_to_db(database = "my_database", server = "my_server", schema = "my_schema", table_name = "output_table", dataframe = my_df, versioned_table=TRUE)
+write_dataframe_to_db <- function(database, server, schema, table_name, dataframe, versioned_table = TRUE) {
   populate_staging_table(database = database, server = server, schema = schema, table = table_name, dataframe = dataframe)
   connection <- create_sqlserver_connection(database = database, server = server)
   tables <- get_db_tables(database = database, server = server)
   if (nrow(tables[tables$Schema == schema & tables$Name == table_name, ]) == 0) {
-    create_versioned_table(database = database, server = server, schema = schema, table = table_name)
+    create_table(database = database, server = server, schema = schema, table = table_name, versioned_table)
   }
   tryCatch(
     {

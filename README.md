@@ -37,14 +37,16 @@ server <- "server\\instance"
 schema <- "my_schema_name"
 
 #Write the example Iris dataframe to a SQL Server table with system versioning (history table and start / end timestamps)
-write_dataframe_to_db(database=database, server=server, schema=schema, table_name="test_iris", dataframe=iris)
+write_dataframe_to_db(database=database, server=server, schema=schema, table_name="test_iris", dataframe=iris, versioned_table=TRUE)
 
 #Read the SQL Server table into an R dataframe
 read_df <- read_table_from_db(database=database, server=server, schema=schema, table_name="test_iris")
 
 #Drop the table from the database
-drop_versioned_table_from_db(database=database, server=server, schema=schema, table_name="test_iris")
+drop_table_from_db(database=database, server=server, schema=schema, table_name="test_iris")
 
 ```
 
-An important point about the current functionality is that this tool can be used to replace an existing records by using the `write_dataframe_to_db` function. In this case the previously existing records will be placed in the `<table name>History` table and all input dataframe records are placed in the table with the current date time stamp.
+Important to note that the `write_dataframe_to_db` function will overwrite the table in the database if it already exists. If the table had versioning on when first created then the existing records will be written to the `<table name>History` table and the end timestamp column will be updated. 
+
+The versioning status of a table is set when it is first created in the schema and it will not be changed with subsequent overwriting of an existing table even if the `versioned_table` parameter of `write_database_to_db` function is changed for subsequent imports. If wish to make a table versioned when it was not previously or vice-versa, use the `drop_table_from_db` function and then create the table again with `write_dataframe_to_db` setting `versioned_table` to TRUE or FALSE as required. 

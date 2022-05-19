@@ -2,9 +2,16 @@
 % Please edit documentation in R/create_replace_table.R
 \name{write_dataframe_to_db}
 \alias{write_dataframe_to_db}
-\title{Write an R dataframe to SQL Server table with system versioning.}
+\title{Write an R dataframe to SQL Server table optionally with system versioning on.}
 \usage{
-write_dataframe_to_db(database, server, schema, table_name, dataframe)
+write_dataframe_to_db(
+  database,
+  server,
+  schema,
+  table_name,
+  dataframe,
+  versioned_table = TRUE
+)
 }
 \arguments{
 \item{database}{Name of SQL Server database where table will be written.}
@@ -16,10 +23,12 @@ write_dataframe_to_db(database, server, schema, table_name, dataframe)
 \item{table_name}{Name of table to be created in SQL Server database.}
 
 \item{dataframe}{Source R dataframe that will be written to SQL Server database.}
+
+\item{versioned_table}{Create table with SQL Server system versioning. Defaults to TRUE. If table already exists in DB will not change existing versioning status.}
 }
 \description{
-Write an R dataframe to SQL Server table with system versioning.
+Write an R dataframe to SQL Server table optionally with system versioning on.
 }
 \examples{
-write_dataframe_to_db(database = "my_database", server = "my_server", schema = "my_schema", table_name = "output_table", dataframe = my_df)
+write_dataframe_to_db(database = "my_database", server = "my_server", schema = "my_schema", table_name = "output_table", dataframe = my_df, versioned_table=TRUE)
 }
