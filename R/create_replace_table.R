@@ -3,7 +3,7 @@ check_existing_table <- function(database, server, schema, table, dataframe) {
   sql_columns <- db_table_metadata(database = database, server = server, schema = schema, table = table)
   for (n in names(df_columns)) {
     if (!n %in% sql_columns$ColumnName) {
-      stop(paste("Column", n, "not found in existing SQL Server table", table, ". Use drop_table_from_db function to delete it first if wish to replace."))
+      stop(paste("Column", n, "not found in existing SQL Server table", table, "- use drop_table_from_db function to delete it first if wish to replace."))
     }
     df_col_type <- r_to_sql_data_type(df_columns[[n]])
     sql_col_type <- sql_columns[sql_columns["ColumnName"] == n, "DataType"]
@@ -27,23 +27,39 @@ create_staging_table <- function(database, server, schema, table, dataframe) {
 }
 
 
-
-populate_staging_table <- function(database, server, schema, table, dataframe, overwrite = TRUE, append = FALSE) {
-  connection <- create_sqlserver_connection(database = database, server = server)
-  tables <- get_db_tables(database = database, server = server)
-  if (nrow(tables[tables$Schema == schema & tables$Name == paste0(table, "_staging_"), ]) == 0) {
-    create_staging_table(database = database, server = server, schema = schema, table = table, dataframe = dataframe)
-    overwrite <- TRUE
-  }
-  tryCatch(
-    {
-      DBI::dbWriteTable(connection, name = DBI::Id(schema = schema, table = paste0(table, "_staging_")), value = dataframe, overwrite = overwrite, append = append)
-      message(paste0("Staging successfully written to database"))
-    },
-    error = function(cond) {
-      stop(paste0("Failed to write staging data to database.\nOriginal error message: ", cond))
+get_df_batches <- function(dataframe, batch_size) {
+  batch_starts <- seq(1, nrow(dataframe), batch_size)
+  if (nrow(dataframe) > batch_size) {
+    batch_ends <- seq(batch_size, nrow(dataframe), batch_size)
+    if (tail(batch_ends, 1) < nrow(dataframe)) {
+      batch_ends <- c(batch_ends, nrow(dataframe))
     }
-  )
+  }
+  else {
+    batch_ends <- c(nrow(dataframe))
+  }
+
+  list(batch_starts = batch_starts, batch_ends = batch_ends)
+}
+
+
+populate_staging_table <- function(database, server, schema, table, dataframe, batch_size = 5e5) {
+  connection <- create_sqlserver_connection(database = database, server = server)
+  batch_list <- get_df_batches(dataframe = dataframe, batch_size = batch_size)
+  message(paste("Loading to staging in", length(batch_list$batch_starts), "batches of", format(batch_size, scientific = FALSE), "rows..."))
+  for (i in seq_along(batch_list$batch_starts)) {
+    batch_start <- batch_list$batch_starts[[i]]
+    batch_end <- batch_list$batch_ends[[i]]
+    tryCatch(
+      {
+        DBI::dbWriteTable(connection, name = DBI::Id(schema = schema, table = paste0(table, "_staging_")), value = dataframe[batch_start:batch_end, ], overwrite = FALSE, append = TRUE)
+      },
+      error = function(cond) {
+        stop(paste0("Failed to write staging data to database.\nOriginal error message: ", cond))
+      }
+    )
+    message(paste("Loaded rows", format(batch_start, scientific = FALSE), "-", format(batch_end, scientific=FALSE), "of", tail(batch_list$batch_ends, 1)))
+  }
   DBI::dbDisconnect(connection)
 }
 
@@ -118,8 +134,8 @@ create_table <- function(database, server, schema, table, versioned_table = FALS
 #'
 #' @examples
 #' write_dataframe_to_db(database = "my_database", server = "my_server", schema = "my_schema", table_name = "output_table", dataframe = my_df, versioned_table = TRUE)
-write_dataframe_to_db <- function(database, server, schema, table_name, dataframe, versioned_table = FALSE) {
-  populate_staging_table(database = database, server = server, schema = schema, table = table_name, dataframe = dataframe)
+write_dataframe_to_db <- function(database, server, schema, table_name, dataframe, batch_size = 5e5, versioned_table = FALSE) {
+  start_time <- Sys.time()
   connection <- create_sqlserver_connection(database = database, server = server)
   tables <- get_db_tables(database = database, server = server)
   if (nrow(tables[tables$Schema == schema & tables$Name == table_name, ]) == 0) {
@@ -128,6 +144,7 @@ write_dataframe_to_db <- function(database, server, schema, table_name, datafram
   else {
     check_existing_table(database = database, server = server, schema = schema, table = table_name, dataframe = dataframe)
   }
+  populate_staging_table(database = database, server = server, schema = schema, table = table_name, dataframe = dataframe, batch_size = batch_size)
   tryCatch(
     {
       populate_table_from_staging(database = database, server = server, schema = schema, table = table_name)
@@ -139,4 +156,6 @@ write_dataframe_to_db <- function(database, server, schema, table_name, datafram
   )
   delete_staging_table(database = database, server = server, schema = schema, table = table_name)
   DBI::dbDisconnect(connection)
+  end_time <- Sys.time()
+  message(paste("Loaded in", round(difftime(end_time, start_time, units="mins")[[1]], 2)), " minutes.")
 }
