@@ -1,4 +1,4 @@
-create_sqlserver_connection <- function(database, server) {
+create_sqlserver_connection <- function(server, database) {
   tryCatch(
     {
       odbc::dbConnect(
@@ -19,8 +19,8 @@ create_sqlserver_connection <- function(database, server) {
 
 #' Connect, execute SQL in SQL Server database and then (optionally) disconnect from database.
 #'
-#' @param database SQL Server database in which SQL executed.
 #' @param server Server instance where SQL Server database running.
+#' @param database SQL Server database in which SQL executed.
 #' @param sql SQL to be executed in the database.
 #' @param output If TRUE write output of SQL to Dataframe. Defaults to FALSE.
 #' @param disconnect If TRUE disconnect from SQL Server database at end. Defaults to TRUE.
@@ -31,10 +31,10 @@ create_sqlserver_connection <- function(database, server) {
 #' @examples
 #' sql_to_run <- "select test_column, other_column from my_test_table where other_column > 10"
 #' execute_sql(database = my_database, server = my_server, sql = sql_to_run, output = TRUE, disconnect = TRUE)
-execute_sql <- function(database, server, sql, output = FALSE, disconnect = TRUE) {
+execute_sql <- function(server, database, sql, output = FALSE, disconnect = TRUE) {
   output_data <- NULL
   if (!exists("connection")) {
-    connection <- create_sqlserver_connection(database = database, server = server)
+    connection <- create_sqlserver_connection(server = server, database = database)
   }
   for (i in 1:length(sql)) {
     if (output) {
@@ -49,7 +49,7 @@ execute_sql <- function(database, server, sql, output = FALSE, disconnect = TRUE
 
 
 
-db_table_metadata <- function(database, server, schema, table_name) {
+db_table_metadata <- function(server, database, schema, table_name) {
   sql <- paste0("SET NOCOUNT ON;
                 DECLARE	@table_catalog nvarchar(128) = '", database, "',
                 @table_schema nvarchar(128) = '", schema, "',
@@ -136,7 +136,7 @@ db_table_metadata <- function(database, server, schema, table_name) {
                 CLOSE column_cursor;
                 DEALLOCATE column_cursor;
                 SELECT * FROM @T1;")
-  data <- execute_sql(database = database, server = server, sql = sql, output = TRUE)
+  data <- execute_sql(server = server, database = database, sql = sql, output = TRUE)
   data
 }
 
@@ -168,7 +168,7 @@ table_where_clause <- function(id_column, start_row, end_row) {
 
 
 
-get_db_tables <- function(database, server) {
+get_db_tables <- function(server, database) {
   sql <- "SELECT SCHEMA_NAME(t.schema_id) AS 'Schema',
   t.name AS 'Name'
   FROM sys.tables t"
