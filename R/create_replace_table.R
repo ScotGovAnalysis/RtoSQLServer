@@ -1,3 +1,19 @@
+check_existing_table <- function(database, server, schema, table, dataframe) {
+  df_columns <- sapply(dataframe, class)
+  sql_columns <- db_table_metadata(database = database, server = server, schema = schema, table = table)
+  for (n in names(df_columns)) {
+    if (!n %in% sql_columns$ColumnName) {
+      stop(paste("Column", n, "not found in existing SQL Server table", table, ". Use drop_table_from_db function to delete it first if wish to replace."))
+    }
+    df_col_type <- r_to_sql_data_type(df_columns[[n]])
+    sql_col_type <- sql_columns[sql_columns["ColumnName"] == n, "DataType"]
+    if (df_col_type != sql_col_type) {
+      stop(paste("Column", n, "datatype:", df_col_type, "does not match existing type", sql_col_type, "."))
+    }
+  }
+}
+
+
 create_staging_table <- function(database, server, schema, table, dataframe) {
   columns <- sapply(dataframe, class)
   sql <- paste0("CREATE TABLE [", schema, "].[", table, "_staging_] (", table, "ID INT NOT NULL IDENTITY PRIMARY KEY,")
@@ -41,7 +57,7 @@ populate_table_from_staging <- function(database, server, schema, table) {
     column_string <- paste0(column_string, " [", column_name, "], ")
   }
   column_string <- substr(column_string, 1, nchar(column_string) - 2)
-  sql <- paste0("DELETE FROM [", schema, "].[", table, "];
+  sql <- paste0("TRUNCATE TABLE [", schema, "].[", table, "];
                 INSERT INTO [", schema, "].[", table, "] (", column_string, ") select ", column_string, " from [", schema, "].[", table, "_staging_];")
   execute_sql(database = database, server = server, sql = sql, output = FALSE)
 }
@@ -64,7 +80,7 @@ delete_staging_table <- function(database, server, schema, table) {
 
 
 
-create_table <- function(database, server, schema, table, versioned_table = TRUE) {
+create_table <- function(database, server, schema, table, versioned_table = FALSE) {
   metadata <- db_table_metadata(database = database, server = server, schema = schema, table = paste0(table, "_staging_"))
   sql <- paste0("CREATE TABLE [", schema, "].[", table, "] (", table, "ID INT NOT NULL IDENTITY PRIMARY KEY,")
   for (row in seq_len(nrow(metadata))) {
@@ -101,13 +117,16 @@ create_table <- function(database, server, schema, table, versioned_table = TRUE
 #' @export
 #'
 #' @examples
-#' write_dataframe_to_db(database = "my_database", server = "my_server", schema = "my_schema", table_name = "output_table", dataframe = my_df, versioned_table=TRUE)
-write_dataframe_to_db <- function(database, server, schema, table_name, dataframe, versioned_table = TRUE) {
+#' write_dataframe_to_db(database = "my_database", server = "my_server", schema = "my_schema", table_name = "output_table", dataframe = my_df, versioned_table = TRUE)
+write_dataframe_to_db <- function(database, server, schema, table_name, dataframe, versioned_table = FALSE) {
   populate_staging_table(database = database, server = server, schema = schema, table = table_name, dataframe = dataframe)
   connection <- create_sqlserver_connection(database = database, server = server)
   tables <- get_db_tables(database = database, server = server)
   if (nrow(tables[tables$Schema == schema & tables$Name == table_name, ]) == 0) {
     create_table(database = database, server = server, schema = schema, table = table_name, versioned_table)
+  }
+  else {
+    check_existing_table(database = database, server = server, schema = schema, table = table_name, dataframe = dataframe)
   }
   tryCatch(
     {
