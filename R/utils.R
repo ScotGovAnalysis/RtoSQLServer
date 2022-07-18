@@ -171,8 +171,7 @@ table_where_clause <- function(id_column, start_row, end_row) {
 get_db_tables <- function(database, server) {
   sql <- "SELECT SCHEMA_NAME(t.schema_id) AS 'Schema',
   t.name AS 'Name'
-  FROM sys.tables t
-  WHERE t.temporal_type != 1"
+  FROM sys.tables t"
   data <- execute_sql(database = database, server = server, sql = sql, output = TRUE)
   data
 }
