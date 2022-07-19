@@ -11,6 +11,7 @@ check_existing_table <- function(server, database, schema, table, dataframe) {
       stop(paste("Column", n, "datatype:", df_col_type, "does not match existing type", sql_col_type, "."))
     }
   }
+  message(paste0("Checked existing columns in '", schema, ".", table, "' match those in dataframe to be loaded. Existing table will be truncated before load."))
 }
 
 
@@ -28,6 +29,7 @@ create_staging_table <- function(server, database, schema, table, dataframe) {
   }
   sql <- paste0(substr(sql, 1, nchar(sql) - 2), ");")
   execute_sql(server = server, database = database, sql = sql, output = FALSE)
+  message("Table: '", paste0(table, "_staging_"), "' successfully created in database: '", database, "' on server '", server, "'")
 }
 
 
@@ -82,6 +84,7 @@ populate_table_from_staging <- function(server, database, schema, table) {
   sql <- paste0("TRUNCATE TABLE [", schema, "].[", table, "];
                 INSERT INTO [", schema, "].[", table, "] (", column_string, ") select ", column_string, " from [", schema, "].[", table, "_staging_];")
   execute_sql(server = server, database = database, sql = sql, output = FALSE)
+  message("Table: '", paste0(schema, ".", table), "' successfully populated from staging")
 }
 
 
@@ -125,6 +128,7 @@ create_table <- function(server, database, schema, table, versioned_table = FALS
     sql <- paste0(substr(sql, 1, nchar(sql) - 2), ");")
   }
   execute_sql(server = server, database = database, sql = sql, output = FALSE, disconnect = TRUE)
+  message("Table: '", paste0(schema, ".", table), "' successfully created in database: '", database, "' on server '", server, "'")
 }
 
 
@@ -143,8 +147,10 @@ create_table <- function(server, database, schema, table, versioned_table = FALS
 #'
 #' @examples
 #' write_dataframe_to_db(server = "my_server", schema = "my_schema", table_name = "output_table", dataframe = my_df, versioned_table = TRUE)
-write_dataframe_to_db <- function(server, database, schema, table_name, dataframe, batch_size = 5e5, versioned_table = FALSE) {
+write_dataframe_to_db <- function(server, database, schema, table_name, dataframe, batch_size = 1e5, versioned_table = FALSE) {
   start_time <- Sys.time()
+  # Create staging table
+  create_staging_table(server = server, database = database, schema = schema, table = table_name, dataframe = dataframe)
   # Check if target table already exists
   tables <- get_db_tables(server = server, database = database)
   # If does bot exist create it
@@ -155,15 +161,12 @@ write_dataframe_to_db <- function(server, database, schema, table_name, datafram
   else {
     check_existing_table(server = server, database = database, schema = schema, table = table_name, dataframe = dataframe)
   }
-  # Create staging table
-  create_staging_table(server = server, database = database, schema = schema, table = table_name, dataframe = dataframe)
   # Populte the staging table using batch import of rows from R dataframe
   populate_staging_table(server = server, database = database, schema = schema, table = table_name, dataframe = dataframe, batch_size = batch_size)
   # Then populate the target table from staging, truncating it first of existing rows
   tryCatch(
     {
       populate_table_from_staging(server = server, database = database, schema = schema, table = table_name)
-      message(paste0("Dataframe successfully written to: '", table_name, "'"))
     },
     error = function(cond) {
       stop(paste0("Failed to write dataframe to database: '", database, "'\nOriginal error message: ", cond))
@@ -172,5 +175,5 @@ write_dataframe_to_db <- function(server, database, schema, table_name, datafram
   # Drop the staging table and finished
   delete_staging_table(server = server, database = database, schema = schema, table = table_name)
   end_time <- Sys.time()
-  message(paste("Loaded in", round(difftime(end_time, start_time, units = "mins")[[1]], 2)), " minutes.")
+  message(paste("Loading completed in", round(difftime(end_time, start_time, units = "mins")[[1]], 2)), " minutes.")
 }
