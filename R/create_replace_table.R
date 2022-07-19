@@ -11,7 +11,7 @@ check_existing_table <- function(server, database, schema, table, dataframe) {
       stop(paste("Column", n, "datatype:", df_col_type, "does not match existing type", sql_col_type, "."))
     }
   }
-  message(paste0("Checked existing columns in '", schema, ".", table, "' match those in dataframe to be loaded. Existing table will be truncated before load."))
+  message("Checked existing columns in '", schema, ".", table, "' match those in dataframe to be loaded. Existing table will be truncated before load.")
 }
 
 
@@ -29,7 +29,7 @@ create_staging_table <- function(server, database, schema, table, dataframe) {
   }
   sql <- paste0(substr(sql, 1, nchar(sql) - 2), ");")
   execute_sql(server = server, database = database, sql = sql, output = FALSE)
-  message("Table: '", paste0(table, "_staging_"), "' successfully created in database: '", database, "' on server '", server, "'")
+  message("Table: '", paste0(schema, ".", table, "_staging_"), "' successfully created in database: '", database, "' on server '", server, "'")
 }
 
 
@@ -84,7 +84,7 @@ populate_table_from_staging <- function(server, database, schema, table) {
   sql <- paste0("TRUNCATE TABLE [", schema, "].[", table, "];
                 INSERT INTO [", schema, "].[", table, "] (", column_string, ") select ", column_string, " from [", schema, "].[", table, "_staging_];")
   execute_sql(server = server, database = database, sql = sql, output = FALSE)
-  message("Table: '", paste0(schema, ".", table), "' successfully populated from staging")
+  message("Table: '", schema, ".", table, "' successfully populated from staging")
 }
 
 
@@ -100,7 +100,7 @@ delete_staging_table <- function(server, database, schema, table) {
     }
   )
   DBI::dbDisconnect(connection)
-  message("Staging table: '", table, "' successfully deleted from database: '", database, "' on server '", server, "'")
+  message("Staging table: '", schema, ".", paste0(table,"_staging_"),"' successfully deleted from database: '", database, "' on server '", server, "'")
 }
 
 
