@@ -1,7 +1,7 @@
 #' Read a SQL Server table into an R dataframe,
 #'
-#' @param database Database containing table to read.
 #' @param server Server instance where SQL Server database running.
+#' @param database Database containing table to read.
 #' @param schema Name of database schema containing table to read.
 #' @param table_name Name of table in database to read.
 #' @param columns Optional vector of column names to select.
