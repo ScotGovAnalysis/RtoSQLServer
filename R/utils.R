@@ -33,9 +33,7 @@ create_sqlserver_connection <- function(server, database) {
 #' execute_sql(database = my_database, server = my_server, sql = sql_to_run, output = TRUE, disconnect = TRUE)
 execute_sql <- function(server, database, sql, output = FALSE, disconnect = TRUE) {
   output_data <- NULL
-  if (!exists("connection")) {
-    connection <- create_sqlserver_connection(server = server, database = database)
-  }
+  connection <- create_sqlserver_connection(server = server, database = database)
   for (i in 1:length(sql)) {
     if (output) {
       output_data <- DBI::dbGetQuery(connection, sql[i])
