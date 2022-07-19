@@ -31,7 +31,7 @@ schema <- "daily"
 
 
 #Write the visa dataframe to a SQL Server table in batches of 100,000 rows at a time
-write_dataframe_to_db(database=database, server=server, schema=schema, table_name="test_tom", dataframe=visa_df, batch_size=1e5, versioned_table=FALSE)
+write_dataframe_to_db(database=database, server=server, schema=schema, table_name="test_visa", dataframe=visa_df, batch_size=1e5, versioned_table=FALSE)
 
 
 #Optional drop the table from the database

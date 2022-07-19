@@ -10,7 +10,7 @@ write_dataframe_to_db(
   schema,
   table_name,
   dataframe,
-  batch_size = 5e+05,
+  batch_size = 1e+05,
   versioned_table = FALSE
 )
 }
@@ -33,5 +33,5 @@ write_dataframe_to_db(
 Write an R dataframe to SQL Server table optionally with system versioning on.
 }
 \examples{
-write_dataframe_to_db(database = "my_database", server = "my_server", schema = "my_schema", table_name = "output_table", dataframe = my_df, versioned_table = TRUE)
+write_dataframe_to_db(server = "my_server", schema = "my_schema", table_name = "output_table", dataframe = my_df, versioned_table = TRUE)
 }
