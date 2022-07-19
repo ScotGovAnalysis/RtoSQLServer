@@ -8,10 +8,10 @@ Functions are also currently available to:
 
 ## Method used
 When loading an R dataframe into SQL Server using `create_replace_table`, following steps are followed:
-1. Firstly check if table of same name in schema already exists.
+1. Check if table of same name in schema already exists.
 2. If does not exist make a new empty target table in the database with columns matching equivalent R datatypes.
-3. If does already exist, check column names and datatypes in source dataframe match existing target SQL Server table.
-4. Create a staging table in SQL Server database.
+3. If table does already exist, check column names and datatypes in source dataframe match existing target SQL Server table.
+4. Create a staging table in SQL Server database for initial load from R.
 5. Load rows from R dataframe into staging table n batches of rows at a time.
 6. Truncate target table and insert all rows from staging table to target table.
 7. Drop staging table. Loading process complete.
