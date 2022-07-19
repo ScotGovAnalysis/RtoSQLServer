@@ -5,7 +5,8 @@ library(readr)
 
 visa_df <- read_csv("C:/repos/visa-applications-2022-07-13.csv")
 
-visa_df <- head(visa_df, 10)
+# Uncomment below if wish to test with a subset first of all
+#visa_df <- head(visa_df, 10)
 
 # Check datatype of each column in df and subset to character cols
 cols_all <- sapply(visa_df, class)
