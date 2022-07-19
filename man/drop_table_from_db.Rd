@@ -4,16 +4,24 @@
 \alias{drop_table_from_db}
 \title{Drop SQL Server table from database. Check if versioned table and disable versioning and drop history table too if so.}
 \usage{
-drop_table_from_db(database, server, schema, table_name)
+drop_table_from_db(
+  server,
+  database,
+  schema,
+  table_name,
+  versioned_table = FALSE
+)
 }
 \arguments{
-\item{database}{Database containing the table to be dropped.}
-
 \item{server}{Server and instance where SQL Server database found.}
+
+\item{database}{Database containing the table to be dropped.}
 
 \item{schema}{Name of schema containing table to be dropped.}
 
 \item{table_name}{Name of the table to be dropped.}
+
+\item{versioned_table}{Is this a versioned table. Defaults to FALSE.}
 }
 \description{
 Drop SQL Server table from database. Check if versioned table and disable versioning and drop history table too if so.
