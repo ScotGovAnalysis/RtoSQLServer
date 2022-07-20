@@ -4,7 +4,7 @@ library(stringr) # Easier string manipulation
 
 # Set source folder -------------------------------------------------------
 
-date_today <- Sys.Date() - 1
+date_today <- Sys.Date()
 
 source_files_folder <- paste0("//s0855a/eoi/output/daily/", date_today, "/whole-data-sets")
 
