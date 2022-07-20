@@ -1,39 +1,67 @@
-library(RtoSQLServerVersioning)
-library(readr)
+library(RtoSQLServerVersioning) # Custom package for SQL Server Data Loading. NOTE: Needs ODBC library v1.33, not v1.32 or earlier.
+library(readr) # Better csv reading
+library(stringr) # Easier string manipulation
 
-# read check source data --------------------------------------------------
+# Set source folder -------------------------------------------------------
 
-visa_df <- read_csv("C:/repos/visa-applications-2022-07-13.csv")
+date_today <- Sys.Date() - 1
+
+source_files_folder <- paste0("//s0855a/eoi/output/daily/", date_today, "/whole-data-sets")
+
+# read and check latest source data --------------------------------------------------
+
+file_prefix <- "visa-applications-"
+
+# ODBC does not like writing tables with "-" characters, so replace with "_" (also needed on dates)
+db_prefix <- str_replace_all(file_prefix, "-", "_")
+
+csv_file <- paste0(file_prefix, date_today, ".csv")
+
+source_df <- read_csv(file.path(source_files_folder, csv_file))
 
 # Uncomment below if wish to test with a subset first of all
-#visa_df <- head(visa_df, 10)
+# source_df <- head(source_df, 10)
 
 # Check datatype of each column in df and subset to character cols
-cols_all <- sapply(visa_df, class)
-cols_character <- cols_all[cols_all=="character"]
+cols_all <- sapply(source_df, class)
+cols_character <- cols_all[cols_all == "character"]
 
 # Truncate character columns to max of 255 characters
-for (col_name in names(cols_character)){
-  visa_df[[col_name]] <- sapply(visa_df[[col_name]], substr, start=1, stop=255)
+for (col_name in names(cols_character)) {
+  source_df[[col_name]] <- sapply(source_df[[col_name]], substr, start = 1, stop = 255)
 }
 
 
 # Database connection info ------------------------------------------------
 
-
-#Set connection details for use in functions:
+# Set connection details for use in functions:
 server <- "s0855a\\DBXED"
 database <- "h4u"
 schema <- "daily"
 
+# OPTIONAL remove previous day table -----------------------------------------------
 
-# Write table to db -------------------------------------------------------
+db_yesterday <- str_replace_all(date_today - 1, "-", "_")
+
+# Will give error if table does not exist, but might not matter?
+drop_table_from_db(
+  server = server,
+  database = database,
+  schema = schema,
+  table_name = paste0(db_prefix, db_yesterday)
+)
 
 
-#Write the visa dataframe to a SQL Server table in batches of 100,000 rows at a time
-write_dataframe_to_db(database=database, server=server, schema=schema, table_name="test_visa", dataframe=visa_df, batch_size=1e5, versioned_table=FALSE)
+# Write current date dataframe to db -------------------------------------------------------
 
 
-#Optional drop the table from the database
-#drop_table_from_db(database=database, server=server, schema=schema, table_name="test_tom", versioned_table=FALSE)
-
+# Write the visa dataframe to a SQL Server table in batches of 100,000 rows at a time
+write_dataframe_to_db(
+  database = database,
+  server = server,
+  schema = schema,
+  table_name = paste0(db_prefix, str_replace_all(date_today, "-", "_")),
+  dataframe = source_df,
+  batch_size = 1e5,
+  versioned_table = FALSE
+)
