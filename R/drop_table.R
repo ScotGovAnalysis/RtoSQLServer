@@ -31,5 +31,5 @@ drop_table_from_db <- function(server, database, schema, table_name, versioned_t
     drop_sql <- paste0("DROP TABLE [", schema, "].[", table_name, "]")
   }
   execute_sql(server = server, database = database, sql = drop_sql, output = TRUE)
-  message("Table: '", table_name, "' successfully deleted from database: '", database, "' on server '", server, "'")
+  message("Table: '", schema, ".", table_name, "' successfully deleted from database: '", database, "' on server '", server, "'")
 }
