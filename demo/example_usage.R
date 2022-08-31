@@ -60,7 +60,7 @@ if (file.exists(csv_fp)) {
   # Write current date dataframe to db -------------------------------------------------------
 
 
-  # Write the visa dataframe to a SQL Server table in batches of 100,000 rows at a time
+  # Write the dataframe to a SQL Server table in batches of 100,000 rows at a time
   write_dataframe_to_db(
     database = database,
     server = server,
