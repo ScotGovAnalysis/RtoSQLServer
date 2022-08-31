@@ -1,5 +1,5 @@
 # RtoSQLServerVersioning
-Work in progress. R package used to import R dataframes into a MS SQL Server database, optionally with [System Versioning](https://docs.microsoft.com/en-us/sql/relational-databases/tables/creating-a-system-versioned-temporal-table?view=sql-server-ver15) enabled.  
+R package used to import R dataframes into a MS SQL Server database, optionally with [System Versioning](https://docs.microsoft.com/en-us/sql/relational-databases/tables/creating-a-system-versioned-temporal-table?view=sql-server-ver15) enabled.  
 
 Functions are also currently available to: 
 - List all tables in a specified schema of a database. 
