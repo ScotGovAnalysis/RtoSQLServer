@@ -2,15 +2,17 @@ library(RtoSQLServerVersioning) # Custom package for SQL Server Data Loading. NO
 library(readr) # Better csv reading
 library(stringr) # Easier string manipulation
 
+# Example of loading a dataset that is refreshed daily by a separate process - the current date is used to find file to load to DB
+
 # Set source folder -------------------------------------------------------
 
 date_today <- Sys.Date()
 
-source_files_folder <- paste0("//s0855a/eoi/output/daily/", date_today, "/whole-data-sets")
+source_files_folder <- paste0("//my_server/my_folder/mysubfolder/daily/", date_today, "/whole-data-sets")
 
 # read and check latest source data --------------------------------------------------
 
-file_prefix <- "visa-applications-"
+file_prefix <- "daily-dataset-"
 
 # ODBC does not like writing tables with "-" characters, so replace with "_" (also needed on dates)
 db_prefix <- str_replace_all(file_prefix, "-", "_")
@@ -31,28 +33,28 @@ if (file.exists(csv_fp)) {
 
   # Truncate character columns to max of 255 characters
   for (col_name in names(cols_character)) {
-    source_df[[col_name]] <- sapply(source_df[[col_name]], substr, start = 1, stop = 255)
+    source_df[[col_name]] <- substr(source_df[[col_name]], start = 1, stop = 255)
   }
 
 
   # Database connection info ------------------------------------------------
 
   # Set connection details for use in functions:
-  server <- "s0855a\\DBXED"
-  database <- "h4u"
-  schema <- "daily"
+  server <- "myserver\\myinstance"
+  database <- "mydatabase"
+  schema <- "myschema"
 
-  # OPTIONAL remove previous day table -----------------------------------------------
+  # OPTIONAL remove previous day table if exists -----------------------------------------------
 
   db_yesterday <- str_replace_all(date_today - 1, "-", "_")
 
-  # Will give error if table does not exist, but might not matter?
-  drop_table_from_db(
+
+  try(drop_table_from_db(
     server = server,
     database = database,
     schema = schema,
     table_name = paste0(db_prefix, db_yesterday)
-  )
+  ))
 
 
   # Write current date dataframe to db -------------------------------------------------------
