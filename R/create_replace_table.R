@@ -142,7 +142,7 @@ create_table <- function(server, database, schema, table, versioned_table = FALS
 #' @param batch_size Source R dataframe rows will be loaded into a staging SQL Server table in batches of this many rows at a time.
 #' @param versioned_table Create table with SQL Server system versioning. Defaults to TRUE. If table already exists in DB will not change existing versioning status.
 #'
-#' @importFrom("utils", "tail")
+#' @importFrom utils tail
 #' @export
 #'
 #' @examples
