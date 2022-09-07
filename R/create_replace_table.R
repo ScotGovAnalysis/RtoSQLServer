@@ -52,7 +52,7 @@ get_df_batches <- function(dataframe, batch_size) {
 populate_staging_table <- function(server, database, schema, table, dataframe, batch_size = 5e5) {
   connection <- create_sqlserver_connection(server = server, database = database)
   batch_list <- get_df_batches(dataframe = dataframe, batch_size = batch_size)
-  message(paste("Loading to staging in", length(batch_list$batch_starts), "batches of", format(batch_size, scientific = FALSE), "rows..."))
+  message(paste("Loading to staging in", length(batch_list$batch_starts), "batches of up to", format(batch_size, scientific = FALSE), "rows..."))
   for (i in seq_along(batch_list$batch_starts)) {
     batch_start <- batch_list$batch_starts[[i]]
     batch_end <- batch_list$batch_ends[[i]]
