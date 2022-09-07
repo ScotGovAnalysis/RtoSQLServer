@@ -12,7 +12,8 @@ LazyData: true
 Imports: 
     odbc (>= 1.3.3),
     DBI,
-    dplyr
+    dplyr,
+    utils
 Language: en-GB
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
