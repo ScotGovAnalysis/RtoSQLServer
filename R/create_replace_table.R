@@ -1,6 +1,6 @@
 check_existing_table <- function(server, database, schema, table, dataframe) {
   df_columns <- sapply(dataframe, class)
-  sql_columns <- db_table_metadata(server = server, database = database, schema = schema, table = table)
+  sql_columns <- db_table_metadata(server = server, database = database, schema = schema, table_name = table)
   for (n in names(df_columns)) {
     if (!n %in% sql_columns$ColumnName) {
       stop(paste("Column", n, "not found in existing SQL Server table", table, "- use drop_table_from_db function to delete it first if wish to replace."))
@@ -18,7 +18,7 @@ check_existing_table <- function(server, database, schema, table, dataframe) {
 create_staging_table <- function(server, database, schema, table, dataframe) {
   tables <- get_db_tables(database = database, server = server)
   if (nrow(tables[tables$Schema == schema & tables$Name == paste0(table, "_staging_"), ]) > 0) {
-    drop_table_from_db(server = server, database = database, schema = schema, table = paste0(table, "_staging_"), versioned_table = FALSE)
+    drop_table_from_db(server = server, database = database, schema = schema, table_name = paste0(table, "_staging_"), versioned_table = FALSE)
   }
   columns <- sapply(dataframe, class)
   sql <- paste0("CREATE TABLE [", schema, "].[", table, "_staging_] (", table, "ID INT NOT NULL IDENTITY PRIMARY KEY,")
@@ -72,7 +72,7 @@ populate_staging_table <- function(server, database, schema, table, dataframe, b
 
 
 populate_table_from_staging <- function(server, database, schema, table) {
-  metadata <- db_table_metadata(server = server, database = database, schema = schema, table = paste0(table, "_staging_"))
+  metadata <- db_table_metadata(server = server, database = database, schema = schema, table_name = paste0(table, "_staging_"))
   column_string <- ""
   for (row in seq_len(nrow(metadata))) {
     if (metadata[row, "ColumnName"] != paste0(table, "ID")) {
@@ -106,7 +106,7 @@ delete_staging_table <- function(server, database, schema, table) {
 
 
 create_table <- function(server, database, schema, table, versioned_table = FALSE) {
-  metadata <- db_table_metadata(server = server, database = database, schema = schema, table = paste0(table, "_staging_"))
+  metadata <- db_table_metadata(server = server, database = database, schema = schema, table_name = paste0(table, "_staging_"))
   sql <- paste0("CREATE TABLE [", schema, "].[", table, "] (", table, "ID INT NOT NULL IDENTITY PRIMARY KEY,")
   for (row in seq_len(nrow(metadata))) {
     if (metadata[row, "ColumnName"] != paste0(table, "ID")) {
@@ -142,7 +142,7 @@ create_table <- function(server, database, schema, table, versioned_table = FALS
 #' @param batch_size Source R dataframe rows will be loaded into a staging SQL Server table in batches of this many rows at a time.
 #' @param versioned_table Create table with SQL Server system versioning. Defaults to TRUE. If table already exists in DB will not change existing versioning status.
 #'
-#'
+#' @importFrom("utils", "tail")
 #' @export
 #'
 #' @examples
