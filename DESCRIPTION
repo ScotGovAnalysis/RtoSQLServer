@@ -1,6 +1,6 @@
 Package: RtoSQLServerVersioning
 Title: Load R Dataframes into SQL Server Database Tables with System Versioning
-Version: 0.0.1.1000
+Version: 0.0.2
 Authors@R: c(
     person("Tom", "Wilson", email = "thomas.wilson@gov.scot", role = "cre"),
     person("Miles", "Drake", email = "miles.drake@gov.scot", role = "aut"),
@@ -9,7 +9,10 @@ Description: What the package does (one paragraph).
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-Imports: odbc, DBI, dplyr
+Imports: 
+    odbc (>= 1.3.3),
+    DBI,
+    dplyr
 Language: en-GB
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
