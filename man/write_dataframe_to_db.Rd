@@ -10,6 +10,7 @@ write_dataframe_to_db(
   schema,
   table_name,
   dataframe,
+  append_to_existing = FALSE,
   batch_size = 1e+05,
   versioned_table = FALSE
 )
@@ -25,6 +26,8 @@ write_dataframe_to_db(
 
 \item{dataframe}{Source R dataframe that will be written to SQL Server database.}
 
+\item{append_to_existing}{Boolean if TRUE then rows will be appended to existing database table (if exists). Default FALSE.}
+
 \item{batch_size}{Source R dataframe rows will be loaded into a staging SQL Server table in batches of this many rows at a time.}
 
 \item{versioned_table}{Create table with SQL Server system versioning. Defaults to TRUE. If table already exists in DB will not change existing versioning status.}
@@ -33,5 +36,5 @@ write_dataframe_to_db(
 Write an R dataframe to SQL Server table optionally with system versioning on.
 }
 \examples{
-write_dataframe_to_db(server = "my_server", schema = "my_schema", table_name = "output_table", dataframe = my_df, versioned_table = TRUE)
+write_dataframe_to_db(server = "my_server", schema = "my_schema", table_name = "output_table", dataframe = my_df)
 }

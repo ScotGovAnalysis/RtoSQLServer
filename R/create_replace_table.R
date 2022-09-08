@@ -71,7 +71,7 @@ populate_staging_table <- function(server, database, schema, table, dataframe, b
 
 
 
-populate_table_from_staging <- function(server, database, schema, table) {
+populate_table_from_staging <- function(server, database, schema, table, append_to_existing = FALSE) {
   metadata <- db_table_metadata(server = server, database = database, schema = schema, table_name = paste0(table, "_staging_"))
   column_string <- ""
   for (row in seq_len(nrow(metadata))) {
@@ -81,8 +81,10 @@ populate_table_from_staging <- function(server, database, schema, table) {
     }
   }
   column_string <- substr(column_string, 1, nchar(column_string) - 2)
-  sql <- paste0("TRUNCATE TABLE [", schema, "].[", table, "];
-                INSERT INTO [", schema, "].[", table, "] (", column_string, ") select ", column_string, " from [", schema, "].[", table, "_staging_];")
+  sql <- paste0("INSERT INTO [", schema, "].[", table, "] (", column_string, ") select ", column_string, " from [", schema, "].[", table, "_staging_];")
+  if (!append_to_existing) {
+    sql <- paste0("TRUNCATE TABLE [", schema, "].[", table, "];", sql)
+  }
   execute_sql(server = server, database = database, sql = sql, output = FALSE)
   message("Table: '", schema, ".", table, "' successfully populated from staging")
 }
@@ -100,7 +102,7 @@ delete_staging_table <- function(server, database, schema, table) {
     }
   )
   DBI::dbDisconnect(connection)
-  message("Staging table: '", schema, ".", paste0(table,"_staging_"),"' successfully deleted from database: '", database, "' on server '", server, "'")
+  message("Staging table: '", schema, ".", paste0(table, "_staging_"), "' successfully deleted from database: '", database, "' on server '", server, "'")
 }
 
 
@@ -139,6 +141,7 @@ create_table <- function(server, database, schema, table, versioned_table = FALS
 #' @param schema Name of schema in SQL Server database where table will be created.
 #' @param table_name Name of table to be created in SQL Server database.
 #' @param dataframe Source R dataframe that will be written to SQL Server database.
+#' @param append_to_existing Boolean if TRUE then rows will be appended to existing database table (if exists). Default FALSE.
 #' @param batch_size Source R dataframe rows will be loaded into a staging SQL Server table in batches of this many rows at a time.
 #' @param versioned_table Create table with SQL Server system versioning. Defaults to TRUE. If table already exists in DB will not change existing versioning status.
 #'
@@ -146,8 +149,8 @@ create_table <- function(server, database, schema, table, versioned_table = FALS
 #' @export
 #'
 #' @examples
-#' write_dataframe_to_db(server = "my_server", schema = "my_schema", table_name = "output_table", dataframe = my_df, versioned_table = TRUE)
-write_dataframe_to_db <- function(server, database, schema, table_name, dataframe, batch_size = 1e5, versioned_table = FALSE) {
+#' write_dataframe_to_db(server = "my_server", schema = "my_schema", table_name = "output_table", dataframe = my_df)
+write_dataframe_to_db <- function(server, database, schema, table_name, dataframe, append_to_existing = FALSE, batch_size = 1e5, versioned_table = FALSE) {
   start_time <- Sys.time()
   # Create staging table
   create_staging_table(server = server, database = database, schema = schema, table = table_name, dataframe = dataframe)
@@ -166,7 +169,7 @@ write_dataframe_to_db <- function(server, database, schema, table_name, datafram
   # Then populate the target table from staging, truncating it first of existing rows
   tryCatch(
     {
-      populate_table_from_staging(server = server, database = database, schema = schema, table = table_name)
+      populate_table_from_staging(server = server, database = database, schema = schema, table = table_name, append_to_existing = append_to_existing)
     },
     error = function(cond) {
       stop(paste0("Failed to write dataframe to database: '", database, "'\nOriginal error message: ", cond))
