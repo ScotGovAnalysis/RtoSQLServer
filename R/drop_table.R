@@ -5,12 +5,13 @@
 #' @param schema Name of schema containing table to be dropped.
 #' @param table_name Name of the table to be dropped.
 #' @param versioned_table Is this a versioned table. Defaults to FALSE.
+#' @param silent If TRUE do not give message that dropping complete. Defaults to FALSE.
 #'
 #' @export
 #'
 #' @examples
 #' drop_table_from_db(database = "my_database", server = "my_server", schema = "my_schema", table_name = "table_to_drop")
-drop_table_from_db <- function(server, database, schema, table_name, versioned_table = FALSE) {
+drop_table_from_db <- function(server, database, schema, table_name, versioned_table = FALSE, silent = FALSE) {
   if (versioned_table) {
     check_sql <- paste0("select name, temporal_type, temporal_type_desc from sys.tables where name = '", table_name, "'")
     check_df <- execute_sql(server = server, database = database, sql = check_sql, output = TRUE)
@@ -31,5 +32,7 @@ drop_table_from_db <- function(server, database, schema, table_name, versioned_t
     drop_sql <- paste0("DROP TABLE [", schema, "].[", table_name, "]")
   }
   execute_sql(server = server, database = database, sql = drop_sql, output = TRUE)
-  message("Table: '", schema, ".", table_name, "' successfully deleted from database: '", database, "' on server '", server, "'")
+  if (!silent) {
+    message("Table: '", schema, ".", table_name, "' successfully deleted from database: '", database, "' on server '", server, "'")
+  }
 }

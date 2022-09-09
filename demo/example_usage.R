@@ -60,13 +60,14 @@ if (file.exists(csv_fp)) {
   # Write current date dataframe to db -------------------------------------------------------
 
 
-  # Write the dataframe to a SQL Server table in batches of 100,000 rows at a time
+  # Write the dataframe to a SQL Server table in batches of 100,000 rows at a time - note over-writing, not appending here
   write_dataframe_to_db(
     database = database,
     server = server,
     schema = schema,
     table_name = paste0(db_prefix, str_replace_all(date_today, "-", "_")),
     dataframe = source_df,
+    append_to_existing = FALSE
     batch_size = 1e5,
     versioned_table = FALSE
   )
