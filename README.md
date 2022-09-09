@@ -11,19 +11,19 @@ When loading an R dataframe into SQL Server using `create_replace_table`, follow
 
 1. The R dataframe is loaded into a staging table in the database in batches of n rows at a time.
 
-2. a) If table of the specified name does NOT already exist in the database schema:
-      i) Create target table in the datbase.
+2. a) If table of the specified name does NOT already exist in the database schema:  
+      i) Create target table in the datbase.  
       ii)Insert all rows from staging table to target table.
 
-3. b) If table of same name does already exist in the database schema:
+3. b) If table of same name does already exist in the database schema:  
 
-    If 'append_to_existing'=FALSE:
-      i) delete all rows from the target table
-      ii) Insert all rows from staging table into target table.
+    If 'append_to_existing'=FALSE:  
+      i) delete all rows from the target table  
+      ii) Insert all rows from staging table into target table.  
 
-    If 'append_to_existing'=TRUE:
-      i) Check that staging table columns and existing target table columns are the same. If not, cancel loading and give a warning.
-      ii) If check passes, insert all rows from staging table into target table.
+    If 'append_to_existing'=TRUE:  
+      i) Check that staging table columns and existing target table columns are the same. If not, cancel loading and give a warning.  
+      ii) If check passes, insert all rows from staging table into target table.  
 
 4. Delete the staging table.
 
