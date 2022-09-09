@@ -12,7 +12,7 @@ When loading an R dataframe into SQL Server using `create_replace_table`, follow
 1. The R dataframe is loaded into a staging table in the database in batches of n rows at a time.
 
 2. a) If table of the specified name does NOT already exist in the database schema:  
-      i) Create target table in the datbase.  
+      i) Create target table in the database.  
       ii)Insert all rows from staging table to target table.
 
 3. b) If table of same name does already exist in the database schema:  
