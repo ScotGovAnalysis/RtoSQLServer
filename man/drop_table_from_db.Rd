@@ -9,7 +9,8 @@ drop_table_from_db(
   database,
   schema,
   table_name,
-  versioned_table = FALSE
+  versioned_table = FALSE,
+  silent = FALSE
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ drop_table_from_db(
 \item{table_name}{Name of the table to be dropped.}
 
 \item{versioned_table}{Is this a versioned table. Defaults to FALSE.}
+
+\item{silent}{If TRUE do not give message that dropping complete. Defaults to FALSE.}
 }
 \description{
 Drop SQL Server table from database. Check if versioned table and disable versioning and drop history table too if so.

@@ -30,7 +30,7 @@ write_dataframe_to_db(
 
 \item{batch_size}{Source R dataframe rows will be loaded into a staging SQL Server table in batches of this many rows at a time.}
 
-\item{versioned_table}{Create table with SQL Server system versioning. Defaults to TRUE. If table already exists in DB will not change existing versioning status.}
+\item{versioned_table}{Create table with SQL Server system versioning. Defaults to FALSE. If table already exists in DB will not change existing versioning status.}
 }
 \description{
 Write an R dataframe to SQL Server table optionally with system versioning on.
