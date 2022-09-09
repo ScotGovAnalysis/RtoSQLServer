@@ -8,14 +8,24 @@ Functions are also currently available to:
 
 ## Method used
 When loading an R dataframe into SQL Server using `create_replace_table`, following steps are followed:
-1. Check if table of same name in schema already exists.
-2. If does not exist make a new empty target table in the database with columns matching equivalent R datatypes.
-3. If table does already exist, check column names and datatypes in source dataframe match existing target SQL Server table.
-4. Create a staging table in SQL Server database for initial load from R.
-5. Load rows from R dataframe into staging table n batches of rows at a time.
-6. Truncate target table and insert all rows from staging table to target table.
-7. Drop staging table. Loading process complete.
 
+1. The R dataframe is loaded into a staging table in the database in batches of n rows at a time.
+
+2. a) If table of the specified name does NOT already exist in the database schema:
+      i) Create target table in the datbase.
+      ii)Insert all rows from staging table to target table.
+
+3. b) If table of same name does already exist in the database schema:
+
+    If 'append_to_existing'=FALSE:
+      i) delete all rows from the target table
+      ii) Insert all rows from staging table into target table.
+
+    If 'append_to_existing'=TRUE:
+      i) Check that staging table columns and existing target table columns are the same. If not, cancel loading and give a warning.
+      ii) If check passes, insert all rows from staging table into target table.
+
+4. Delete the staging table.
 
 ## Installation
 R package can be installed directly from Github or locally from zip.  
@@ -52,18 +62,30 @@ database <- "my_database_name"
 schema <- "my_schema_name"
 
 #Write the test dataframe to a SQL Server table in 100K batches (by default system versioning is FALSE)
-write_dataframe_to_db(server=server, database=database, schema=schema, table_name="test_r_tbl", dataframe=iris, batch_size=1e5, versioned_table=FALSE)
+write_dataframe_to_db(server=server, 
+                      database=database, 
+                      schema=schema, 
+                      table_name="test_r_tbl", 
+                      dataframe=iris, 
+                      append_to_existing = FALSE,
+                      batch_size=1e5, 
+                      versioned_table=FALSE)
 
 #Read the SQL Server table into an R dataframe
-read_df <- read_table_from_db(server=server, database=database, schema=schema, table_name="test_r_tbl")
+read_df <- read_table_from_db(server=server, 
+                              database=database, 
+                              schema=schema, 
+                              table_name="test_r_tbl")
 
 #Drop the table from the database
-drop_table_from_db(server=server, database=database, schema=schema, table_name="test_r_tbl")
+drop_table_from_db(server=server, 
+                   database=database, 
+                   schema=schema, 
+                   table_name="test_r_tbl")
 
 ```
 
-Important to note that the `write_dataframe_to_db` function will overwrite the table in the database if it already exists. If the table had versioning on when first created then the existing records will be written to the `<table name>History` table and the end timestamp column will be updated. 
+The `write_dataframe_to_db` function will overwrite the table in the database if it already exists and argument `append_to_existing=FALSE`. If the table had versioning on when first created then the existing records will be written to the `<table name>History` table and the end timestamp column will be updated. 
 
-The versioning status of a table is set when it is first created in the schema and it will not be changed with subsequent overwriting of an existing table even if the `versioned_table` parameter of `write_database_to_db` function is changed for subsequent imports. If wish to make a table versioned when it was not previously or vice-versa, use the `drop_table_from_db` function and then create the table again with `write_dataframe_to_db` setting `versioned_table` to TRUE or FALSE as required. 
 
 Note a later version of SQL Server (2016 or later) is required for the System Versioning functionality. If using MS SQL Server 2012 or earlier, will only be successful if use version_table = FALSE arguments to these functions.
