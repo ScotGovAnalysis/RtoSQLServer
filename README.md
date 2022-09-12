@@ -17,8 +17,8 @@ When loading an R dataframe into SQL Server using `create_replace_table`, follow
 
 3. b) If table of same name does already exist in the database schema:  
 
-    If 'append_to_existing'=FALSE:  
-      i) delete all rows from the target table  
+    If 'append_to_existing'=FALSE (this will result in an overwrite):  
+      i) Drop the existing copy of the target table and create a new one from staging table definition.  
       ii) Insert all rows from staging table into target table.  
 
     If 'append_to_existing'=TRUE:  
