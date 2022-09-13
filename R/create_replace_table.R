@@ -148,6 +148,26 @@ clean_table_name <- function(table_name) {
   return(new_name)
 }
 
+rename_reserved_column <- function(column_name) {
+  if (tolower(column_name) %in% c("tablenamekey", "tablenameversionkey", "sysstarttime", "sysendtime")) {
+    paste0(column_name, "_old")
+  } else {
+    column_name
+  }
+}
+
+clean_column_names <- function(input_df) {
+  # Get column names as vector
+  column_names <- colnames(input_df)
+  # Truncate any names that have > 128 characters
+  column_names <- sapply(column_names, substr, start = 1, stop = 128)
+  # Rename any column names that are SQL Server reserved
+  column_names <- sapply(column_names, rename_reserved_column)
+  # Assign and return df
+  colnames(input_df) <- column_names
+  input_df
+}
+
 
 #' Write an R dataframe to SQL Server table optionally with system versioning on.
 #'
@@ -167,8 +187,10 @@ clean_table_name <- function(table_name) {
 #' write_dataframe_to_db(server = "my_server", schema = "my_schema", table_name = "output_table", dataframe = my_df)
 write_dataframe_to_db <- function(server, database, schema, table_name, dataframe, append_to_existing = FALSE, batch_size = 1e5, versioned_table = FALSE) {
   start_time <- Sys.time()
-  #Clean table_name in case special characters included
+  # Clean table_name in case special characters included
   table_name <- clean_table_name(table_name)
+  # Clean df column names
+  dataframe <- clean_column_names(dataframe)
   # Create staging table
   create_staging_table(server = server, database = database, schema = schema, table = table_name, dataframe = dataframe)
   # Check if target table already exists
