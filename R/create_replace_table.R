@@ -1,32 +1,49 @@
 check_existing_table <- function(server, database, schema, table, dataframe) {
-  df_columns <- sapply(dataframe, class)
   sql_columns <- db_table_metadata(server = server, database = database, schema = schema, table_name = table)
-  for (n in names(df_columns)) {
-    if (!n %in% sql_columns$ColumnName) {
+  for (col_name in colnames(dataframe)) {
+
+    # First check for columns that do not exist at all in target
+    if (!col_name %in% sql_columns$ColumnName) {
       delete_staging_table(server = server, database = database, schema = schema, table = table, silent = TRUE)
-      stop(paste0("Column '", n, "' not found in existing SQL Server table '", table, "'- use option append_to_existing=FALSE if wish to replace"))
+      stop(paste0("Column '", col_name, "' not found in existing SQL Server table '", table, "'- use option append_to_existing=FALSE if wish to replace"))
     }
-    df_col_type <- r_to_sql_data_type(df_columns[[n]])
-    sql_col_type <- sql_columns[sql_columns["ColumnName"] == n, "DataType"]
-    if (df_col_type != sql_col_type) {
-      delete_staging_table(server = server, database = database, schema = schema, table = table, silent = TRUE)
-      stop(paste0("Column '", n, "' datatype: '", df_col_type, "' does not match existing type '", sql_col_type, "'."))
+
+    # If all column exists, then check if datatypes are compatible
+
+    df_col_type <- r_to_sql_datatype(dataframe[[col_name]])
+    sql_col_type <- sql_columns[sql_columns["ColumnName"] == col_name, "DataType"]
+
+    # - may be incompatible types e.g. numeric and char
+    # - may need to resize existing db nvarchar col
+    # - or may be already compatible as existing db nvarchar col max larger than data in df to load
+    if (sql_col_type != df_col_type) {
+      # If char cols of different sizes might still be compatible:
+      mismatch_type <- compatible_character_cols(sql_col_type, df_col_type)
+      if (mismatch_type == "incompatible") {
+        delete_staging_table(server = server, database = database, schema = schema, table = table, silent = TRUE)
+        stop(paste0("Column '", col_name, "' datatype: '", df_col_type, "' does not match existing type '", sql_col_type, "'."))
+      } else if (mismatch_type == "resize") {
+        alter_sql_character_col(server = server, database = database, schema = schema, table = table, column_name = col_name, new_char_type = df_col_type)
+      }
     }
   }
   message("Checked existing columns in '", schema, ".", table, "' match those in dataframe to be loaded.")
 }
 
 
+alter_sql_character_col <- function(server, database, schema, table, column_name, new_char_type) {
+  sql <- paste0("ALTER TABLE [", schema, "].[", table, "] ALTER COLUMN [", column_name, "] ", new_char_type, ";")
+  execute_sql(server = server, database = database, sql = sql, output = FALSE)
+}
+
 create_staging_table <- function(server, database, schema, table, dataframe) {
   tables <- get_db_tables(database = database, server = server)
   if (nrow(tables[tables$Schema == schema & tables$Name == paste0(table, "_staging_"), ]) > 0) {
     drop_table_from_db(server = server, database = database, schema = schema, table_name = paste0(table, "_staging_"), versioned_table = FALSE)
   }
-  columns <- sapply(dataframe, class)
   sql <- paste0("CREATE TABLE [", schema, "].[", table, "_staging_] (", table, "ID INT NOT NULL IDENTITY PRIMARY KEY,")
-  for (column_index in seq_len(ncol(dataframe))) {
-    column_name <- names(columns[column_index])
-    data_type <- r_to_sql_data_type(columns[[column_index]][1])
+  for (column_name in colnames(dataframe)) {
+    data_type <- r_to_sql_datatype(dataframe[[column_name]])
     sql <- paste0(sql, " [", column_name, "] ", data_type, ", ")
   }
   sql <- paste0(substr(sql, 1, nchar(sql) - 2), ");")
