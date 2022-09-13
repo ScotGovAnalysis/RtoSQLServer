@@ -136,6 +136,18 @@ create_table <- function(server, database, schema, table, versioned_table = FALS
   }
 }
 
+clean_table_name <- function(table_name) {
+  # Replace - with _
+  new_name <- gsub("-", "_", table_name, ignore.case = TRUE)
+  # Remove any characters not character, number underscore
+  new_name <- gsub("[^0-9a-z_]", "", new_name, ignore.case = TRUE)
+  # Advise if changing target table name
+  if (new_name != table_name) {
+    message(paste0("Cannot name a table'", table_name, "' replacing with name '", new_name, "' (see ODBC table name limitations)"))
+  }
+  return(new_name)
+}
+
 
 #' Write an R dataframe to SQL Server table optionally with system versioning on.
 #'
@@ -155,6 +167,8 @@ create_table <- function(server, database, schema, table, versioned_table = FALS
 #' write_dataframe_to_db(server = "my_server", schema = "my_schema", table_name = "output_table", dataframe = my_df)
 write_dataframe_to_db <- function(server, database, schema, table_name, dataframe, append_to_existing = FALSE, batch_size = 1e5, versioned_table = FALSE) {
   start_time <- Sys.time()
+  #Clean table_name in case special characters included
+  table_name <- clean_table_name(table_name)
   # Create staging table
   create_staging_table(server = server, database = database, schema = schema, table = table_name, dataframe = dataframe)
   # Check if target table already exists
@@ -171,7 +185,7 @@ write_dataframe_to_db <- function(server, database, schema, table_name, datafram
     # Drop the existing table
     drop_table_from_db(server = server, database = database, schema = schema, table_name = table_name, versioned_table = TRUE, silent = TRUE)
     # Create the new one
-    create_table(server = server, database = database, schema = schema, table = table_name, versioned_table, silent=TRUE)
+    create_table(server = server, database = database, schema = schema, table = table_name, versioned_table, silent = TRUE)
   }
 
   # Populte the staging table using batch import of rows from R dataframe
