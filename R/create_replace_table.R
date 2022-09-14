@@ -28,7 +28,7 @@ check_existing_table <- function(server, database, schema, table, dataframe) {
       }
     }
   }
-  message("Checked existing columns in '", schema, ".", table, "' match those in dataframe to be loaded.")
+  message("Checked existing columns in '", schema, ".", table, "' are compatible with those in the dataframe to be loaded.")
 }
 
 
