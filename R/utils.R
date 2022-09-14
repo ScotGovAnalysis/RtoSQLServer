@@ -205,17 +205,21 @@ r_to_sql_datatype <- function(col_v) {
 }
 
 
-compatible_character_cols<- function(existing_col_type, to_load_col_type){
+compatible_character_cols <- function(existing_col_type, to_load_col_type) {
   # Only both column datatypes contain "nvarchar" then proceed
-  if (! (grepl("nvarchar", existing_col_type) & grepl("nvarchar", to_load_col_type))){
-    return ("incompatible")
+  if (!(grepl("nvarchar", existing_col_type) & grepl("nvarchar", to_load_col_type))) {
+    return("incompatible")
   }
   else {
     # Extract the nvarchar column size, e.g. 255 from nvarchar(255)
-    existing_col_size <- as.numeric(gsub("[0-9]", "", existing_col_type))
-    to_load_col_size <- as.numeric(gsub("[0-9]", "", to_load_col_type))
-    if (to_load_col_size <= existing_col_size){
-      return("compatible")} # No change needed
-    else {return ("need resize")} # Indicates will need alter statement
+    existing_col_size <- as.numeric(gsub("[^0-9]", "", existing_col_type))
+    to_load_col_size <- as.numeric(gsub("[^0-9]", "", to_load_col_type))
+
+    if (to_load_col_size <= existing_col_size) {
+      return("compatible") # No change needed
     }
+    else {
+      return("resize") # Indicates will need alter statement
+    }
+  }
 }
