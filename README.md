@@ -1,19 +1,18 @@
-# RtoSQLServerVersioning
+# RtoSQLServer
 R package used to import R dataframes into a MS SQL Server database, optionally with [System Versioning](https://docs.microsoft.com/en-us/sql/relational-databases/tables/creating-a-system-versioned-temporal-table?view=sql-server-ver15) enabled.  
 
-Functions are also currently available to: 
-- List all tables in a specified schema of a database. 
+As well as loading R dataframes into SQL Server databases, functions are also currently available to: 
 - Select all rows of specific columns of a database table.
 - Drop a table from the database.
 
-## Method used
+## Loading method used
 When loading an R dataframe into SQL Server using `create_replace_table`, following steps are followed:
 
 1. The R dataframe is loaded into a staging table in the database in batches of n rows at a time.
 
 2. a) If table of the specified name does NOT already exist in the database schema:  
       i) Create target table in the database.  
-      ii)Insert all rows from staging table to target table.
+      ii) Insert all rows from staging table to target table.
 
 3. b) If table of same name does already exist in the database schema:  
 
@@ -34,17 +33,17 @@ While this repo is private, to install directly from Github will need to create 
 
 ```r
 # install.packages("devtools")
-devtools::install_github("datasciencescotland/rtosqlserverversioning@main", auth_token = "<my personal access token>")
+devtools::install_github("datasciencescotland/rtosqlserver@main", auth_token = "<my personal access token>")
 ```
 
 If the above does not work, install by downloading:
 
-1. Go to the [repository on Github](https://github.com/datasciencescotland/rtosqlserverversioning)
+1. Go to the [repository on Github](https://github.com/datasciencescotland/rtosqlserverver)
 2. Click Clone or download then Download ZIP.
 3. Save the file locally and unzip.
 4. Install with install.packages():
 ```
-install.packages("C:/my_repos/RtoSQLServerVersioning", repos = NULL, type="source")
+install.packages("C:/my_repos/RtoSQLServer", repos = NULL, type="source")
 ```
 
 **IMPORTANT:** The [ODBC library](https://CRAN.R-project.org/package=odbc) version should be at least 1.3.3 as crashing issues were found when using 1.3.2.

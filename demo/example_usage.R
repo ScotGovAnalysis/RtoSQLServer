@@ -1,4 +1,4 @@
-library(RtoSQLServerVersioning) # Custom package for SQL Server Data Loading. NOTE: Needs ODBC library v1.33, not v1.32 or earlier.
+library(RtoSQLServer) # Custom package for SQL Server Data Loading. NOTE: Needs ODBC library v1.33, not v1.32 or earlier.
 library(readr) # Better csv reading
 library(stringr) # Easier string manipulation
 
