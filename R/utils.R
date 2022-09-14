@@ -36,9 +36,23 @@ execute_sql <- function(server, database, sql, output = FALSE, disconnect = TRUE
   connection <- create_sqlserver_connection(server = server, database = database)
   for (i in 1:length(sql)) {
     if (output) {
-      output_data <- DBI::dbGetQuery(connection, sql[i])
+      tryCatch(
+        {
+          output_data <- DBI::dbGetQuery(connection, sql[i])
+        },
+        error = function(cond) {
+          stop(paste0("Failed to execute SQL.\nOriginal error message: ", cond))
+        }
+      )
     } else {
-      DBI::dbGetQuery(connection, sql[i])
+      tryCatch(
+        {
+          DBI::dbGetQuery(connection, sql[i])
+        },
+        error = function(cond) {
+          stop(paste0("Failed to execute SQL.\nOriginal error message: ", cond))
+        }
+      )
     }
   }
   if (disconnect) DBI::dbDisconnect(connection)
