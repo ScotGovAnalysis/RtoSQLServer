@@ -23,6 +23,7 @@ check_existing_table <- function(server, database, schema, table, dataframe) {
         delete_staging_table(server = server, database = database, schema = schema, table = table, silent = TRUE)
         stop(paste0("Column '", col_name, "' datatype: '", df_col_type, "' does not match existing type '", sql_col_type, "'."))
       } else if (mismatch_type == "resize") {
+        message(paste0("Resizing existing column '", col_name, "' from ", sql_col_type, " to ", df_col_type))
         alter_sql_character_col(server = server, database = database, schema = schema, table = table, column_name = col_name, new_char_type = df_col_type)
       }
     }
