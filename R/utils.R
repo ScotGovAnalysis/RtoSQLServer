@@ -174,15 +174,52 @@ get_db_tables <- function(server, database) {
   data
 }
 
-r_to_sql_data_type <- function(r_data_type) {
-  sql_data_type <- switch(r_data_type,
+r_to_sql_character_sizes <- function(max_string) {
+  if (max_string <= 50) {
+    "nvarchar(50)"
+  } else if (max_string > 50 & max_string <= 255) {
+    "nvarchar(255)"
+  } else if (max_string > 255 & max_string <= 4000) {
+    "nvarchar(4000)"
+  } else {
+    "nvarchar(max)"
+  }
+}
+
+
+r_to_sql_datatype <- function(col_v) {
+  r_data_type <- class(col_v)
+  if (r_data_type %in% c("character", "factor")) {
+    col_v <- as.character(col_v) # to ensure factor cols are character
+    max_string <- max(nchar(col_v))
+  }
+  switch(r_data_type,
     "numeric" = "float",
     "logical" = "bit",
-    "character" = "varchar(255)",
-    "factor" = "varchar(255)",
+    "character" = r_to_sql_character_sizes(max_string),
+    "factor" = r_to_sql_character_sizes(max_string),
     "POSIXct" = "datetime2(3)",
     "POSIXlt" = "datetime2(3)",
     "integer" = "int"
   )
-  sql_data_type
+}
+
+
+compatible_character_cols <- function(existing_col_type, to_load_col_type) {
+  # Only both column datatypes contain "nvarchar" then proceed
+  if (!(grepl("nvarchar", existing_col_type) & grepl("nvarchar", to_load_col_type))) {
+    return("incompatible")
+  }
+  else {
+    # Extract the nvarchar column size, e.g. 255 from nvarchar(255)
+    existing_col_size <- as.numeric(gsub("[^0-9]", "", existing_col_type))
+    to_load_col_size <- as.numeric(gsub("[^0-9]", "", to_load_col_type))
+
+    if (to_load_col_size <= existing_col_size) {
+      return("compatible") # No change needed
+    }
+    else {
+      return("resize") # Indicates will need alter statement
+    }
+  }
 }
