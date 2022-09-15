@@ -67,7 +67,7 @@ if (file.exists(csv_fp)) {
     schema = schema,
     table_name = paste0(db_prefix, str_replace_all(date_today, "-", "_")),
     dataframe = source_df,
-    append_to_existing = FALSE
+    append_to_existing = FALSE,
     batch_size = 1e5,
     versioned_table = FALSE
   )
