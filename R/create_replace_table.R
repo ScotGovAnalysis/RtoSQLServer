@@ -14,8 +14,8 @@ check_existing_table <- function(server, database, schema, table, dataframe) {
     sql_col_type <- sql_columns[sql_columns["ColumnName"] == col_name, "DataType"]
 
     # - may be incompatible types e.g. numeric and char
-    # - may need to resize existing db nvarchar col
-    # - or may be already compatible as existing db nvarchar col max larger than data in df to load
+    # - may need to resize existing database table nvarchar col
+    # - or may be already compatible as existing database nvarchar col max larger than data in df to load
     if (sql_col_type != df_col_type) {
       # If char cols of different sizes might still be compatible:
       mismatch_type <- compatible_character_cols(sql_col_type, df_col_type)
