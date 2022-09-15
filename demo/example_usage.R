@@ -1,6 +1,4 @@
 library(RtoSQLServer) # Custom package for SQL Server Data Loading. NOTE: Needs ODBC library v1.33, not v1.32 or earlier.
-library(readr) # Better csv reading
-library(stringr) # Easier string manipulation
 
 # Example of loading a dataset that is refreshed daily by a separate process - the current date is used to find file to load to DB
 
@@ -15,14 +13,14 @@ source_files_folder <- paste0("//my_server/my_folder/mysubfolder/daily/", date_t
 file_prefix <- "daily-dataset-"
 
 # ODBC does not like writing tables with "-" characters, so replace with "_" (also needed on dates)
-db_prefix <- str_replace_all(file_prefix, "-", "_")
+db_prefix <- gsub("-", "_", file_prefix)
 
 csv_file <- paste0(file_prefix, date_today, ".csv")
 
 csv_fp <- file.path(source_files_folder, csv_file)
 
 if (file.exists(csv_fp)) {
-  source_df <- read_csv(file.path(source_files_folder, csv_file))
+  source_df <- read.csv(file.path(source_files_folder, csv_file), stringsAsFactors = FALSE)
 
   # Uncomment below if wish to test with a subset first of all
   # source_df <- head(source_df, 10)
@@ -46,7 +44,7 @@ if (file.exists(csv_fp)) {
 
   # OPTIONAL remove previous day table if exists -----------------------------------------------
 
-  db_yesterday <- str_replace_all(date_today - 1, "-", "_")
+  db_yesterday <- gsub("-", "_", date_today - 1)
 
 
   try(drop_table_from_db(
@@ -65,7 +63,7 @@ if (file.exists(csv_fp)) {
     database = database,
     server = server,
     schema = schema,
-    table_name = paste0(db_prefix, str_replace_all(date_today, "-", "_")),
+    table_name = paste0(db_prefix, gsub("-", "_", date_today)),
     dataframe = source_df,
     append_to_existing = FALSE,
     batch_size = 1e5,
