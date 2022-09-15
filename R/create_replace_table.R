@@ -8,7 +8,7 @@ check_existing_table <- function(server, database, schema, table, dataframe) {
       stop(paste0("Column '", col_name, "' not found in existing SQL Server table '", table, "'- use option append_to_existing=FALSE if wish to replace"))
     }
 
-    # If all column exists, then check if datatypes are compatible
+    # If column exists, then check if datatypes are compatible
 
     df_col_type <- r_to_sql_datatype(dataframe[[col_name]])
     sql_col_type <- sql_columns[sql_columns["ColumnName"] == col_name, "DataType"]
