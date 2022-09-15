@@ -218,22 +218,29 @@ r_to_sql_datatype <- function(col_v) {
   )
 }
 
+get_nvarchar_size <- function(input_char_type){
+  sub("\\)", "", unlist(strsplit(input_char_type,"\\("))[2])
+}
+
 
 compatible_character_cols <- function(existing_col_type, to_load_col_type) {
-  # Only both column datatypes contain "nvarchar" then proceed
+  # Only if both column datatypes contain "nvarchar" then proceed
   if (!(grepl("nvarchar", existing_col_type) & grepl("nvarchar", to_load_col_type))) {
     return("incompatible")
   }
   else {
     # Extract the nvarchar column size, e.g. 255 from nvarchar(255)
-    existing_col_size <- as.numeric(gsub("[^0-9]", "", existing_col_type))
-    to_load_col_size <- as.numeric(gsub("[^0-9]", "", to_load_col_type))
-
-    if (to_load_col_size <= existing_col_size) {
-      return("compatible") # No change needed
+    existing_col_size <- get_nvarchar_size(existing_col_type)
+    to_load_col_size <- get_nvarchar_size(to_load_col_type)
+    if (existing_col_size == "max"){
+      "compatible" # If existing is max then to load will be fine
+    } else if (to_load_col_size == "max"){
+      "resize" # If existing not max but to load is then must resize
+    } else if (as.numeric(to_load_col_size) <= as.numeric(existing_col_size)) {
+      "compatible" # If neither is max, but existing greater than or equal to load then will be fine
     }
     else {
-      return("resize") # Indicates will need alter statement
+      return("resize") # If neither is max, but existing smaller than to load then must resize
     }
   }
 }
