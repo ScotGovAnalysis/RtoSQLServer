@@ -76,9 +76,10 @@ populate_staging_table <- function(server, database, schema, table, dataframe, b
   for (i in seq_along(batch_list$batch_starts)) {
     batch_start <- batch_list$batch_starts[[i]]
     batch_end <- batch_list$batch_ends[[i]]
+    load_df <- data.frame(dataframe[batch_start:batch_end, ])
     tryCatch(
       {
-        DBI::dbWriteTable(connection, name = DBI::Id(schema = schema, table = paste0(table, "_staging_")), value = dataframe[batch_start:batch_end, ], overwrite = FALSE, append = TRUE)
+        DBI::dbWriteTable(connection, name = DBI::Id(schema = schema, table = paste0(table, "_staging_")), value = load_df, overwrite = FALSE, append = TRUE)
       },
       error = function(cond) {
         stop(paste0("Failed to write staging data to database.\nOriginal error message: ", cond))
