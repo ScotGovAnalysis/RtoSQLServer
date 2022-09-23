@@ -149,7 +149,7 @@ create_table <- function(server, database, schema, table, versioned_table = FALS
   else {
     sql <- paste0(substr(sql, 1, nchar(sql) - 2), ");")
   }
-  execute_sql(server = server, database = database, sql = sql, output = FALSE, disconnect = TRUE)
+  execute_sql(server = server, database = database, sql = sql, output = FALSE)
   if (!silent) {
     message("Table: '", paste0(schema, ".", table), "' successfully created in database: '", database, "' on server '", server, "'")
   }
