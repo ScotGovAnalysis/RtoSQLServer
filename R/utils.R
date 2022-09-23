@@ -16,37 +16,6 @@ create_sqlserver_connection <- function(server, database) {
 }
 
 
-
-#' Connect, execute SQL in SQL Server database and then (optionally) disconnect from database.
-#'
-#' @param server Server instance where SQL Server database running.
-#' @param database SQL Server database in which SQL executed.
-#' @param sql SQL to be executed in the database.
-#' @param output If TRUE write output of SQL to Dataframe. Defaults to FALSE.
-#' @param disconnect If TRUE disconnect from SQL Server database at end. Defaults to TRUE.
-#'
-#' @return Dataframe or NULL depending on SQL executed.
-#' @export
-#'
-#' @examples
-#' sql_to_run <- "select test_column, other_column from my_test_table where other_column > 10"
-#' execute_sql(database = my_database, server = my_server, sql = sql_to_run, output = TRUE, disconnect = TRUE)
-execute_sql <- function(server, database, sql, output = FALSE, disconnect = TRUE) {
-  output_data <- NULL
-  connection <- create_sqlserver_connection(server = server, database = database)
-  for (i in 1:length(sql)) {
-    if (output) {
-      output_data <- DBI::dbGetQuery(connection, sql[i])
-    } else {
-      DBI::dbGetQuery(connection, sql[i])
-    }
-  }
-  if (disconnect) DBI::dbDisconnect(connection)
-  return(output_data)
-}
-
-
-
 db_table_metadata <- function(server, database, schema, table_name) {
   sql <- paste0("SET NOCOUNT ON;
                 DECLARE	@table_catalog nvarchar(128) = '", database, "',
@@ -135,6 +104,7 @@ db_table_metadata <- function(server, database, schema, table_name) {
                 DEALLOCATE column_cursor;
                 SELECT * FROM @T1;")
   data <- execute_sql(server = server, database = database, sql = sql, output = TRUE)
+  data[data$DataType=="nvarchar(-1)","DataType"]="nvarchar(max)"
   data
 }
 
@@ -204,22 +174,29 @@ r_to_sql_datatype <- function(col_v) {
   )
 }
 
+get_nvarchar_size <- function(input_char_type) {
+  sub("\\)", "", unlist(strsplit(input_char_type, "\\("))[2])
+}
+
 
 compatible_character_cols <- function(existing_col_type, to_load_col_type) {
-  # Only both column datatypes contain "nvarchar" then proceed
+  # Only if both column datatypes contain "nvarchar" then proceed
   if (!(grepl("nvarchar", existing_col_type) & grepl("nvarchar", to_load_col_type))) {
     return("incompatible")
   }
   else {
     # Extract the nvarchar column size, e.g. 255 from nvarchar(255)
-    existing_col_size <- as.numeric(gsub("[^0-9]", "", existing_col_type))
-    to_load_col_size <- as.numeric(gsub("[^0-9]", "", to_load_col_type))
-
-    if (to_load_col_size <= existing_col_size) {
-      return("compatible") # No change needed
+    existing_col_size <- get_nvarchar_size(existing_col_type)
+    to_load_col_size <- get_nvarchar_size(to_load_col_type)
+    if (existing_col_size == "max") {
+      "compatible" # If existing is max then to load will be fine
+    } else if (to_load_col_size == "max") {
+      "resize" # If existing not max but to load is then must resize
+    } else if (as.numeric(to_load_col_size) <= as.numeric(existing_col_size)) {
+      "compatible" # If neither is max, but existing greater than or equal to load then will be fine
     }
     else {
-      return("resize") # Indicates will need alter statement
+      return("resize") # If neither is max, but existing smaller than to load then must resize
     }
   }
 }

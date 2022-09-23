@@ -8,14 +8,14 @@ check_existing_table <- function(server, database, schema, table, dataframe) {
       stop(paste0("Column '", col_name, "' not found in existing SQL Server table '", table, "'- use option append_to_existing=FALSE if wish to replace"))
     }
 
-    # If all column exists, then check if datatypes are compatible
+    # If column exists, then check if datatypes are compatible
 
     df_col_type <- r_to_sql_datatype(dataframe[[col_name]])
     sql_col_type <- sql_columns[sql_columns["ColumnName"] == col_name, "DataType"]
 
     # - may be incompatible types e.g. numeric and char
-    # - may need to resize existing db nvarchar col
-    # - or may be already compatible as existing db nvarchar col max larger than data in df to load
+    # - may need to resize existing database table nvarchar col
+    # - or may be already compatible as existing database nvarchar col max larger than data in df to load
     if (sql_col_type != df_col_type) {
       # If char cols of different sizes might still be compatible:
       mismatch_type <- compatible_character_cols(sql_col_type, df_col_type)
@@ -23,11 +23,12 @@ check_existing_table <- function(server, database, schema, table, dataframe) {
         delete_staging_table(server = server, database = database, schema = schema, table = table, silent = TRUE)
         stop(paste0("Column '", col_name, "' datatype: '", df_col_type, "' does not match existing type '", sql_col_type, "'."))
       } else if (mismatch_type == "resize") {
+        message(paste0("Resizing existing column '", col_name, "' from ", sql_col_type, " to ", df_col_type))
         alter_sql_character_col(server = server, database = database, schema = schema, table = table, column_name = col_name, new_char_type = df_col_type)
       }
     }
   }
-  message("Checked existing columns in '", schema, ".", table, "' match those in dataframe to be loaded.")
+  message("Checked existing columns in '", schema, ".", table, "' are compatible with those in the dataframe to be loaded.")
 }
 
 
@@ -75,9 +76,10 @@ populate_staging_table <- function(server, database, schema, table, dataframe, b
   for (i in seq_along(batch_list$batch_starts)) {
     batch_start <- batch_list$batch_starts[[i]]
     batch_end <- batch_list$batch_ends[[i]]
+    load_df <- data.frame(dataframe[batch_start:batch_end, ])
     tryCatch(
       {
-        DBI::dbWriteTable(connection, name = DBI::Id(schema = schema, table = paste0(table, "_staging_")), value = dataframe[batch_start:batch_end, ], overwrite = FALSE, append = TRUE)
+        DBI::dbWriteTable(connection, name = DBI::Id(schema = schema, table = paste0(table, "_staging_")), value = load_df, overwrite = FALSE, append = TRUE)
       },
       error = function(cond) {
         stop(paste0("Failed to write staging data to database.\nOriginal error message: ", cond))
@@ -147,7 +149,7 @@ create_table <- function(server, database, schema, table, versioned_table = FALS
   else {
     sql <- paste0(substr(sql, 1, nchar(sql) - 2), ");")
   }
-  execute_sql(server = server, database = database, sql = sql, output = FALSE, disconnect = TRUE)
+  execute_sql(server = server, database = database, sql = sql, output = FALSE)
   if (!silent) {
     message("Table: '", paste0(schema, ".", table), "' successfully created in database: '", database, "' on server '", server, "'")
   }
@@ -180,6 +182,8 @@ clean_column_names <- function(input_df) {
   column_names <- sapply(column_names, substr, start = 1, stop = 128)
   # Rename any column names that are SQL Server reserved
   column_names <- sapply(column_names, rename_reserved_column)
+  # A . is exceptable in R dataframe column name not good for SQL select
+  column_names <- unlist(lapply(column_names, gsub, pattern="\\.", replacement="_"))
   # Assign and return df
   colnames(input_df) <- column_names
   input_df

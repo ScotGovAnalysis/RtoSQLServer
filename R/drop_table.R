@@ -12,6 +12,10 @@
 #' @examples
 #' drop_table_from_db(database = "my_database", server = "my_server", schema = "my_schema", table_name = "table_to_drop")
 drop_table_from_db <- function(server, database, schema, table_name, versioned_table = FALSE, silent = FALSE) {
+  tables <- get_db_tables(database = database, server = server)
+  if (nrow(tables[tables$Schema == schema & tables$Name == table_name, ]) == 0) {
+    stop(paste0("Table '", schema, ".", table_name, "' does not exist in the database."))
+  }
   if (versioned_table) {
     check_sql <- paste0("select name, temporal_type, temporal_type_desc from sys.tables where name = '", table_name, "'")
     check_df <- execute_sql(server = server, database = database, sql = check_sql, output = TRUE)
