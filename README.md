@@ -47,7 +47,7 @@ If the above does not work, install by downloading:
 install.packages("C:/my_repos/RtoSQLServer", repos = NULL, type="source")
 ```
 
-**IMPORTANT:** The [ODBC library](https://CRAN.R-project.org/package=odbc) version should be at least 1.3.3 as crashing issues were found when using 1.3.2.
+**IMPORTANT:** Tested with [ODBC library](https://CRAN.R-project.org/package=odbc) version 1.3.3. If using R 3.6.3 this library should be installed from source or a windows binary compiled at R 3.6.3, the windows binary on CRAN is compiled at R 4.2 and this causes R crashes when installed in R 3.6.3 if SQL statements return errors.
 
 ## Example Usage
 A work in progress, here is an example using the main functions:
