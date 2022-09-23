@@ -4,6 +4,7 @@ R package used to import R dataframes into a MS SQL Server database, optionally 
 As well as loading R dataframes into SQL Server databases, functions are also currently available to: 
 - Select all rows of specific columns of a database table.
 - Drop a table from the database.
+- Run any other input sql in the database and return dataframe if a select statement.
 
 ## Loading method used
 When loading an R dataframe into SQL Server using `create_replace_table`, following steps are followed:
@@ -51,16 +52,16 @@ install.packages("C:/my_repos/RtoSQLServer", repos = NULL, type="source")
 ## Example Usage
 A work in progress, here is an example using the main functions:
 ```r
-#Make a test dataframe with n rows
+# Make a test dataframe with n rows
 test_n_rows <- 1234567
 test_df <- data.frame(a=rep("a", test_n_rows), b=rep("b", test_n_rows))
 
-#Set database connection details for use in functions:
+# Set database connection details for use in functions:
 server <- "server\\instance"
 database <- "my_database_name"
 schema <- "my_schema_name"
 
-#Write the test dataframe to a SQL Server table in 100K batches (by default system versioning is FALSE)
+# Write the test dataframe to a SQL Server table in 100K batches (by default system versioning is FALSE)
 write_dataframe_to_db(server=server, 
                       database=database, 
                       schema=schema, 
@@ -70,13 +71,22 @@ write_dataframe_to_db(server=server,
                       batch_size=1e5, 
                       versioned_table=FALSE)
 
-#Read the SQL Server table into an R dataframe
+# Read the SQL Server table into an R dataframe
 read_df <- read_table_from_db(server=server, 
                               database=database, 
                               schema=schema, 
                               table_name="test_r_tbl")
+                              
+# Run other SQL for example select specific column
+sql <- paste0("select a from ", schema, ".test_r_tbl")
 
-#Drop the table from the database
+read_selected_df <- execute_sql(server=server,
+                                database=database,
+                                sql=sql,
+                                output=TRUE)
+                              
+
+# Drop the table from the database
 drop_table_from_db(server=server, 
                    database=database, 
                    schema=schema, 
