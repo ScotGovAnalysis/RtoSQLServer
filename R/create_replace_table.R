@@ -182,6 +182,8 @@ clean_column_names <- function(input_df) {
   column_names <- sapply(column_names, substr, start = 1, stop = 128)
   # Rename any column names that are SQL Server reserved
   column_names <- sapply(column_names, rename_reserved_column)
+  # A . is exceptable in R dataframe column name not good for SQL select
+  column_names <- unlist(lapply(column_names, gsub, pattern="\\.", replacement="_"))
   # Assign and return df
   colnames(input_df) <- column_names
   input_df
