@@ -1,74 +1,82 @@
-library(RtoSQLServer) # Custom package for SQL Server Data Loading. NOTE: Needs ODBC library v1.33, not v1.32 or earlier.
-
-# Example of loading a dataset that is refreshed daily by a separate process - the current date is used to find file to load to DB
-
-# Set source folder -------------------------------------------------------
-
-date_today <- Sys.Date()
-
-source_files_folder <- paste0("//my_server/my_folder/mysubfolder/daily/", date_today, "/whole-data-sets")
-
-# read and check latest source data --------------------------------------------------
-
-file_prefix <- "daily-dataset-"
-
-# ODBC does not like writing tables with "-" characters, so replace with "_" (also needed on dates)
-db_prefix <- gsub("-", "_", file_prefix)
-
-csv_file <- paste0(file_prefix, date_today, ".csv")
-
-csv_fp <- file.path(source_files_folder, csv_file)
-
-if (file.exists(csv_fp)) {
-  source_df <- read.csv(file.path(source_files_folder, csv_file), stringsAsFactors = FALSE)
-
-  # Uncomment below if wish to test with a subset first of all
-  # source_df <- head(source_df, 10)
-
-  # Check datatype of each column in df and subset to character cols
-  cols_all <- sapply(source_df, class)
-  cols_character <- cols_all[cols_all == "character"]
-
-  # Truncate character columns to max of 255 characters
-  for (col_name in names(cols_character)) {
-    source_df[[col_name]] <- substr(source_df[[col_name]], start = 1, stop = 255)
-  }
+library(RtoSQLServer)
 
 
-  # Database connection info ------------------------------------------------
-
-  # Set connection details for use in functions:
-  server <- "myserver\\myinstance"
-  database <- "mydatabase"
-  schema <- "myschema"
-
-  # OPTIONAL remove previous day table if exists -----------------------------------------------
-
-  db_yesterday <- gsub("-", "_", date_today - 1)
+# Prepare a data frame to load ----------------------------------------------
+test_iris <- iris # Here simply demo of loading a copy of iris dataframe
 
 
-  try(drop_table_from_db(
-    server = server,
-    database = database,
-    schema = schema,
-    table_name = paste0(db_prefix, db_yesterday)
-  ))
+# Set database connection info --------------------------------------------
 
 
-  # Write current date dataframe to db -------------------------------------------------------
+server <- "s0196a\\ADM"
+database <- "admdemothemeadmdemotopic"
+schema <- "admdemodataitem"
 
 
-  # Write the dataframe to a SQL Server table in batches of 100,000 rows at a time - note over-writing, not appending here
-  write_dataframe_to_db(
-    database = database,
-    server = server,
-    schema = schema,
-    table_name = paste0(db_prefix, gsub("-", "_", date_today)),
-    dataframe = source_df,
-    append_to_existing = FALSE,
-    batch_size = 1e5,
-    versioned_table = FALSE
-  )
-} else {
-  stop(paste("csv file for current date:", csv_fp, "does not exist"))
-}
+# Write a new dataframe to the database -----------------------------------------
+
+#  NOTE: When loading, make sure the table_name specified above only contains chracters, numbers and _ (this will be automatically corrected if not)
+
+
+write_dataframe_to_db(server=server,
+                      database=database,
+                      schema=schema,
+                      table_name="test_iris",
+                      dataframe=test_iris,
+                      append_to_existing=FALSE, # Set as FALSE to overwrite table if exists
+                      batch_size=1e5,# Set as any integer or leave as default if less than about 100 K rows
+                      versioned_table=FALSE) # Unless definitely need history table, set as FALSE (default)
+
+
+# Append to existing table in the database --------------------------------
+
+# In this example we are just appending the same dataframe to the existing table.
+# Must ensure the existing table and the dataframe to be appended hold the same columns
+# If specified append_to_existing=FALSE then the existing table is overwritten
+
+write_dataframe_to_db(server=server,
+                      database=database,
+                      schema=schema,
+                      table_name="test_iris",
+                      dataframe=test_iris,
+                      append_to_existing=TRUE, # Setting this as TRUE ensures append to existing - default is FALSE
+                      batch_size=1e5,# Set as any integer or leave as default if less than about 100 K rows
+                      versioned_table=FALSE) # Unless definitely need history table, set as FALSE (default)
+
+
+
+# Read the SQL Server table into an R dataframe ---------------------------
+
+test_iris_db <- read_table_from_db(server=server,
+                                   database=database,
+                                   schema=schema,
+                                   table_name="test_iris")
+
+
+# Remove the table from the database  -------------------------------------
+
+drop_table_from_db(server=server,
+                   database=database,
+                   schema=schema,
+                   table_name="test_iris",
+                   versioned_table = FALSE)
+
+
+# Run other SQL -----------------------------------------------------------
+# Can run SQL to select specific columns and return as DF
+
+sql <- paste0("select Species, Sepal_Length from ", schema, ".test_iris")
+
+execute_sql(server=server,
+            database=database,
+            sql=sql,
+            output=TRUE)
+
+# Can also run SQL that does not return a DF if set output FALSE (default)
+
+sql <- paste0("delete from ", schema, ".test_iris where Species = 'virginica'")
+
+execute_sql(server=server,
+            database=database,
+            sql=sql,
+            output=FALSE)
