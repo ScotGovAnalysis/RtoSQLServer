@@ -4,7 +4,7 @@
 \alias{execute_sql}
 \title{Connect, execute SQL in SQL Server database and then disconnect from database.}
 \usage{
-execute_sql(server, database, sql, output = FALSE, disconnect = TRUE)
+execute_sql(server, database, sql, output = FALSE)
 }
 \arguments{
 \item{server}{Server instance where SQL Server database running.}

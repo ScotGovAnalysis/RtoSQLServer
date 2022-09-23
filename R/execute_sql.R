@@ -11,7 +11,7 @@
 #' @examples
 #' sql_to_run <- "select test_column, other_column from my_test_table where other_column > 10"
 #' execute_sql(database = my_database, server = my_server, sql = sql_to_run, output = TRUE)
-execute_sql <- function(server, database, sql, output = FALSE, disconnect = TRUE) {
+execute_sql <- function(server, database, sql, output = FALSE) {
   connection <- create_sqlserver_connection(server = server, database = database)
   for (i in 1:length(sql)) {
     if (output) {
