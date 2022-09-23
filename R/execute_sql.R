@@ -27,7 +27,7 @@ execute_sql <- function(server, database, sql, output = FALSE, disconnect = TRUE
       tryCatch(
         {
           DBI::dbExecute(connection, sql[i])
-          output_data <- "excuted successfully"
+          output_data <- paste0(sql, " executed successfully")
         },
         error = function(cond) {
           stop(paste0("Failed to execute SQL.\nOriginal error message: ", cond))
