@@ -149,6 +149,7 @@ db_table_metadata <- function(server, database, schema, table_name) {
                 DEALLOCATE column_cursor;
                 SELECT * FROM @T1;")
   data <- execute_sql(server = server, database = database, sql = sql, output = TRUE)
+  data[data$DataType=="nvarchar(-1)","DataType"]="nvarchar(max)"
   data
 }
 
