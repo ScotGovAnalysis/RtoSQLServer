@@ -30,11 +30,9 @@ When loading an R dataframe into SQL Server using `create_replace_table`, follow
 ## Installation
 R package can be installed directly from Github or locally from zip.  
 
-While this repo is private, to install directly from Github will need to create a [Github PAT](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) and then can use your PAT to install in R (assuming you've been given access to the repository):
-
 ```r
 # install.packages("devtools")
-devtools::install_github("datasciencescotland/rtosqlserver@main", auth_token = "<my personal access token>")
+devtools::install_github("datasciencescotland/rtosqlserver@main")
 ```
 
 If the above does not work, install by downloading:
