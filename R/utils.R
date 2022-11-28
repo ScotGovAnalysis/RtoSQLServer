@@ -10,7 +10,11 @@ create_sqlserver_connection <- function(server, database) {
       )
     },
     error = function(cond) {
-      stop(paste0("Failed to create connection to database: '", database, "' on server: '", server, "'\nOriginal error message: '", cond, "'"))
+      stop(paste0(
+        "Failed to create connection to database: '",
+        database, "' on server: '",
+        server, "'\nOriginal error message: '", cond, "'"
+      ))
     }
   )
 }
@@ -37,7 +41,8 @@ db_table_metadata <- function(server, database, schema, table_name) {
                 MaximumValue nvarchar(255));
                 INSERT INTO @T1 (ColumnName, DataType)
                 SELECT	COLUMN_NAME,
-                REPLACE(CONCAT(DATA_TYPE, '(', CHARACTER_MAXIMUM_LENGTH, ')'), '()', '')
+                REPLACE(CONCAT(DATA_TYPE, '(',
+                CHARACTER_MAXIMUM_LENGTH, ')'), '()', '')
                 FROM INFORMATION_SCHEMA.COLUMNS
                 WHERE	TABLE_CATALOG = @table_catalog
                 AND TABLE_SCHEMA = @table_schema
@@ -52,11 +57,13 @@ db_table_metadata <- function(server, database, schema, table_name) {
                 SET @sql_statement =
                 CONCAT(N'SET @null_countOUT =
                 (SELECT COUNT(*)
-                FROM [', @table_catalog, '].[', @table_schema, '].[', @table_name, ']
+                FROM [', @table_catalog, '].
+                [', @table_schema, '].[', @table_name, ']
                 WHERE [', @column_name, '] IS NULL)
                 SET @distinct_valuesOUT =
                 (SELECT COUNT(DISTINCT([', @column_name, ']))
-                FROM [', @table_catalog, '].[', @table_schema, '].[', @table_name, ']
+                FROM [', @table_catalog, '].[', @table_schema, '].
+                [', @table_name, ']
                 WHERE [', @column_name, '] IS NOT NULL) ')
                 IF (@data_type != 'bit')
                 BEGIN
@@ -64,12 +71,14 @@ db_table_metadata <- function(server, database, schema, table_name) {
                 CONCAT(@sql_statement,
                 'SET @minimum_valueOUT =
                 CAST((SELECT MIN([', @column_name, '])
-                FROM [', @table_catalog, '].[', @table_schema, '].[', @table_name, ']
+                FROM [', @table_catalog, '].[', @table_schema, '].
+                [', @table_name, ']
                 WHERE [', @column_name, '] IS NOT NULL)
                 AS nvarchar(225))
                 SET @maximum_valueOUT =
                 CAST((SELECT MAX([', @column_name, '])
-                FROM [', @table_catalog, '].[', @table_schema, '].[', @table_name, ']
+                FROM [', @table_catalog, '].[', @table_schema, '].
+                [', @table_name, ']
                 WHERE [', @column_name, '] IS NOT NULL)
                 AS nvarchar(225))')
                 END
@@ -103,8 +112,13 @@ db_table_metadata <- function(server, database, schema, table_name) {
                 CLOSE column_cursor;
                 DEALLOCATE column_cursor;
                 SELECT * FROM @T1;")
-  data <- execute_sql(server = server, database = database, sql = sql, output = TRUE)
-  data[data$DataType=="nvarchar(-1)","DataType"]="nvarchar(max)"
+  data <- execute_sql(
+    server = server,
+    database = database,
+    sql = sql,
+    output = TRUE
+  )
+  data[data$DataType == "nvarchar(-1)", "DataType"] <- "nvarchar(max)"
   data
 }
 
@@ -128,9 +142,12 @@ table_select_list <- function(columns) {
 table_where_clause <- function(id_column, start_row, end_row) {
   dplyr::case_when(
     is.null(start_row) & is.null(end_row) ~ "",
-    is.null(start_row) & !is.null(end_row) ~ paste0(" WHERE [", id_column, "] <= ", end_row),
-    !is.null(start_row) & is.null(end_row) ~ paste0(" WHERE [", id_column, "] >= ", start_row),
-    !is.null(start_row) & !is.null(end_row) ~ paste0(" WHERE [", id_column, "] BETWEEN ", start_row, " AND ", end_row)
+    is.null(start_row) & !is.null(end_row) ~
+    paste0(" WHERE [", id_column, "] <= ", end_row),
+    !is.null(start_row) & is.null(end_row) ~
+    paste0(" WHERE [", id_column, "] >= ", start_row),
+    !is.null(start_row) & !is.null(end_row) ~
+    paste0(" WHERE [", id_column, "] BETWEEN ", start_row, " AND ", end_row)
   )
 }
 
@@ -140,7 +157,12 @@ get_db_tables <- function(server, database) {
   sql <- "SELECT SCHEMA_NAME(t.schema_id) AS 'Schema',
   t.name AS 'Name'
   FROM sys.tables t"
-  data <- execute_sql(database = database, server = server, sql = sql, output = TRUE)
+  data <- execute_sql(
+    database = database,
+    server = server,
+    sql = sql,
+    output = TRUE
+  )
   data
 }
 
@@ -179,9 +201,13 @@ get_nvarchar_size <- function(input_char_type) {
 }
 
 
-compatible_character_cols <- function(existing_col_type, to_load_col_type) {
+compatible_character_cols <- function(existing_col_type,
+                                      to_load_col_type) {
   # Only if both column datatypes contain "nvarchar" then proceed
-  if (!(grepl("nvarchar", existing_col_type) & grepl("nvarchar", to_load_col_type))) {
+  if (!(grepl("nvarchar", existing_col_type) & grepl(
+    "nvarchar",
+    to_load_col_type
+  ))) {
     return("incompatible")
   }
   else {
@@ -192,11 +218,14 @@ compatible_character_cols <- function(existing_col_type, to_load_col_type) {
       "compatible" # If existing is max then to load will be fine
     } else if (to_load_col_size == "max") {
       "resize" # If existing not max but to load is then must resize
-    } else if (as.numeric(to_load_col_size) <= as.numeric(existing_col_size)) {
-      "compatible" # If neither is max, but existing greater than or equal to load then will be fine
+    } else if (as.numeric(to_load_col_size)
+    <= as.numeric(existing_col_size)) {
+      "compatible" # If neither is max, but existing greater
+      # than or equal to load then will be fine
     }
     else {
-      return("resize") # If neither is max, but existing smaller than to load then must resize
+      return("resize") # If neither is max, but existing smaller
+      # than to load then must resize
     }
   }
 }
