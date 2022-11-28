@@ -133,7 +133,8 @@ populate_staging_table <- function(server, database, schema, table,
     batch_start <- batch_list$batch_starts[[i]]
     batch_end <- batch_list$batch_ends[[i]]
     load_df <- data.frame(dataframe[batch_start:batch_end, ])
-    tryCatch({
+    tryCatch(
+      {
         DBI::dbWriteTable(connection,
           name = DBI::Id(
             schema = schema,
@@ -192,7 +193,8 @@ delete_staging_table <- function(server, database, schema,
     server = server,
     database = database
   )
-  tryCatch({
+  tryCatch(
+    {
       odbc::dbRemoveTable(conn = connection, DBI::Id(
         schema = schema,
         table = paste0(table, "_staging_")
@@ -328,12 +330,14 @@ clean_column_names <- function(input_df) {
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' write_dataframe_to_db(
 #'   server = "my_server",
 #'   schema = "my_schema",
 #'   table_name = "output_table",
 #'   dataframe = my_df
 #' )
+#' }
 write_dataframe_to_db <- function(server,
                                   database,
                                   schema,
@@ -404,7 +408,8 @@ write_dataframe_to_db <- function(server,
   )
   # Then populate the target table from staging, truncating
   # it first of existing rows
-  tryCatch({
+  tryCatch(
+    {
       populate_table_from_staging(
         server = server,
         database = database,

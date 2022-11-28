@@ -12,12 +12,14 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' drop_table_from_db(
 #'   database = "my_database",
 #'   server = "my_server",
 #'   schema = "my_schema",
 #'   table_name = "table_to_drop"
 #' )
+#' }
 drop_table_from_db <- function(server,
                                database,
                                schema,

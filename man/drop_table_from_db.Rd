@@ -2,7 +2,8 @@
 % Please edit documentation in R/drop_table.R
 \name{drop_table_from_db}
 \alias{drop_table_from_db}
-\title{Drop SQL Server table from database. Check if versioned table and disable versioning and drop history table too if so.}
+\title{Drop SQL Server table from database. Check if versioned table and disable
+versioning and drop history table too if so.}
 \usage{
 drop_table_from_db(
   server,
@@ -24,11 +25,20 @@ drop_table_from_db(
 
 \item{versioned_table}{Is this a versioned table. Defaults to FALSE.}
 
-\item{silent}{If TRUE do not give message that dropping complete. Defaults to FALSE.}
+\item{silent}{If TRUE do not give message that dropping complete.
+Defaults to FALSE.}
 }
 \description{
-Drop SQL Server table from database. Check if versioned table and disable versioning and drop history table too if so.
+Drop SQL Server table from database. Check if versioned table and disable
+versioning and drop history table too if so.
 }
 \examples{
-drop_table_from_db(database = "my_database", server = "my_server", schema = "my_schema", table_name = "table_to_drop")
+\dontrun{
+drop_table_from_db(
+  database = "my_database",
+  server = "my_server",
+  schema = "my_schema",
+  table_name = "table_to_drop"
+)
+}
 }
