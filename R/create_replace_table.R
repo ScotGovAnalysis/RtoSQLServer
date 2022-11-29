@@ -75,8 +75,10 @@ create_staging_table <- function(server, database, schema, table, dataframe) {
   if (nrow(tables[tables$Schema == schema & tables$Name ==
     paste0(table, "_staging_"), ]) > 0) {
     drop_table_from_db(
-      server = server, database = database,
-      schema = schema, table_name = paste0(table, "_staging_"),
+      server = server,
+      database = database,
+      schema = schema,
+      table_name = paste0(table, "_staging_"),
       versioned_table = FALSE
     )
   }
@@ -93,10 +95,12 @@ create_staging_table <- function(server, database, schema, table, dataframe) {
   )
   message(format_message(
     paste0(
-      "Table: '", schema, ".", table, "_staging_"
-    ),
-    "' successfully created in database: '", database,
-    "' on server '", server, "'"
+      "Table: '", schema, ".", table, "_staging_",
+      "' successfully created in database: '",
+      database,
+      "' on server '",
+      server, "'"
+    )
   ))
 }
 
@@ -438,6 +442,7 @@ write_dataframe_to_db <- function(server,
     "Loading completed in",
     round(difftime(end_time, start_time,
       units = "mins"
-    )[[1]], 2)
-  ), " minutes."))
+    )[[1]], 2),
+    " minutes."
+  )))
 }
