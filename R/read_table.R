@@ -26,10 +26,10 @@ read_table_from_db <- function(database,
   tables <- get_db_tables(database = database, server = server)
   if (nrow(tables[tables$Schema == schema &
     tables$Name == table_name, ]) == 0) {
-    stop(paste0(
+    stop(format_message(paste0(
       "Table '", schema, ".", table_name,
       "' does not exist in the database."
-    ))
+    )))
   }
   select_list <- table_select_list(columns)
   sql <- paste0(

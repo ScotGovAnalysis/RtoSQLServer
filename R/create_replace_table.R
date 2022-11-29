@@ -11,11 +11,11 @@ check_existing_table <- function(server, database, schema, table, dataframe) {
         server = server, database = database,
         schema = schema, table = table, silent = TRUE
       )
-      stop(paste0(
+      stop(format_message(paste0(
         "Column '", col_name,
         "' not found in existing SQL Server table '",
         table, "'- use option append_to_existing=FALSE if wish to replace"
-      ))
+      )))
     }
 
     # If column exists, then check if datatypes are compatible
@@ -36,15 +36,15 @@ check_existing_table <- function(server, database, schema, table, dataframe) {
           server = server, database =
             database, schema = schema, table = table, silent = TRUE
         )
-        stop(paste0(
+        stop(format_message(paste0(
           "Column '", col_name, "' datatype: '",
           df_col_type, "' does not match existing type '", sql_col_type, "'."
-        ))
+        )))
       } else if (mismatch_type == "resize") {
-        message(paste0(
+        message(format_message(paste0(
           "Resizing existing column '",
           col_name, "' from ", sql_col_type, " to ", df_col_type
-        ))
+        )))
         alter_sql_character_col(
           server = server,
           database = database, schema = schema,
@@ -54,11 +54,11 @@ check_existing_table <- function(server, database, schema, table, dataframe) {
       }
     }
   }
-  message(
+  message(format_message(paste0(
     "Checked existing columns in '",
     schema, ".", table,
     "' are compatible with those in the dataframe to be loaded."
-  )
+  )))
 }
 
 
@@ -91,11 +91,13 @@ create_staging_table <- function(server, database, schema, table, dataframe) {
     server = server, database = database, sql = sql,
     output = FALSE
   )
-  message(
-    "Table: '", paste0(schema, ".", table, "_staging_"),
+  message(format_message(
+    paste0(
+      "Table: '", schema, ".", table, "_staging_"
+    ),
     "' successfully created in database: '", database,
     "' on server '", server, "'"
-  )
+  ))
 }
 
 
@@ -122,13 +124,13 @@ populate_staging_table <- function(server, database, schema, table,
     database = database
   )
   batch_list <- get_df_batches(dataframe = dataframe, batch_size = batch_size)
-  message(paste(
+  message(format_message(paste(
     "Loading to staging in", length(batch_list$batch_starts),
     "batches of up to", format(batch_size,
       scientific =
         FALSE
     ), "rows..."
-  ))
+  )))
   for (i in seq_along(batch_list$batch_starts)) {
     batch_start <- batch_list$batch_starts[[i]]
     batch_end <- batch_list$batch_ends[[i]]
@@ -144,15 +146,15 @@ populate_staging_table <- function(server, database, schema, table,
         )
       },
       error = function(cond) {
-        stop(paste0("Failed to write staging
-                    data to database.\nOriginal error message: ", cond))
+        stop(format_message(paste0("Failed to write staging
+                    data to database.\nOriginal error message: ", cond)))
       }
     )
-    message(paste(
+    message(format_message(paste(
       "Loaded rows", format(batch_start, scientific = FALSE),
       "-", format(batch_end, scientific = FALSE), "of",
       tail(batch_list$batch_ends, 1)
-    ))
+    )))
   }
   DBI::dbDisconnect(connection)
 }
@@ -179,10 +181,10 @@ populate_table_from_staging <- function(server, database, schema, table) {
     table, "_staging_];"
   )
   execute_sql(server = server, database = database, sql = sql, output = FALSE)
-  message(
+  message(format_message(paste0(
     "Table: '", schema, ".", table,
     "' successfully populated from staging"
-  )
+  )))
 }
 
 
@@ -201,20 +203,20 @@ delete_staging_table <- function(server, database, schema,
       ))
     },
     error = function(cond) {
-      stop(paste0(
+      stop(format_message(paste0(
         "Failed to delete staging table: '", table,
         "' from database: '", database, "' on server: '",
         server, "'\nOriginal error message: ", cond
-      ))
+      )))
     }
   )
   DBI::dbDisconnect(connection)
   if (!silent) {
-    message(
+    message(format_message(paste0(
       "Staging table: '", schema, ".", paste0(table, "_staging_"),
       "' successfully deleted from database: '",
       database, "' on server '", server, "'"
-    )
+    )))
   }
 }
 
@@ -253,11 +255,11 @@ create_table <- function(server, database, schema, table,
   }
   execute_sql(server = server, database = database, sql = sql, output = FALSE)
   if (!silent) {
-    message(
+    message(format_message(paste0(
       "Table: '", paste0(schema, ".", table),
       "' successfully created in database: '", database,
       "' on server '", server, "'"
-    )
+    )))
   }
 }
 
@@ -268,11 +270,11 @@ clean_table_name <- function(table_name) {
   new_name <- gsub("[^0-9a-z_]", "", new_name, ignore.case = TRUE)
   # Advise if changing target table name
   if (new_name != table_name) {
-    message(paste0(
+    message(format_message(paste0(
       "Cannot name a table'", table_name,
       "' replacing with name '", new_name,
       "' (see ODBC table name limitations)"
-    ))
+    )))
   }
   return(new_name)
 }
@@ -373,10 +375,10 @@ write_dataframe_to_db <- function(server,
     )
     # If not appending and exists then inform that will be overwritten
   } else {
-    (message(paste0(
+    (message(format_message(paste0(
       "Existing table '", schema, "'.'", table_name,
       "' will be over-written."
-    )))
+    ))))
     # Drop the existing table
     drop_table_from_db(
       server = server,
@@ -418,10 +420,10 @@ write_dataframe_to_db <- function(server,
       )
     },
     error = function(cond) {
-      stop(paste0(
+      stop(format_message(paste0(
         "Failed to write dataframe to database: '",
         database, "'\nOriginal error message: ", cond
-      ))
+      )))
     }
   )
   # Drop the staging table and finished
@@ -432,10 +434,10 @@ write_dataframe_to_db <- function(server,
     table = table_name
   )
   end_time <- Sys.time()
-  message(paste(
+  message(format_message(paste(
     "Loading completed in",
     round(difftime(end_time, start_time,
       units = "mins"
     )[[1]], 2)
-  ), " minutes.")
+  ), " minutes."))
 }

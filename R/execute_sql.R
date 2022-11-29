@@ -30,7 +30,9 @@ execute_sql <- function(server, database, sql, output = FALSE) {
           output_data <- DBI::dbGetQuery(connection, sql[i])
         },
         error = function(cond) {
-          stop(paste0("Failed to execute SQL.\nOriginal error message: ", cond))
+          stop(format_message(paste0(
+            "Failed to execute SQL.\nOriginal error message: ", cond
+          )))
         }
       )
     } else {
@@ -40,7 +42,9 @@ execute_sql <- function(server, database, sql, output = FALSE) {
           output_data <- paste0(sql, " executed successfully")
         },
         error = function(cond) {
-          stop(paste0("Failed to execute SQL.\nOriginal error message: ", cond))
+          stop(format_message(paste0(
+            "Failed to execute SQL.\nOriginal error message: ", cond
+          )))
         }
       )
     }

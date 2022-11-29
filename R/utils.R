@@ -10,11 +10,11 @@ create_sqlserver_connection <- function(server, database) {
       )
     },
     error = function(cond) {
-      stop(paste0(
+      stop(format_message(paste0(
         "Failed to create connection to database: '",
         database, "' on server: '",
         server, "'\nOriginal error message: '", cond, "'"
-      ))
+      )))
     }
   )
 }
@@ -228,4 +228,9 @@ compatible_character_cols <- function(existing_col_type,
       # than to load then must resize
     }
   }
+}
+
+# function to format multiline message, stop, warn strings due to 80 char limit
+format_message <- function(message_string) {
+  strwrap(message_string, prefix = " ", initial = "")
 }

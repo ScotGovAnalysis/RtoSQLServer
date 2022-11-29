@@ -29,10 +29,10 @@ drop_table_from_db <- function(server,
   tables <- get_db_tables(database = database, server = server)
   if (nrow(tables[tables$Schema == schema &
     tables$Name == table_name, ]) == 0) {
-    stop(paste0(
+    stop(format_message(paste0(
       "Table '", schema, ".", table_name,
       "' does not exist in the database."
-    ))
+    )))
   }
   if (versioned_table) {
     check_sql <- paste0("select name, temporal_type,
@@ -71,13 +71,13 @@ drop_table_from_db <- function(server,
     output = TRUE
   )
   if (!silent) {
-    message(
+    message(format_message(paste0(
       "Table: '",
       schema, ".",
       table_name,
       "' successfully deleted from database: '",
       database, "' on server '",
       server, "'"
-    )
+    )))
   }
 }
