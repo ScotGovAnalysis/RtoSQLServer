@@ -152,6 +152,7 @@ get_db_tables <- function(server, database) {
 }
 
 r_to_sql_character_sizes <- function(max_string) {
+  max_string <- as.numeric(max_string)
   if (max_string <= 50) {
     "nvarchar(50)"
   } else if (max_string > 50 & max_string <= 255) {
