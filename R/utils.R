@@ -1,4 +1,4 @@
-create_sqlserver_connection <- function(server, database) {
+create_sqlserver_connection <- function(server, database, timeout = 10) {
   tryCatch(
     {
       odbc::dbConnect(
@@ -6,7 +6,8 @@ create_sqlserver_connection <- function(server, database) {
         Driver = "SQL Server",
         Trusted_Connection = "True",
         DATABASE = database,
-        SERVER = server
+        SERVER = server,
+        timeout = timeout
       )
     },
     error = function(cond) {
@@ -219,4 +220,15 @@ compatible_character_cols <- function(existing_col_type,
 # function to format multiline message, stop, warn strings due to 80 char limit
 format_message <- function(message_string) {
   strwrap(message_string, prefix = " ", initial = "")
+}
+
+# TRUE or FALSE test for table in schema
+check_table_exists <- function(server,
+                               database,
+                               schema,
+                               table_name) {
+  all_tables <- get_db_tables(database = database, server = server)
+  # return TRUE if exists or else false
+  nrow(all_tables[all_tables$Schema == schema &
+    all_tables$Name == table_name, ]) == 1
 }
