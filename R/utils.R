@@ -138,21 +138,6 @@ table_select_list <- function(columns) {
 }
 
 
-
-table_where_clause <- function(id_column, start_row, end_row) {
-  dplyr::case_when(
-    is.null(start_row) & is.null(end_row) ~ "",
-    is.null(start_row) & !is.null(end_row) ~
-    paste0(" WHERE [", id_column, "] <= ", end_row),
-    !is.null(start_row) & is.null(end_row) ~
-    paste0(" WHERE [", id_column, "] >= ", start_row),
-    !is.null(start_row) & !is.null(end_row) ~
-    paste0(" WHERE [", id_column, "] BETWEEN ", start_row, " AND ", end_row)
-  )
-}
-
-
-
 get_db_tables <- function(server, database) {
   sql <- "SELECT SCHEMA_NAME(t.schema_id) AS 'Schema',
   t.name AS 'Name'
