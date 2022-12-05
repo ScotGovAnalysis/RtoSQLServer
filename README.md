@@ -1,55 +1,93 @@
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
 # RtoSQLServer
-R package used to import R dataframes into a MS SQL Server database, optionally with [System Versioning](https://docs.microsoft.com/en-us/sql/relational-databases/tables/creating-a-system-versioned-temporal-table?view=sql-server-ver15) enabled.  
 
-As well as loading R dataframes into SQL Server databases, functions are also currently available to: 
-- Select all rows of specific columns of a database table.
-- Drop a table from the database.
-- Run any other input sql in the database and return dataframe if a select statement.
+<!-- badges: start -->
 
-## Loading method used
-When loading an R dataframe into SQL Server using `create_replace_table`, following steps are followed:
+[![Lifecycle:
+experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
+<!-- badges: end -->
 
-1. The R dataframe is loaded into a staging table in the database in batches of n rows at a time.
-
-2. a) If table of the specified name does NOT already exist in the database schema:  
-      i) Create target table in the database.  
-      ii) Insert all rows from staging table to target table.
-
-3. b) If table of same name does already exist in the database schema:  
-
-    If 'append_to_existing'=FALSE (this will result in an overwrite):  
-      i) Drop the existing copy of the target table and create a new one from staging table definition.  
-      ii) Insert all rows from staging table into target table.  
-
-    If 'append_to_existing'=TRUE:  
-      i) Check that staging table columns and existing target table columns are the same. If not, cancel loading and give a warning.  
-      ii) If check passes, insert all rows from staging table into target table.  
-
-4. Delete the staging table.
+R package used to import R dataframes into a MS SQL Server database,
+optionally with [System
+Versioning](https://docs.microsoft.com/en-us/sql/relational-databases/tables/creating-a-system-versioned-temporal-table?view=sql-server-ver15)
+enabled.
 
 ## Installation
-R package can be installed directly from Github or locally from zip.  
 
-```r
+R package can be installed directly from Github or locally from zip.
+
+``` r
 # install.packages("devtools")
 devtools::install_github("datasciencescotland/rtosqlserver@main")
 ```
 
 If the above does not work, install by downloading:
 
-1. Go to the [repository on Github](https://github.com/datasciencescotland/rtosqlserverver)
-2. Click Clone or download then Download ZIP.
-3. Save the file locally and unzip.
-4. Install with install.packages():
-```
-install.packages("C:/my_repos/RtoSQLServer", repos = NULL, type="source")
-```
+1.  Go to the [repository on
+    Github](https://github.com/datasciencescotland/rtosqlserverver)
+2.  Click Clone or download then Download ZIP.
+3.  Save the file locally and unzip.
+4.  Install with install.packages():
 
-**IMPORTANT:** Tested with [ODBC library](https://CRAN.R-project.org/package=odbc) version 1.3.3. If using R 3.6.3 this library should be installed from source or a windows binary compiled at R 3.6.3, the windows binary on CRAN is compiled at R 4.2 and this causes R crashes when installed in R 3.6.3 if SQL statements return errors.
+<!-- -->
+
+    install.packages("C:/my_repos/RtoSQLServer", repos = NULL, type="source")
+
+## Functionality
+
+As well as loading R dataframes into SQL Server databases, functions are
+also currently available to:
+
+-   Select all rows of specific columns of a database table.
+-   Drop a table from the database.
+-   Run any other input sql in the database and return dataframe if a
+    select statement.
+
+It is recommend to ensure using the latest versions of
+[Rcpp](https://cran.r-project.org/web/packages/Rcpp/index.html),
+[odbc](https://cran.r-project.org/web/packages/odbc/index.html) and
+[DBI](https://cran.r-project.org/web/packages/DBI/index.html). If using
+Windows in a secure environment install these from source or a Windows
+binary compiled at the version of R you are using.
+
+## Loading method used
+
+When loading an R dataframe into SQL Server using
+`write_dataframe_to_db`, following steps are followed:
+
+1.  The R dataframe is loaded into a staging table in the database in
+    batches of n rows at a time.
+
+2.  1.  If table of the specified name does NOT already exist in the
+        database schema:
+        1.  Create target table in the database.  
+        2.  Insert all rows from staging table to target table.
+
+3.  2.  If table of same name does already exist in the database schema:
+
+    If ‘append_to_existing’=FALSE (this will result in an overwrite):
+
+    1.  Drop the existing copy of the target table and create a new one
+        from staging table definition.  
+    2.  Insert all rows from staging table into target table.
+
+    If ‘append_to_existing’=TRUE:
+
+    1.  Check that staging table columns and existing target table
+        columns are the same. If not, cancel loading and give a
+        warning.  
+    2.  If check passes, insert all rows from staging table into target
+        table.
+
+4.  Delete the staging table.
 
 ## Example Usage
-A work in progress, here is an example using the main functions:
-```r
+
+Here is an example using the main functions:
+
+``` r
 # Make a test dataframe with n rows
 test_n_rows <- 1234567
 test_df <- data.frame(a=rep("a", test_n_rows), b=rep("b", test_n_rows))
@@ -89,10 +127,4 @@ drop_table_from_db(server=server,
                    database=database, 
                    schema=schema, 
                    table_name="test_r_tbl")
-
 ```
-
-The `write_dataframe_to_db` function will overwrite the table in the database if it already exists and argument `append_to_existing=FALSE`. If the table had versioning on when first created then the existing records will be written to the `<table name>History` table and the end timestamp column will be updated. 
-
-
-Note a later version of SQL Server (2016 or later) is required for the System Versioning functionality. If using MS SQL Server 2012 or earlier, will only be successful if use version_table = FALSE arguments to these functions.

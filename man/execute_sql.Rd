@@ -2,7 +2,8 @@
 % Please edit documentation in R/execute_sql.R
 \name{execute_sql}
 \alias{execute_sql}
-\title{Connect, execute SQL in SQL Server database and then disconnect from database.}
+\title{Connect, execute SQL in SQL Server database and then disconnect from
+database.}
 \usage{
 execute_sql(server, database, sql, output = FALSE)
 }
@@ -19,9 +20,16 @@ execute_sql(server, database, sql, output = FALSE)
 Dataframe or NULL depending on SQL executed.
 }
 \description{
-Connect, execute SQL in SQL Server database and then disconnect from database.
+Connect, execute SQL in SQL Server database and then disconnect from
+database.
 }
 \examples{
-sql_to_run <- "select test_column, other_column from my_test_table where other_column > 10"
-execute_sql(database = my_database, server = my_server, sql = sql_to_run, output = TRUE)
+\dontrun{
+sql_to_run <- "select test_column, other_column from my_test_table
+where other_column > 10"
+execute_sql(
+  database = my_database, server = my_server,
+  sql = sql_to_run, output = TRUE
+)
+}
 }

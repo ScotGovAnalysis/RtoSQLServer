@@ -10,15 +10,34 @@
 #' @export
 #'
 #' @examples
-#' read_table_from_db(database = "my_database", server = "my_server", table_name = "my_table", columns = c("column1", "column2"))
-read_table_from_db <- function(database, server, schema, table_name, columns = NULL) {
+#' \dontrun{
+#' read_table_from_db(
+#'   database = "my_database",
+#'   server = "my_server",
+#'   table_name = "my_table",
+#'   columns = c("column1", "column2")
+#' )
+#' }
+read_table_from_db <- function(database,
+                               server,
+                               schema,
+                               table_name,
+                               columns = NULL) {
   tables <- get_db_tables(database = database, server = server)
-  if (nrow(tables[tables$Schema == schema & tables$Name == table_name, ]) == 0) {
-    stop(paste0("Table '", schema, ".", table_name, "' does not exist in the database."))}
+  if (nrow(tables[tables$Schema == schema &
+    tables$Name == table_name, ]) == 0) {
+    stop(format_message(paste0(
+      "Table '", schema, ".", table_name,
+      "' does not exist in the database."
+    )))
+  }
   select_list <- table_select_list(columns)
   sql <- paste0(
     "SELECT ", select_list,
     " FROM [", schema, "].[", table_name, "];"
   )
-  execute_sql(database = database, server = server, sql = sql, output = TRUE)
+  execute_sql(
+    database = database, server =
+      server, sql = sql, output = TRUE
+  )
 }

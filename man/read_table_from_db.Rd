@@ -24,5 +24,12 @@ Dataframe of table.
 Read a SQL Server table into an R dataframe,
 }
 \examples{
-read_table_from_db(database = "my_database", server = "my_server", table_name = "my_table", columns = c("column1", "column2"))
+\dontrun{
+read_table_from_db(
+  database = "my_database",
+  server = "my_server",
+  table_name = "my_table",
+  columns = c("column1", "column2")
+)
+}
 }
