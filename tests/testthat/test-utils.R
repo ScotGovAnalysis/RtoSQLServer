@@ -47,3 +47,7 @@ test_that("Message printing wrap fn works", {
 test_that("Formatting column select sql works", {
   expect_equal(table_select_list(c("species", "petal_length")), "[species], [petal_length]")
 })
+
+test_that("Incorrect connection gives error", {
+  expect_error(create_sqlserver_connection("nonexistent", "nonexistent", 1))
+})
