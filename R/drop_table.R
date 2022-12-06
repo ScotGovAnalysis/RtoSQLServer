@@ -1,24 +1,31 @@
-# check table sql
+# sql to check if versioned table
 create_check_sql <- function(schema, table_name) {
-  paste0("select name, temporal_type_desc
-          from sys.tables where name = '", table_name, "'
-          and schema_name(schema_id) = '", schema, "'")
-}
-
-
-# versioned table sql
-create_drop_sql_versioned <- function(schema, table_name) {
   paste0(
-    "ALTER TABLE [", schema, "].[", table_name, "]
-     SET ( SYSTEM_VERSIONING = OFF );",
-    "DROP TABLE [", schema, "].[", table_name, "];",
-    "DROP TABLE [", schema, "].[", table_name, "History]"
+    "select name, temporal_type_desc from sys.tables where name = '",
+    table_name,
+    "' and schema_name(schema_id) = '", schema, "';"
   )
 }
 
-# non versioned table sql
+
+# create versioned table sql
+create_drop_sql_versioned <- function(schema, table_name) {
+  paste0(
+    "ALTER TABLE [", schema, "].[",
+    table_name, "] SET ( SYSTEM_VERSIONING = OFF ); ",
+    "DROP TABLE [", schema, "].[", table_name, "]; ",
+    "DROP TABLE [", schema, "].[", table_name, "History];"
+  )
+}
+
+# create non versioned table sql
 create_drop_sql_nonversioned <- function(schema, table_name) {
-  paste0("DROP TABLE [", schema, "].[", table_name, "]")
+  paste0("DROP TABLE [", schema, "].[", table_name, "];")
+}
+
+# Ensure a versioned table based on metadata
+is_versioned <- function(check_df) {
+  check_df[["temporal_type_desc"]] == "SYSTEM_VERSIONED_TEMPORAL_TABLE"
 }
 
 # Derive the drop sql depending on if versioned (check first)
@@ -37,18 +44,17 @@ create_drop_sql <- function(server,
       sql = check_sql,
       output = TRUE
     )
-    if (check_df[["temporal_type_desc"]] ==
-      "SYSTEM_VERSIONED_TEMPORAL_TABLE") {
-      drop_sql <- create_drop_sql_versioned(schema, table)
+    if (is_versioned(check_df)) {
+      drop_sql <- create_drop_sql_versioned(schema, table_name)
     }
     # In case use the versioned_table argument as TRUE but not versioned table
     else {
-      drop_sql <- create_drop_sql_nonversioned(schema, table)
+      drop_sql <- create_drop_sql_nonversioned(schema, table_name)
     }
   }
   # If versioned_table argument is FALSE
   else {
-    drop_sql <- create_drop_sql_nonversioned(schema, table)
+    drop_sql <- create_drop_sql_nonversioned(schema, table_name)
   }
   return(drop_sql)
 }
