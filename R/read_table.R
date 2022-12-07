@@ -1,3 +1,12 @@
+create_read_sql <- function(select_list, schema, table_name) {
+  paste0(
+  "SELECT ", select_list,
+  " FROM [", schema, "].[", table_name, "];"
+)
+}
+
+
+
 #' Read a SQL Server table into an R dataframe,
 #'
 #' @param server Server instance where SQL Server database running.
@@ -23,21 +32,25 @@ read_table_from_db <- function(database,
                                schema,
                                table_name,
                                columns = NULL) {
-  tables <- get_db_tables(database = database, server = server)
-  if (nrow(tables[tables$Schema == schema &
-    tables$Name == table_name, ]) == 0) {
+  if (!check_table_exists(
+    server,
+    database,
+    schema,
+    table_name
+  )) {
     stop(format_message(paste0(
       "Table '", schema, ".", table_name,
       "' does not exist in the database."
     )))
   }
   select_list <- table_select_list(columns)
-  sql <- paste0(
-    "SELECT ", select_list,
-    " FROM [", schema, "].[", table_name, "];"
-  )
+
+  read_sql <- create_read_sql(select_list,
+                              schema,
+                              table_name)
+
   execute_sql(
     database = database, server =
-      server, sql = sql, output = TRUE
+      server, sql = read_sql, output = TRUE
   )
 }
