@@ -1,8 +1,8 @@
 create_read_sql <- function(select_list, schema, table_name) {
   paste0(
-  "SELECT ", select_list,
-  " FROM [", schema, "].[", table_name, "];"
-)
+    "SELECT ", select_list,
+    " FROM [", schema, "].[", table_name, "];"
+  )
 }
 
 
@@ -45,9 +45,11 @@ read_table_from_db <- function(database,
   }
   select_list <- table_select_list(columns)
 
-  read_sql <- create_read_sql(select_list,
-                              schema,
-                              table_name)
+  read_sql <- create_read_sql(
+    select_list,
+    schema,
+    table_name
+  )
 
   execute_sql(
     database = database, server =
