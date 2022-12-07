@@ -1,10 +1,22 @@
+table_select_list <- function(columns) {
+  select_list <- ""
+  if (is.null(columns)) {
+    select_list <- "*"
+  } else {
+    for (column in columns) {
+      select_list <- paste0(select_list, "[", column, "], ")
+    }
+    select_list <- substr(select_list, 1, nchar(select_list) - 2)
+  }
+  select_list
+}
+
 create_read_sql <- function(select_list, schema, table_name) {
   paste0(
     "SELECT ", select_list,
     " FROM [", schema, "].[", table_name, "];"
   )
 }
-
 
 
 #' Read a SQL Server table into an R dataframe,
