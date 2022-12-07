@@ -47,7 +47,6 @@ execute_sql <- function(server, database, sql, output = FALSE) {
         }
       )
     }
-  }
   DBI::dbDisconnect(connection)
   return(output_data)
 }
