@@ -123,22 +123,6 @@ db_table_metadata <- function(server, database, schema, table_name) {
   data
 }
 
-
-
-table_select_list <- function(columns) {
-  select_list <- ""
-  if (is.null(columns)) {
-    select_list <- "*"
-  } else {
-    for (column in columns) {
-      select_list <- paste0(select_list, "[", column, "], ")
-    }
-    select_list <- substr(select_list, 1, nchar(select_list) - 2)
-  }
-  select_list
-}
-
-
 get_db_tables <- function(server, database) {
   sql <- "SELECT SCHEMA_NAME(t.schema_id) AS 'Schema',
   t.name AS 'Name'
