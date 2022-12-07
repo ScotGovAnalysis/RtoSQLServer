@@ -270,6 +270,8 @@ create_table <- function(server, database, schema, table,
 clean_table_name <- function(table_name) {
   # Replace - with _
   new_name <- gsub("-", "_", table_name, ignore.case = TRUE)
+  # Replace spaces with _
+  new_name <- gsub("\\s", "_", new_name, ignore.case = TRUE)
   # Remove any characters not character, number underscore
   new_name <- gsub("[^0-9a-z_]", "", new_name, ignore.case = TRUE)
   # Advise if changing target table name
@@ -302,7 +304,7 @@ clean_column_names <- function(input_df) {
   column_names <- sapply(column_names, substr, start = 1, stop = 128)
   # Rename any column names that are SQL Server reserved
   column_names <- sapply(column_names, rename_reserved_column)
-  # A . is exceptable in R dataframe column name not good for SQL select
+  # . is exceptable in R dataframe column name not good for SQL select
   column_names <- unlist(lapply(column_names, gsub,
     pattern = "\\.",
     replacement = "_"
