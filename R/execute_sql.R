@@ -24,29 +24,29 @@ execute_sql <- function(server, database, sql, output = FALSE) {
     database = database
   )
   if (output) {
-      tryCatch(
-        {
-          output_data <- DBI::dbGetQuery(connection, sql)
-        },
-        error = function(cond) {
-          stop(format_message(paste0(
-            "Failed to execute SQL.\nODBC error message: ", cond
-          )))
-        }
-      )
-    } else {
-      tryCatch(
-        {
-          DBI::dbExecute(connection, sql)
-          output_data <- paste0(sql, " executed successfully")
-        },
-        error = function(cond) {
-          stop(format_message(paste0(
-            "Failed to execute SQL.\nODBC error message: ", cond
-          )))
-        }
-      )
-    }
+    tryCatch(
+      {
+        output_data <- DBI::dbGetQuery(connection, sql)
+      },
+      error = function(cond) {
+        stop(format_message(paste0(
+          "Failed to execute SQL.\nODBC error message: ", cond
+        )))
+      }
+    )
+  } else {
+    tryCatch(
+      {
+        DBI::dbExecute(connection, sql)
+        output_data <- paste0(sql, " executed successfully")
+      },
+      error = function(cond) {
+        stop(format_message(paste0(
+          "Failed to execute SQL.\nODBC error message: ", cond
+        )))
+      }
+    )
+  }
   DBI::dbDisconnect(connection)
   return(output_data)
 }
