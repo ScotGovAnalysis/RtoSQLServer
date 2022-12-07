@@ -285,10 +285,10 @@ clean_table_name <- function(table_name) {
   return(new_name)
 }
 
-rename_reserved_column <- function(column_name) {
+rename_reserved_column <- function(column_name, table_name) {
   if (tolower(column_name) %in% c(
-    "tablenamekey",
-    "tablenameversionkey",
+    paste0(table_name, "key"),
+    paste0(table_name, "versionkey"),
     "sysstarttime", "sysendtime"
   )) {
     paste0(column_name, "_old")
@@ -297,13 +297,13 @@ rename_reserved_column <- function(column_name) {
   }
 }
 
-clean_column_names <- function(input_df) {
+clean_column_names <- function(input_df, table_name) {
   # Get column names as vector
   column_names <- colnames(input_df)
   # Truncate any names that have > 128 characters
   column_names <- sapply(column_names, substr, start = 1, stop = 128)
   # Rename any column names that are SQL Server reserved
-  column_names <- sapply(column_names, rename_reserved_column)
+  column_names <- sapply(column_names, rename_reserved_column, table_name)
   # . is exceptable in R dataframe column name not good for SQL select
   column_names <- unlist(lapply(column_names, gsub,
     pattern = "\\.",
@@ -358,7 +358,7 @@ write_dataframe_to_db <- function(server,
   # Clean table_name in case special characters included
   table_name <- clean_table_name(table_name)
   # Clean df column names
-  dataframe <- clean_column_names(dataframe)
+  dataframe <- clean_column_names(dataframe, table_name)
   # Create staging table
   create_staging_table(
     server = server, database = database, schema = schema,
