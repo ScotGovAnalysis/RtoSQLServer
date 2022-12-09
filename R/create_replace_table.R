@@ -1,7 +1,12 @@
-check_existing_table <- function(server, database, schema, table, dataframe) {
+check_existing_table <- function(server,
+                                 database,
+                                 schema,
+                                 table_name,
+                                 dataframe,
+                                 ...) {
   sql_columns <- db_table_metadata(
     server = server, database = database,
-    schema = schema, table_name = table
+    schema = schema, table_name = table_name
   )
   for (col_name in colnames(dataframe)) {
 
@@ -9,12 +14,12 @@ check_existing_table <- function(server, database, schema, table, dataframe) {
     if (!col_name %in% sql_columns$ColumnName) {
       delete_staging_table(
         server = server, database = database,
-        schema = schema, table = table, silent = TRUE
+        schema = schema, table_name = table_name, silent = TRUE
       )
       stop(format_message(paste0(
         "Column '", col_name,
         "' not found in existing SQL Server table '",
-        table, "'- use option append_to_existing=FALSE if wish to replace"
+        table_name, "'- use option append_to_existing=FALSE if wish to replace"
       )))
     }
 
@@ -34,7 +39,7 @@ check_existing_table <- function(server, database, schema, table, dataframe) {
       if (mismatch_type == "incompatible") {
         delete_staging_table(
           server = server, database =
-            database, schema = schema, table = table, silent = TRUE
+            database, schema = schema, table_name = table_name, silent = TRUE
         )
         stop(format_message(paste0(
           "Column '", col_name, "' datatype: '",
@@ -48,7 +53,8 @@ check_existing_table <- function(server, database, schema, table, dataframe) {
         alter_sql_character_col(
           server = server,
           database = database, schema = schema,
-          table = table, column_name = col_name,
+          table_name = table_name,
+          column_name = col_name,
           new_char_type = df_col_type
         )
       }
@@ -56,21 +62,21 @@ check_existing_table <- function(server, database, schema, table, dataframe) {
   }
   message(format_message(paste0(
     "Checked existing columns in '",
-    schema, ".", table,
+    schema, ".", table_name,
     "' are compatible with those in the dataframe to be loaded."
   )))
 }
 
 
 alter_sql_character_col <- function(server,
-                                    database, schema, table, column_name,
+                                    database, schema, table_name, column_name,
                                     new_char_type) {
-  sql <- paste0("ALTER TABLE [", schema, "].[", table, "]
+  sql <- paste0("ALTER TABLE [", schema, "].[", table_name, "]
                 ALTER COLUMN [", column_name, "] ", new_char_type, ";")
   execute_sql(server = server, database = database, sql = sql, output = FALSE)
 }
 
-create_staging_table <- function(server, database, schema, table, dataframe) {
+create_staging_table <- function(server, database, schema, table_name, dataframe) {
   tables <- get_db_tables(database = database, server = server)
   if (nrow(tables[tables$Schema == schema & tables$Name ==
     paste0(table, "_staging_"), ]) > 0) {
@@ -78,7 +84,7 @@ create_staging_table <- function(server, database, schema, table, dataframe) {
       server = server,
       database = database,
       schema = schema,
-      table_name = paste0(table, "_staging_"),
+      table_name = paste0(table_name, "_staging_"),
       versioned_table = FALSE
     )
   }
@@ -95,7 +101,7 @@ create_staging_table <- function(server, database, schema, table, dataframe) {
   )
   message(format_message(
     paste0(
-      "Table: '", schema, ".", table, "_staging_",
+      "Table: '", schema, ".", table_name, "_staging_",
       "' successfully created in database: '",
       database,
       "' on server '",
@@ -121,7 +127,7 @@ get_df_batches <- function(dataframe, batch_size) {
 }
 
 
-populate_staging_table <- function(server, database, schema, table,
+populate_staging_table <- function(server, database, schema, table_name,
                                    dataframe, batch_size = 5e5) {
   connection <- create_sqlserver_connection(
     server = server,
@@ -144,7 +150,7 @@ populate_staging_table <- function(server, database, schema, table,
         DBI::dbWriteTable(connection,
           name = DBI::Id(
             schema = schema,
-            table = paste0(table, "_staging_")
+            table = paste0(table_name, "_staging_")
           ), value = load_df,
           overwrite = FALSE, append = TRUE
         )
@@ -165,28 +171,28 @@ populate_staging_table <- function(server, database, schema, table,
 
 
 
-populate_table_from_staging <- function(server, database, schema, table) {
+populate_table_from_staging <- function(server, database, schema, table_name) {
   metadata <- db_table_metadata(
     server = server,
     database = database, schema = schema,
-    table_name = paste0(table, "_staging_")
+    table_name = paste0(table_name, "_staging_")
   )
   column_string <- ""
   for (row in seq_len(nrow(metadata))) {
-    if (metadata[row, "ColumnName"] != paste0(table, "ID")) {
+    if (metadata[row, "ColumnName"] != paste0(table_name, "ID")) {
       column_name <- metadata[row, 1]
       column_string <- paste0(column_string, " [", column_name, "], ")
     }
   }
   column_string <- substr(column_string, 1, nchar(column_string) - 2)
   sql <- paste0(
-    "INSERT INTO [", schema, "].[", table, "] (", column_string, ")
+    "INSERT INTO [", schema, "].[", table_name, "] (", column_string, ")
                 select ", column_string, " from [", schema, "].[",
     table, "_staging_];"
   )
   execute_sql(server = server, database = database, sql = sql, output = FALSE)
   message(format_message(paste0(
-    "Table: '", schema, ".", table,
+    "Table: '", schema, ".", table_name,
     "' successfully populated from staging"
   )))
 }
@@ -194,7 +200,7 @@ populate_table_from_staging <- function(server, database, schema, table) {
 
 
 delete_staging_table <- function(server, database, schema,
-                                 table, silent = FALSE) {
+                                 table_name, silent = FALSE) {
   connection <- create_sqlserver_connection(
     server = server,
     database = database
@@ -203,12 +209,12 @@ delete_staging_table <- function(server, database, schema,
     {
       odbc::dbRemoveTable(conn = connection, DBI::Id(
         schema = schema,
-        table = paste0(table, "_staging_")
+        table = paste0(table_name, "_staging_")
       ))
     },
     error = function(cond) {
       stop(format_message(paste0(
-        "Failed to delete staging table: '", table,
+        "Failed to delete staging table: '", table_name,
         "' from database: '", database, "' on server: '",
         server, "'\nOriginal error message: ", cond
       )))
@@ -217,7 +223,7 @@ delete_staging_table <- function(server, database, schema,
   DBI::dbDisconnect(connection)
   if (!silent) {
     message(format_message(paste0(
-      "Staging table: '", schema, ".", paste0(table, "_staging_"),
+      "Staging table: '", schema, ".", paste0(table_name, "_staging_"),
       "' successfully deleted from database: '",
       database, "' on server '", server, "'"
     )))
@@ -226,19 +232,19 @@ delete_staging_table <- function(server, database, schema,
 
 
 
-create_table <- function(server, database, schema, table,
+create_table <- function(server, database, schema, table_name,
                          versioned_table = FALSE, silent = FALSE) {
   metadata <- db_table_metadata(
     server = server, database =
       database, schema = schema, table_name =
-      paste0(table, "_staging_")
+      paste0(table_name, "_staging_")
   )
   sql <- paste0(
-    "CREATE TABLE [", schema, "].[", table, "] (",
+    "CREATE TABLE [", schema, "].[", table_name, "] (",
     table, "ID INT NOT NULL IDENTITY PRIMARY KEY,"
   )
   for (row in seq_len(nrow(metadata))) {
-    if (metadata[row, "ColumnName"] != paste0(table, "ID")) {
+    if (metadata[row, "ColumnName"] != paste0(table_name, "ID")) {
       column_name <- metadata[row, "ColumnName"]
       data_type <- metadata[row, "DataType"]
       sql <- paste0(sql, " [", column_name, "] ", data_type, ", ")
@@ -251,7 +257,7 @@ create_table <- function(server, database, schema, table,
       "SysEndTime DATETIME2 GENERATED ALWAYS AS ROW END NOT NULL, ",
       "PERIOD FOR SYSTEM_TIME (SysStartTime, SysEndTime)) ",
       "WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE = [", schema, "].[",
-      table, "History]));"
+      table_name, "History]));"
     )
   }
   else {
@@ -260,7 +266,7 @@ create_table <- function(server, database, schema, table,
   execute_sql(server = server, database = database, sql = sql, output = FALSE)
   if (!silent) {
     message(format_message(paste0(
-      "Table: '", paste0(schema, ".", table),
+      "Table: '", paste0(schema, ".", table_name),
       "' successfully created in database: '", database,
       "' on server '", server, "'"
     )))
@@ -354,6 +360,7 @@ write_dataframe_to_db <- function(server,
                                   append_to_existing = FALSE,
                                   batch_size = 1e5,
                                   versioned_table = FALSE) {
+  write_df_args <- as.list(environment())
   start_time <- Sys.time()
   # Clean table_name in case special characters included
   table_name <- clean_table_name(table_name)
@@ -361,8 +368,11 @@ write_dataframe_to_db <- function(server,
   dataframe <- clean_column_names(dataframe, table_name)
   # Create staging table
   create_staging_table(
-    server = server, database = database, schema = schema,
-    table = table_name, dataframe = dataframe
+    server = server,
+    database = database,
+    schema = schema,
+    table_name = table_name,
+    dataframe = dataframe
   )
   # Check if target table already exists
   tables <- get_db_tables(server = server, database = database)
