@@ -79,7 +79,7 @@ alter_sql_character_col <- function(server,
 create_staging_table <- function(server, database, schema, table_name, dataframe) {
   tables <- get_db_tables(database = database, server = server)
   if (nrow(tables[tables$Schema == schema & tables$Name ==
-    paste0(table, "_staging_"), ]) > 0) {
+    paste0(table_name, "_staging_"), ]) > 0) {
     drop_table_from_db(
       server = server,
       database = database,
@@ -88,8 +88,8 @@ create_staging_table <- function(server, database, schema, table_name, dataframe
       versioned_table = FALSE
     )
   }
-  sql <- paste0("CREATE TABLE [", schema, "].[", table, "_staging_]
-                (", table, "ID INT NOT NULL IDENTITY PRIMARY KEY,")
+  sql <- paste0("CREATE TABLE [", schema, "].[", table_name, "_staging_]
+                (", table_name, "ID INT NOT NULL IDENTITY PRIMARY KEY,")
   for (column_name in colnames(dataframe)) {
     data_type <- r_to_sql_datatype(dataframe[[column_name]])
     sql <- paste0(sql, " [", column_name, "] ", data_type, ", ")
@@ -188,7 +188,7 @@ populate_table_from_staging <- function(server, database, schema, table_name) {
   sql <- paste0(
     "INSERT INTO [", schema, "].[", table_name, "] (", column_string, ")
                 select ", column_string, " from [", schema, "].[",
-    table, "_staging_];"
+    table_name, "_staging_];"
   )
   execute_sql(server = server, database = database, sql = sql, output = FALSE)
   message(format_message(paste0(
@@ -241,7 +241,7 @@ create_table <- function(server, database, schema, table_name,
   )
   sql <- paste0(
     "CREATE TABLE [", schema, "].[", table_name, "] (",
-    table, "ID INT NOT NULL IDENTITY PRIMARY KEY,"
+    table_name, "ID INT NOT NULL IDENTITY PRIMARY KEY,"
   )
   for (row in seq_len(nrow(metadata))) {
     if (metadata[row, "ColumnName"] != paste0(table_name, "ID")) {
