@@ -1,55 +1,105 @@
-check_existing_table <- function(db_params,
-                                 dataframe) {
-  sql_columns <- db_table_metadata(
+# If error found on checks drop staging table before stop msg
+process_fail <- function(message, db_params) {
+  delete_staging_table(db_params, silent = TRUE)
+  stop(cli::format_error(message))
+}
+
+# Column in to load dataframe, but not existing SQL table
+missing_col_error <- function(compare_col_df) {
+  missing_df <- compare_col_df[compare_col_df$col_issue == "missing", ]
+  if (nrow(missing_df) > 0) {
+    error_message <- glue::glue_data(
+      missing_df,
+      "Column {column_name} not found
+                                     in existing table."
+    )
+
+    c(error_message, "Use option append_to_existing=FALSE
+                       to overwrite")
+  }
+}
+
+# Column in to load dataframe not compatible with existing SQL table
+mismatch_datatype_error <- function(compare_col_df) {
+  incompatible_df <- compare_col_df[compare_col_df$col_issue == "incompatible", ]
+  if (nrow(incompatible_df) > 0) {
+    error_message <- glue::glue_data(
+      incompatible_df,
+      "Column {column_name} existing datatype
+                                     {data_type} not compatible with matching
+                                     dataframe column"
+    )
+
+    c(error_message, "Use option append_to_existing=FALSE
+                       to overwrite")
+  }
+}
+
+# Char column in to load dataframe larger than existing SQL table - resize it
+resize_datatypes <- function(compare_col_df, db_params) {
+  resize_df <- compare_col_df[compare_col_df$col_issue == "resize", ]
+
+  for (row in 1:nrow(resize_df)) {
+    alter_sql_character_col(
+      db_params, resize_df[row, "column_name"],
+      resize_df[row, "df_data_type"]
+    )
+  }
+}
+
+# An na val for data_type must be a column in dataframe, not SQL table
+check_columns <- function(compare_col_df) {
+  compare_col_df$col_issue[is.na(compare_col_df$data_type), ] <- "missing"
+
+  compare_col_df$col_issue <- mapply(
+    compatible_character_cols,
+    compare_col_df$data_type,
+    compare_col_df$df_data_type
+  )
+}
+
+# Create metadata column name and datatype tbls for existing SQL table
+# and the to load df - merge them and compare the differences
+compare_columns <- function(db_params, dataframe) {
+  sql_metadata <- db_table_metadata(
     db_params$server,
     db_params$database,
     db_params$schema,
     db_params$table_name
   )
 
-  for (col_name in colnames(dataframe)) {
+  df_metadata <- df_to_metadata(dataframe)
 
-    # First check for columns that do not exist at all in target
-    if (!col_name %in% sql_columns$ColumnName) {
-      delete_staging_table(db_params, silent = TRUE)
-      stop(format_message(paste0(
-        "Column '", col_name,
-        "' not found in existing SQL Server table '",
-        table_name, "'- use option append_to_existing=FALSE if wish to replace"
-      )))
-    }
+  colnames(df_metadata) <- c("df_column_name", "df_data_type")
 
-    # If column exists, then check if datatypes are compatible
+  compare_col_df <- merge(
+    x = sql_metadata,
+    y = df_metadata,
+    by.x = "column_name",
+    by.y = "df_column_name",
+    all = TRUE
+  )
 
-    df_col_type <- r_to_sql_datatype(dataframe[[col_name]])
-    sql_col_type <- sql_columns[sql_columns["ColumnName"] ==
-      col_name, "DataType"]
+  check_columns(compare_col_df)
+}
 
-    # - may be incompatible types e.g. numeric and char
-    # - may need to resize existing database table nvarchar col
-    # - or may be already compatible as existing database nvarchar col max
-    # - larger than data in df to load
-    if (sql_col_type != df_col_type) {
-      # If char cols of different sizes might still be compatible:
-      mismatch_type <- compatible_character_cols(sql_col_type, df_col_type)
-      if (mismatch_type == "incompatible") {
-        delete_staging_table(db_params, silent = TRUE)
-        stop(format_message(paste0(
-          "Column '", col_name, "' datatype: '",
-          df_col_type, "' does not match existing type '", sql_col_type, "'."
-        )))
-      } else if (mismatch_type == "resize") {
-        message(format_message(paste0(
-          "Resizing existing column '",
-          col_name, "' from ", sql_col_type, " to ", df_col_type
-        )))
-        alter_sql_character_col(db_params,
-          column_name = col_name,
-          new_char_type = df_col_type
-        )
-      }
-    }
+
+# Main column checking function used when append_to_existing=TRUE
+check_existing_table <- function(db_params,
+                                 dataframe) {
+  compare_col_df <- compare_columns(db_params, dataframe)
+
+  is_missing <- missing_col_error(compare_col_df)
+  is_incompatible <- mismatch_datatype_error(compare_col_df)
+
+  if (!is.null(is_missing)) {
+    process_fail(is_missing, db_params)
+  } else if (!is.null(is_incompatible)) {
+    process_fail(is_incompatible, db_params)
   }
+
+  resize_datatypes(compare_col_df, db_params)
+
   message(format_message(paste0(
     "Checked existing columns in '",
     db_params$schema, ".", db_params$table_name,
@@ -66,40 +116,80 @@ alter_sql_character_col <- function(db_params,
     "] ALTER COLUMN [", column_name, "] ", new_char_type, ";"
   )
   execute_sql(
-    dbparams$server,
+    db_params$server,
     db_params$database,
     sql,
     FALSE
   )
+  format_message(glue::glue("Resizing column {column_name}
+                            to {new_char_type}."))
+}
+
+sql_create_table <- function(schema, table_name, metadata_df) {
+  sql <- paste0(
+    "CREATE TABLE [", schema,
+    "].[", table_name, "] ([",
+    table_name, "ID] INT NOT NULL IDENTITY PRIMARY KEY,"
+  )
+  for (row in seq_len(nrow(metadata_df))) {
+    if (metadata_df[row, "column_name"] != paste0(table_name, "ID")) {
+      column_name <- metadata_df[row, "column_name"]
+      data_type <- metadata_df[row, "data_type"]
+      sql <- paste0(
+        sql, " [", column_name, "] ",
+        data_type, ","
+      )
+    }
+  }
+  paste0(substr(sql, 1, nchar(sql) - 1), ");")
+}
+
+
+sql_versioned_table <- function(sql, db_params) {
+  # To remove the trailing );
+  sql <- substr(sql, 1, nchar(sql) - 2)
+  # The versioned table sql
+  paste0(
+    sql,
+    "SysStartTime DATETIME2 GENERATED ALWAYS AS ROW START NOT NULL, ",
+    "SysEndTime DATETIME2 GENERATED ALWAYS AS ROW END NOT NULL, ",
+    "PERIOD FOR SYSTEM_TIME (SysStartTime, SysEndTime)) ",
+    "WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE = [",
+    db_params$schema, "].[", db_params$table_name, "History]));"
+  )
 }
 
 create_staging_table <- function(db_params, dataframe) {
-  tables <- get_db_tables(db_params$server, db_params$database)
-  if (nrow(tables[tables$Schema == schema & tables$Name ==
-    paste0(db_params$table_name, "_staging_"), ]) > 0) {
+  staging_name <- paste0(db_params$table_name, "_staging_")
+
+  if (check_table_exists(
+    db_params$server,
+    db_params$database,
+    db_params$schema,
+    staging_name
+  )) {
     drop_table_from_db(
       db_params$server,
       db_params$database,
       db_params$schema,
-      paste0(db_params$table_name, "_staging_"),
+      staging_name,
       FALSE
     )
   }
-  sql <- paste0(
-    "CREATE TABLE [", db_params$schema, "].[",
-    db_params$table_name, "_staging_] (",
-    db_params$table_name, "ID INT NOT NULL IDENTITY PRIMARY KEY,"
+
+  metadata_df <- df_to_metadata(dataframe)
+
+  sql <- sql_create_table(
+    db_params$schema,
+    staging_name,
+    metadata_df
   )
-  for (column_name in colnames(dataframe)) {
-    data_type <- r_to_sql_datatype(dataframe[[column_name]])
-    sql <- paste0(sql, " [", column_name, "] ", data_type, ", ")
-  }
-  sql <- paste0(substr(sql, 1, nchar(sql) - 2), ");")
+
   execute_sql(
-    server = db_params$server,
+    db_params$server,
     db_params$database,
-    sql = sql,
-    output = FALSE
+    sql,
+    FALSE
   )
   message(format_message(
     paste0(
@@ -182,7 +272,7 @@ populate_table_from_staging <- function(db_params) {
   )
   column_string <- ""
   for (row in seq_len(nrow(metadata))) {
-    if (metadata[row, "ColumnName"] != paste0(db_params$table_name, "ID")) {
+    if (metadata[row, "column_name"] != paste0(db_params$table_name, "ID")) {
       column_name <- metadata[row, 1]
       column_string <- paste0(column_string, " [", column_name, "], ")
     }
@@ -237,35 +327,20 @@ delete_staging_table <- function(db_params, silent = FALSE) {
 
 
 create_table <- function(db_params, silent = FALSE) {
-  metadata <- db_table_metadata(
+  metadata_df <- db_table_metadata(
     db_params$server,
     db_params$database,
     db_params$schema,
     paste0(db_params$table_name, "_staging_")
   )
-  sql <- paste0(
-    "CREATE TABLE [", db_params$schema, "].[", db_params$table_name, "] (",
-    db_params$table_name, "ID INT NOT NULL IDENTITY PRIMARY KEY,"
+  sql <- sql_create_table(
+    db_params$schema,
+    db_params$table_name,
+    metadata_df
   )
-  for (row in seq_len(nrow(metadata))) {
-    if (metadata[row, "ColumnName"] != paste0(db_params$table_name, "ID")) {
-      column_name <- metadata[row, "ColumnName"]
-      data_type <- metadata[row, "DataType"]
-      sql <- paste0(sql, " [", column_name, "] ", data_type, ", ")
-    }
-  }
+
   if (db_params$versioned_table) {
-    sql <- paste0(
-      sql,
-      "SysStartTime DATETIME2 GENERATED ALWAYS AS ROW START NOT NULL, ",
-      "SysEndTime DATETIME2 GENERATED ALWAYS AS ROW END NOT NULL, ",
-      "PERIOD FOR SYSTEM_TIME (SysStartTime, SysEndTime)) ",
-      "WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE = [",
-      db_params$schema, "].[", db_params$table_name, "History]));"
-    )
-  }
-  else {
-    sql <- paste0(substr(sql, 1, nchar(sql) - 2), ");")
+    sql <- sql_versioned_table(sql, db_params)
   }
   execute_sql(
     db_params$server,
@@ -389,10 +464,12 @@ write_dataframe_to_db <- function(server,
   # Create staging table
   create_staging_table(db_params, dataframe)
   # Check if target table already exists
-  tables <- get_db_tables(server = server, database = database)
-  # If does bot exist create it
-  if (nrow(tables[tables$Schema == schema & tables$Name == table_name, ])
-  == 0) {
+  if (!check_table_exists(
+    server,
+    database,
+    schema,
+    table_name
+  )) {
     create_table(db_params)
     # If exists and appending then check existing columns
   } else if (append_to_existing) {
@@ -405,18 +482,18 @@ write_dataframe_to_db <- function(server,
     ))))
     # Drop the existing table
     drop_table_from_db(
-      server = server,
-      database = database,
-      schema = schema,
-      table_name = table_name,
-      versioned_table = TRUE,
+      server,
+      database,
+      schema,
+      table_name,
+      TRUE,
       silent = TRUE
     )
     # Create the new one
     create_table(db_params, silent = TRUE)
   }
 
-  # Populte the staging table using batch import of rows from R dataframe
+  # Populate the staging table using batch import of rows from R dataframe
   populate_staging_table(db_params,
     dataframe = dataframe
   )

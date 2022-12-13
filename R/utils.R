@@ -34,13 +34,13 @@ db_table_metadata <- function(server, database, schema, table_name) {
                 @distinct_values int,
                 @minimum_value nvarchar(225),
                 @maximum_value nvarchar(225);
-                DECLARE @T1 AS TABLE	(ColumnName nvarchar(128),
-                DataType nvarchar(128),
+                DECLARE @T1 AS TABLE	(column_name nvarchar(128),
+                data_type nvarchar(128),
                 NullCount int,
                 DistinctValues int,
                 MinimumValue nvarchar(255),
                 MaximumValue nvarchar(255));
-                INSERT INTO @T1 (ColumnName, DataType)
+                INSERT INTO @T1 (column_name, data_type)
                 SELECT	COLUMN_NAME,
                 REPLACE(CONCAT(DATA_TYPE, '(',
                 CHARACTER_MAXIMUM_LENGTH, ')'), '()', '')
@@ -49,7 +49,7 @@ db_table_metadata <- function(server, database, schema, table_name) {
                 AND TABLE_SCHEMA = @table_schema
                 AND TABLE_NAME = @table_name;
                 DECLARE column_cursor CURSOR
-                FOR SELECT ColumnName, DataType FROM @T1;
+                FOR SELECT column_name, data_type FROM @T1;
                 OPEN column_cursor;
                 FETCH NEXT FROM column_cursor
                 INTO @column_name, @data_type;
@@ -106,7 +106,7 @@ db_table_metadata <- function(server, database, schema, table_name) {
                 DistinctValues = @distinct_values,
                 MinimumValue = @minimum_value,
                 MaximumValue = @maximum_value
-                WHERE ColumnName = @column_name;
+                WHERE column_name = @column_name;
                 FETCH NEXT FROM column_cursor
                 INTO @column_name, @data_type;
                 END
@@ -119,7 +119,8 @@ db_table_metadata <- function(server, database, schema, table_name) {
     sql = sql,
     output = TRUE
   )
-  data[data$DataType == "nvarchar(-1)", "DataType"] <- "nvarchar(max)"
+  data[data$data_type == "nvarchar(-1)", "data_type"] <- "nvarchar(max)"
+  data[] <- lapply(data, function(x) if (is.factor(x)) as.character(x) else x)
   data
 }
 
@@ -149,8 +150,16 @@ r_to_sql_character_sizes <- function(max_string) {
   }
 }
 
+df_to_metadata <- function(dataframe) {
+  col_types <- sapply(dataframe, r_to_sql_data_type)
+  data.frame(
+    column_name = names(col_types), data_type = unname(col_types),
+    stringsAsFactors = FALSE
+  )
+}
 
-r_to_sql_datatype <- function(col_v) {
+
+r_to_sql_data_type <- function(col_v) {
   r_data_type <- class(col_v)
   if (r_data_type %in% c("character", "factor")) {
     col_v <- as.character(col_v) # to ensure factor cols are character
@@ -174,7 +183,7 @@ get_nvarchar_size <- function(input_char_type) {
 
 compatible_character_cols <- function(existing_col_type,
                                       to_load_col_type) {
-  # Only if both column datatypes contain "nvarchar" then proceed
+  # Only if both column data_types contain "nvarchar" then proceed
   if (!(grepl("nvarchar", existing_col_type) & grepl(
     "nvarchar",
     to_load_col_type
