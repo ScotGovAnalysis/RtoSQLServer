@@ -83,7 +83,7 @@ compare_columns <- function(db_params, dataframe) {
 
   # ID column will not be in to load R df, so ignore this column
   id_col <- paste0(db_params$table_name, "ID")
-  compare_col_df <- compare_col_df[compare_col_df$column_name != id_col]
+  compare_col_df <- compare_col_df[compare_col_df$column_name != id_col, ]
 
 
   check_columns(compare_col_df)
