@@ -6,32 +6,30 @@ process_fail <- function(message, db_params) {
 
 # Column in to load dataframe, but not existing SQL table
 missing_col_error <- function(compare_col_df) {
-  missing_df <- compare_col_df[compare_col_df$col_issue == "missing", ]
+  missing_df <- compare_col_df[compare_col_df$col_issue == "missing sql", ]
   if (nrow(missing_df) > 0) {
     error_message <- glue::glue_data(
       missing_df,
-      "Column {column_name} not found
-                                     in existing table."
+      "Column {column_name} not found in existing table."
     )
 
-    c(error_message, "Use option append_to_existing=FALSE
-                       to overwrite")
+    c(error_message, "Use option append_to_existing=FALSE to overwrite")
   }
 }
 
 # Column in to load dataframe not compatible with existing SQL table
 mismatch_datatype_error <- function(compare_col_df) {
-  incompatible_df <- compare_col_df[compare_col_df$col_issue == "incompatible", ]
+  incompatible_df <- compare_col_df[compare_col_df$col_issue
+  == "incompatible", ]
   if (nrow(incompatible_df) > 0) {
     error_message <- glue::glue_data(
       incompatible_df,
       "Column {column_name} existing datatype
-                                     {data_type} not compatible with matching
-                                     dataframe column"
+      {data_type} not compatible with matching
+      dataframe column"
     )
 
-    c(error_message, "Use option append_to_existing=FALSE
-                       to overwrite")
+    c(error_message, "Use option append_to_existing=FALSE to overwrite")
   }
 }
 
@@ -39,23 +37,26 @@ mismatch_datatype_error <- function(compare_col_df) {
 resize_datatypes <- function(compare_col_df, db_params) {
   resize_df <- compare_col_df[compare_col_df$col_issue == "resize", ]
 
-  for (row in 1:nrow(resize_df)) {
-    alter_sql_character_col(
-      db_params, resize_df[row, "column_name"],
-      resize_df[row, "df_data_type"]
-    )
+  if (nrow(resize_df) > 0) {
+    for (row in 1:nrow(resize_df)) {
+      alter_sql_character_col(
+        db_params, resize_df[row, "column_name"],
+        resize_df[row, "df_data_type"]
+      )
+    }
   }
 }
 
-# An na val for data_type must be a column in dataframe, not SQL table
+# Compare each row in joined metadata df and check if col present in each
+# and if datatypes are compatible
 check_columns <- function(compare_col_df) {
-  compare_col_df$col_issue[is.na(compare_col_df$data_type), ] <- "missing"
-
   compare_col_df$col_issue <- mapply(
-    compatible_character_cols,
+    compatible_cols,
     compare_col_df$data_type,
     compare_col_df$df_data_type
   )
+
+  print(compare_col_df)
 }
 
 # Create metadata column name and datatype tbls for existing SQL table
@@ -79,6 +80,11 @@ compare_columns <- function(db_params, dataframe) {
     by.y = "df_column_name",
     all = TRUE
   )
+
+  # ID column will not be in to load R df, so ignore this column
+  id_col <- paste0(db_params$table_name, "ID")
+  compare_col_df[compare_col_df$column_name != id_col]
+
 
   check_columns(compare_col_df)
 }
@@ -125,11 +131,16 @@ alter_sql_character_col <- function(db_params,
                             to {new_char_type}."))
 }
 
+id_col_name <- function(table_name) {
+  table_name <- gsub("_staging_$", "", table_name)
+  paste0(table_name, "ID")
+}
+
 sql_create_table <- function(schema, table_name, metadata_df) {
   sql <- paste0(
     "CREATE TABLE [", schema,
     "].[", table_name, "] ([",
-    table_name, "ID] INT NOT NULL IDENTITY PRIMARY KEY,"
+    id_col_name(table_name), "] INT NOT NULL IDENTITY PRIMARY KEY,"
   )
   for (row in seq_len(nrow(metadata_df))) {
     if (metadata_df[row, "column_name"] != paste0(table_name, "ID")) {
