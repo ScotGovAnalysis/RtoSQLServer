@@ -181,13 +181,28 @@ get_nvarchar_size <- function(input_char_type) {
 }
 
 
-compatible_character_cols <- function(existing_col_type,
-                                      to_load_col_type) {
-  # Only if both column data_types contain "nvarchar" then proceed
-  if (!(grepl("nvarchar", existing_col_type) & grepl(
-    "nvarchar",
-    to_load_col_type
-  ))) {
+compatible_cols <- function(existing_col_type,
+                            to_load_col_type) {
+
+  # If existing is na then column not in sql db
+  if (is.na(existing_col_type)) {
+    return("missing sql")
+  }
+
+  # If to load is na then not in to load df
+  else if (is.na(to_load_col_type)) {
+    return("missing df")
+  }
+
+  # Identical columns of any type are fine
+  else if (existing_col_type == to_load_col_type) {
+    return("compatible")
+  }
+  # Else only if both column data_types contain "nvarchar" then proceed
+
+  else if (!(grepl("nvarchar", existing_col_type) &
+    grepl("nvarchar", to_load_col_type)
+  )) {
     return("incompatible")
   }
   else {
@@ -195,12 +210,12 @@ compatible_character_cols <- function(existing_col_type,
     existing_col_size <- get_nvarchar_size(existing_col_type)
     to_load_col_size <- get_nvarchar_size(to_load_col_type)
     if (existing_col_size == "max") {
-      "compatible" # If existing is max then to load will be fine
+      return("compatible") # If existing is max then to load will be fine
     } else if (to_load_col_size == "max") {
-      "resize" # If existing not max but to load is then must resize
+      return("resize") # If existing not max but to load is then must resize
     } else if (as.numeric(to_load_col_size)
     <= as.numeric(existing_col_size)) {
-      "compatible" # If neither is max, but existing greater
+      return("compatible") # If neither is max, but existing greater
       # than or equal to load then will be fine
     }
     else {
