@@ -1,7 +1,7 @@
 # If error found on checks drop staging table before stop msg
 process_fail <- function(message, db_params) {
   delete_staging_table(db_params, silent = TRUE)
-  stop(cli::format_error(message))
+  stop(cli::format_error(message), call. = FALSE)
 }
 
 # Column in to load dataframe, but not existing SQL table
@@ -14,6 +14,17 @@ missing_col_error <- function(compare_col_df) {
     )
 
     c(error_message, "Use option append_to_existing=FALSE to overwrite")
+  }
+}
+
+# Column existing SQL table, not in to load df - can still be loaded
+missing_col_warning <- function(compare_col_df) {
+  missing_df <- compare_col_df[compare_col_df$col_issue == "missing df", ]
+  if (nrow(missing_df) > 0) {
+    glue::glue_data(
+      missing_df,
+      "Column {column_name} in existing table not found in dataframe to append."
+    )
   }
 }
 
@@ -55,8 +66,6 @@ check_columns <- function(compare_col_df) {
     compare_col_df$data_type,
     compare_col_df$df_data_type
   )
-
-  print(compare_col_df)
 }
 
 # Create metadata column name and datatype tbls for existing SQL table
@@ -97,12 +106,16 @@ check_existing_table <- function(db_params,
 
   is_missing <- missing_col_error(compare_col_df)
   is_incompatible <- mismatch_datatype_error(compare_col_df)
+  is_warning <- missing_col_warning(compare_col_df)
 
   if (!is.null(is_missing)) {
     process_fail(is_missing, db_params)
   } else if (!is.null(is_incompatible)) {
     process_fail(is_incompatible, db_params)
+  } else if (!is.null(is_warning)) {
+    warning(cli::format_warning(is_warning), call. = FALSE)
   }
+
 
   resize_datatypes(compare_col_df, db_params)
 
