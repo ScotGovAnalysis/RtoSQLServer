@@ -1,26 +1,30 @@
 test_that("SQL Server data type mapping works", {
-  expect_equal(r_to_sql_datatype(iris$Species), "nvarchar(50)")
-  expect_equal(r_to_sql_datatype(iris$Petal.Length), "float")
+  expect_equal(r_to_sql_data_type(iris$Species), "nvarchar(50)")
+  expect_equal(r_to_sql_data_type(iris$Petal.Length), "float")
 })
 
 test_that("Compatible character col check works", {
-  expect_equal(compatible_character_cols(
+  expect_equal(compatible_cols(
     "float",
-    "nvarchar(50"
+    "float"
+  ), "compatible")
+  expect_equal(compatible_cols(
+    "float",
+    "nvarchar(50)"
   ), "incompatible")
-  expect_equal(compatible_character_cols(
+  expect_equal(compatible_cols(
     "nvarchar(max)",
     "nvarchar(50)"
   ), "compatible")
-  expect_equal(compatible_character_cols(
+  expect_equal(compatible_cols(
     "nvarchar(50)",
     "nvarchar(max)"
   ), "resize")
-  expect_equal(compatible_character_cols(
+  expect_equal(compatible_cols(
     "nvarchar(255)",
     "nvarchar(255)"
   ), "compatible")
-  expect_equal(compatible_character_cols(
+  expect_equal(compatible_cols(
     "nvarchar(50)",
     "nvarchar(255)"
   ), "resize")
