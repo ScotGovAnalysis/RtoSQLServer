@@ -311,7 +311,7 @@ populate_table_from_staging <- function(db_params) {
     paste0(db_params$table_name, "_staging_")
   )
 
-  sql <- create_intsert_sql(db_params, metadata)
+  sql <- create_insert_sql(db_params, metadata)
 
   execute_sql(db_params$server, db_params$database, sql, FALSE)
   message(format_message(paste0(
