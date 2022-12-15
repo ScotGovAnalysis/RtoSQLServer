@@ -172,6 +172,7 @@ r_to_sql_data_type <- function(col_v) {
     "factor" = r_to_sql_character_sizes(max_string),
     "POSIXct" = "datetime2(3)",
     "POSIXlt" = "datetime2(3)",
+    "Date" = "datetime2(3)",
     "integer" = "int"
   )
 }
