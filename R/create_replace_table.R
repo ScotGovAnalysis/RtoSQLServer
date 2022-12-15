@@ -286,6 +286,22 @@ populate_staging_table <- function(db_params,
   DBI::dbDisconnect(connection)
 }
 
+create_insert_sql <- function(db_params, metadata_df) {
+  metadata_df <- metadata_df[metadata_df$column_name !=
+    paste0(db_params$table_name, "ID"), ]
+
+  column_selects <- glue::glue_collapse(
+    glue::glue_data(metadata_df, "[{column_name}]"), ", "
+  )
+
+
+  glue::glue(
+    "INSERT INTO [{db_params$schema}].[{db_params$table_name}]",
+    "({column_selects}) select {column_selects} from",
+    "[{db_params$schema}].[{db_params$table_name}_staging_];",
+    .sep = " "
+  )
+}
 
 populate_table_from_staging <- function(db_params) {
   metadata <- db_table_metadata(
@@ -294,20 +310,9 @@ populate_table_from_staging <- function(db_params) {
     db_params$schema,
     paste0(db_params$table_name, "_staging_")
   )
-  column_string <- ""
-  for (row in seq_len(nrow(metadata))) {
-    if (metadata[row, "column_name"] != paste0(db_params$table_name, "ID")) {
-      column_name <- metadata[row, 1]
-      column_string <- paste0(column_string, " [", column_name, "], ")
-    }
-  }
-  column_string <- substr(column_string, 1, nchar(column_string) - 2)
-  sql <- paste0(
-    "INSERT INTO [", db_params$schema, "].[", db_params$table_name,
-    "] (", column_string, ") select ",
-    column_string, " from [", schema, "].[",
-    db_params$table_name, "_staging_];"
-  )
+
+  sql <- create_intsert_sql(db_params, metadata)
+
   execute_sql(db_params$server, db_params$database, sql, FALSE)
   message(format_message(paste0(
     "Table: '", db_params$schema, ".", db_params$table_name,
@@ -521,8 +526,7 @@ write_dataframe_to_db <- function(server,
   populate_staging_table(db_params,
     dataframe = dataframe
   )
-  # Then populate the target table from staging, truncating
-  # it first of existing rows
+  # Then populate the target table from staging
   tryCatch(
     {
       populate_table_from_staging(db_params)

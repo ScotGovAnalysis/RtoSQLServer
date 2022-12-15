@@ -42,10 +42,12 @@ test_that("compare columns is correct", {
     df_to_metadata(test_iris)
   )
 
-  db_params <- list(server = "t",
-                    database = "t",
-                    schema = "t",
-                    table_name = "t")
+  db_params <- list(
+    server = "t",
+    database = "t",
+    schema = "t",
+    table_name = "t"
+  )
 
   expect_identical(compare_columns(db_params, test_iris2), test_md_compare)
 })
