@@ -31,3 +31,21 @@ test_that("create table sql correct", {
     correct_sql
   )
 })
+
+test_that("compare columns is correct", {
+  test_iris <- readRDS(test_path("testdata", "test_iris.rds"))
+  test_iris2 <- readRDS(test_path("testdata", "test_iris2.rds"))
+  test_md_compare <- readRDS(test_path("testdata", "test_md_compare.rds"))
+
+  mockery::stub(
+    compare_columns, "db_table_metadata",
+    df_to_metadata(test_iris)
+  )
+
+  db_params <- list(server = "t",
+                    database = "t",
+                    schema = "t",
+                    table_name = "t")
+
+  expect_identical(compare_columns(db_params, test_iris2), test_md_compare)
+})
