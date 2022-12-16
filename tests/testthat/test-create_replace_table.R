@@ -51,3 +51,30 @@ test_that("compare columns is correct", {
 
   expect_identical(compare_columns(db_params, test_iris2), test_md_compare)
 })
+
+test_that("df batches are correct", {
+  test_batches <- readRDS(test_path("testdata", "test_batches.rds"))
+
+  expect_identical(get_df_batches(iris, 5), test_batches)
+})
+
+test_that("populate staging loads correct", {
+  test_batches <- readRDS(test_path("testdata", "test_batches.rds"))
+  db_params <- list(
+    server = "t",
+    database = "t",
+    schema = "t",
+    table_name = "t"
+  )
+  m <- mockery::mock(1, cycle=TRUE)
+  mockery::stub(populate_staging_table, "create_sqlserver_connection", 1)
+  mockery::stub(populate_staging_table, "DBI::dbWriteTable", m)
+  mockery::stub(populate_staging_table, "DBI::dbDisconnect", 1)
+
+  populate_staging_table(db_params, iris, 75)
+  args <- mockery::mock_args(m)
+
+  mockery::expect_called(m, 2)
+  expect_equal(args[[1]]$value, iris[1:75,])
+  expect_equal(args[[2]]$value, iris[76:150,])
+})
