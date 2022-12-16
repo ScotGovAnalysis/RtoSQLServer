@@ -1,26 +1,25 @@
 # sql to check if versioned table
 create_check_sql <- function(schema, table_name) {
-  paste0(
-    "select name, temporal_type_desc from sys.tables where name = '",
-    table_name,
-    "' and schema_name(schema_id) = '", schema, "';"
+  glue::glue(
+    "select name, temporal_type_desc, from sys.tables where name = ",
+    "'{table_name}' and schema_name(schema_id) = '{schema}';"
   )
 }
 
 
 # create versioned table sql
 create_drop_sql_versioned <- function(schema, table_name) {
-  paste0(
-    "ALTER TABLE [", schema, "].[",
-    table_name, "] SET ( SYSTEM_VERSIONING = OFF ); ",
-    "DROP TABLE [", schema, "].[", table_name, "]; ",
-    "DROP TABLE [", schema, "].[", table_name, "History];"
+  glue::glue("ALTER TABLE [{schema}].[{table_name}]",
+    "SET ( SYSTEM_VERSIONING = OFF );",
+    "DROP TABLE [{schema}].[{table_name}];",
+    "DROP TABLE [{schema}].[{table_name}History];",
+    .sep = " "
   )
 }
 
 # create non versioned table sql
 create_drop_sql_nonversioned <- function(schema, table_name) {
-  paste0("DROP TABLE [", schema, "].[", table_name, "];")
+  glue::glue("DROP TABLE [{schema}].[{table_name}];")
 }
 
 # Ensure a versioned table based on metadata
@@ -57,21 +56,6 @@ create_drop_sql <- function(server,
     drop_sql <- create_drop_sql_nonversioned(schema, table_name)
   }
   return(drop_sql)
-}
-
-# drop message
-get_drop_message <- function(database,
-                             server,
-                             schema,
-                             table_name) {
-  paste0(
-    "Table: '",
-    schema, ".",
-    table_name,
-    "' successfully deleted from database: '",
-    database, "' on server '",
-    server, "'"
-  )
 }
 
 #' Drop SQL Server table from database. Check if versioned table and disable
@@ -135,11 +119,9 @@ drop_table_from_db <- function(server,
 
   # Output message if required
   if (!silent) {
-    show_message <- get_drop_message(
-      server,
-      database,
-      schema,
-      table_name
+    show_message <- glue::glue(
+      "Table: {schema}.{table_name}",
+      "successfully deleted."
     )
 
     message(format_message(show_message))
