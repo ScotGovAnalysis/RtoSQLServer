@@ -46,7 +46,7 @@ read_table_from_db <- function(database,
     schema,
     table_name
   )) {
-    stop(format_message(
+    stop(glue::glue(
       "Table: {schema}.{table_name} does not exist in the database."
     ))
   }

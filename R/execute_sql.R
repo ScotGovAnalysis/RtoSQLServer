@@ -29,7 +29,7 @@ execute_sql <- function(server, database, sql, output = FALSE) {
         output_data <- DBI::dbGetQuery(connection, sql)
       },
       error = function(cond) {
-        stop(format_message(
+        stop(glue::glue(
           "Failed to execute SQL.\nODBC error message: {cond}"
         ))
       }
@@ -41,7 +41,7 @@ execute_sql <- function(server, database, sql, output = FALSE) {
         output_data <- paste0(sql, " executed successfully")
       },
       error = function(cond) {
-        stop(format_message(
+        stop(glue::glue(
           "Failed to execute SQL.\nODBC error message: {cond}"
         ))
       }

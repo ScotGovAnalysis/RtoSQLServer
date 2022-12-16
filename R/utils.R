@@ -11,10 +11,11 @@ create_sqlserver_connection <- function(server, database, timeout = 10) {
       )
     },
     error = function(cond) {
-      stop(format_message(
+      stop(glue::glue(
         "Failed to create connection to database:",
         "{database} on server: {server}",
-        "\n{cond}"
+        "\n{cond}",
+        .sep = " "
       ))
     }
   )
@@ -226,10 +227,6 @@ compatible_cols <- function(existing_col_type,
   }
 }
 
-# function to glue message lines
-format_message <- function(...) {
-  glue::glue(..., .sep = " ")
-}
 
 # TRUE or FALSE test for table in schema
 check_table_exists <- function(server,

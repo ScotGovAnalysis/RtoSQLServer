@@ -1,7 +1,7 @@
 # sql to check if versioned table
 create_check_sql <- function(schema, table_name) {
   glue::glue(
-    "select name, temporal_type_desc, from sys.tables where name = ",
+    "select name, temporal_type_desc from sys.tables where name = ",
     "'{table_name}' and schema_name(schema_id) = '{schema}';"
   )
 }
@@ -92,7 +92,7 @@ drop_table_from_db <- function(server,
     schema,
     table_name
   )) {
-    stop(format_message(
+    stop(glue::glue(
       "Table: {schema}.{table_name} does not exist in the database."
     ))
   }
@@ -118,7 +118,9 @@ drop_table_from_db <- function(server,
 
   # Output message if required
   if (!silent) {
-    message(format_message("Table: {schema}.{table_name}",
-                           "successfully deleted."))
+    message(glue::glue("Table: {schema}.{table_name}",
+      "successfully deleted.",
+      .sep = " "
+    ))
   }
 }

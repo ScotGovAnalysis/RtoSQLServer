@@ -42,14 +42,6 @@ test_that("Char size to nvarchar type mapping works", {
   expect_equal(r_to_sql_character_sizes("4001"), "nvarchar(max)")
 })
 
-test_that("Message printing glue fn works", {
-  replace_val <- "the cat"
-  test_msg <- format_message(
-    "{replace val}",
-    "sat on the mat"
-  )
-  expect_equal(test_msg, "the cat sat on the mat")
-})
 
 test_that("Formatting column select sql works", {
   expect_equal(table_select_list(c("species", "petal_length")), "[species], [petal_length]")

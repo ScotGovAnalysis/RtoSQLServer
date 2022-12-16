@@ -17,7 +17,7 @@ test_that("versioned drop sql created correctly", {
   )
 
   mockery::stub(create_drop_sql, "execute_sql", check_df)
-  #mockery::stub(create_drop_sql, "is_versioned", TRUE)
+  # mockery::stub(create_drop_sql, "is_versioned", TRUE)
 
   expect_equal(create_drop_sql(
     "test", "test", "test_schema", "test_tbl", TRUE
@@ -32,7 +32,7 @@ test_that("non-versioned drop sql created correctly", {
   drop_nonver_sql <- "DROP TABLE [test_schema].[test_tbl];"
 
   mockery::stub(create_drop_sql, "execute_sql", check_df)
-  #mockery::stub(create_drop_sql, "is_versioned", FALSE)
+  # mockery::stub(create_drop_sql, "is_versioned", FALSE)
 
   expect_equal(create_drop_sql(
     "test", "test", "test_schema", "test_tbl", FALSE

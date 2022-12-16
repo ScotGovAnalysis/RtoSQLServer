@@ -1,7 +1,7 @@
 # If error found on checks drop staging table before stop msg
 process_fail <- function(message, db_params) {
   delete_staging_table(db_params, silent = TRUE)
-  stop(format_message(message), call. = FALSE)
+  stop(glue::glue(message, .sep = " "), call. = FALSE)
 }
 
 # Column in to load dataframe, but not existing SQL table
@@ -120,16 +120,17 @@ check_existing_table <- function(db_params,
   } else if (!is.null(is_incompatible)) {
     process_fail(is_incompatible, db_params)
   } else if (!is.null(is_warning)) {
-    warning(format_message(is_warning), call. = FALSE)
+    warning(glue::glue(is_warning, .sep = " "), call. = FALSE)
   }
 
 
   resize_datatypes(compare_col_df, db_params)
 
-  message(format_message(
+  message(glue::glue(
     "Checked existing columns in ",
     "{db_params$schema}.{db_params$table_name}",
-    "are compatible with those in the dataframe to be loaded."
+    "are compatible with those in the dataframe to be loaded.",
+    .sep = " "
   ))
 }
 
@@ -148,10 +149,10 @@ alter_sql_character_col <- function(db_params,
     sql,
     FALSE
   )
-  message(format_message(
+  message(glue::glue(
     "Resizing column {column_name}",
     "to {new_char_type}."
-  ))
+  ), .sep = " ")
 }
 
 id_col_name <- function(table_name) {
@@ -221,9 +222,10 @@ create_staging_table <- function(db_params, dataframe) {
     sql,
     FALSE
   )
-  message(format_message(
+  message(glue::glue(
     "Table: {db_params$schema}.{db_params$table_name}_staging_",
-    "successfully created in database."
+    "successfully created in database.",
+    .sep = " "
   ))
 }
 
@@ -252,9 +254,10 @@ populate_staging_table <- function(db_params,
     db_params$database
   )
   batch_list <- get_df_batches(dataframe = dataframe, batch_size = batch_size)
-  message(format_message(
+  message(glue::glue(
     "Loading to staging in {length(batch_list$batch_starts)}",
-    "batches of up to {format(batch_size, scientific = FALSE)} rows..."
+    "batches of up to {format(batch_size, scientific = FALSE)} rows...",
+    .sep = " "
   ))
   for (i in seq_along(batch_list$batch_starts)) {
     batch_start <- batch_list$batch_starts[[i]]
@@ -271,22 +274,18 @@ populate_staging_table <- function(db_params,
         )
       },
       error = function(cond) {
-        stop(format_message(
+        stop(glue::glue(
           "Failed to write staging",
-          "data to database.\n", cond
+          "data to database.\n", cond,
+          .sep = " "
         ))
       }
     )
-    message(format_message(paste(
-      "Loaded rows", format(batch_start, scientific = FALSE),
-      "-", format(batch_end, scientific = FALSE), "of",
-      tail(batch_list$batch_ends, 1)
-    )))
-
-    message(format_message(
+    message(glue::glue(
       "Loaded rows {format(batch_start, scientific = FALSE)}",
       "- {format(batch_end, scientific = FALSE)} of",
-      "{tail(batch_list$batch_ends, 1)}"
+      "{tail(batch_list$batch_ends, 1)}",
+      .sep = " "
     ))
   }
   DBI::dbDisconnect(connection)
@@ -320,9 +319,11 @@ populate_table_from_staging <- function(db_params) {
   sql <- create_insert_sql(db_params, metadata)
 
   execute_sql(db_params$server, db_params$database, sql, FALSE)
-  message(format_message(
+  print("done")
+  message(glue::glue(
     "Table: {db_params$schema}.{db_params$table_name}",
-    "{successfully populated from staging"
+    "successfully populated from staging",
+    .sep = " "
   ))
 }
 
@@ -338,9 +339,10 @@ delete_staging_table <- function(db_params, silent = FALSE) {
     TRUE
   )
   if (!silent) {
-    message(format_message(
+    message(glue::glue(
       "Staging table: {db_params$schema}.{db_params$table_name}_staging_",
-      "successfully deleted from database."
+      "successfully deleted from database.",
+      .sep = " "
     ))
   }
 }
@@ -370,9 +372,10 @@ create_table <- function(db_params, silent = FALSE) {
     FALSE
   )
   if (!silent) {
-    message(format_message(
+    message(glue::glue(
       "Table: {db_params$schema}.{db_params$table_name}",
-      "successfully created in database"
+      "successfully created in database",
+      .sep = " "
     ))
   }
 }
@@ -386,10 +389,11 @@ clean_table_name <- function(table_name) {
   new_name <- gsub("[^0-9a-z_]", "", new_name, ignore.case = TRUE)
   # Advise if changing target table name
   if (new_name != table_name) {
-    warning(format_message(
+    warning(glue::glue(
       "Cannot name a table {table_name}\n",
       "replacing with name {new_name}",
-      "(see ODBC table name limitations)"
+      "(see ODBC table name limitations)",
+      .sep = " "
     ))
   }
   return(new_name)
@@ -496,10 +500,11 @@ write_dataframe_to_db <- function(server,
     check_existing_table(db_params, dataframe)
     # If not appending and exists then inform that will be overwritten
   } else {
-    warning(format_message(
+    warning(glue::glue(
       "Existing database table: {schema}.{table_name}",
-      "will be over-written."
-    ))
+      "was over-written.",
+      .sep = " "
+    ), call. = FALSE)
     # Drop the existing table
     drop_table_from_db(
       server,
@@ -517,23 +522,26 @@ write_dataframe_to_db <- function(server,
   populate_staging_table(db_params,
     dataframe = dataframe
   )
+
+  populate_table_from_staging(db_params)
   # Then populate the target table from staging
-  tryCatch(
-    {
-      populate_table_from_staging(db_params)
-    },
-    error = function(cond) {
-      stop(format_message(
-        "Failed to write dataframe to database.\n", cond
-      ))
-    }
-  )
+  #  tryCatch(
+  #    {
+  #      populate_table_from_staging(db_params)
+  #    },
+  #    error = function(cond) {
+  #      stop(glue::glue(
+  #        "Failed to write dataframe to database\n {cond}",
+  #        .sep = " "
+  #      ))
+  #    }
+  #  )
   # Drop the staging table and finished
   delete_staging_table(db_params)
   end_time <- Sys.time()
-  message(format_message(
+  message(glue::glue(
     "Loading completed in",
-    "{round(difftime(end_time, start_time,
-      units = 'mins')[[1]], 2)} minutes."
+    "{round(difftime(end_time, start_time,units = 'mins')[[1]], 2)} minutes.",
+    .sep = " "
   ))
 }
