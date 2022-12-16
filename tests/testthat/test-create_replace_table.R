@@ -75,6 +75,28 @@ test_that("populate staging loads correct", {
   args <- mockery::mock_args(m)
 
   mockery::expect_called(m, 2)
-  expect_equal(args[[1]]$value, iris[1:75,])
-  expect_equal(args[[2]]$value, iris[76:150,])
+  expect_identical(args[[1]]$value, iris[1:75,])
+  expect_identical(args[[2]]$value, iris[76:150,])
 })
+
+
+test_that("insert sql created correctly", {
+
+  db_params<-list(server="test",
+                  database="test",
+                  schema="test",
+                  table_name="test_iris")
+
+  test_md <- readRDS(test_path("testdata", "test_iris_md.rds"))
+  check_sql <- readRDS(test_path("testdata", "test_insert_sql.rds"))
+
+  m <- mockery::mock(1)
+  mockery::stub(populate_table_from_staging, "db_table_metadata", test_md)
+  mockery::stub(populate_table_from_staging, "execute_sql", m)
+
+  populate_table_from_staging(db_params)
+  args <- mockery::mock_args(m)
+
+  expect_identical(args[[1]][[3]], check_sql)
+}
+)
