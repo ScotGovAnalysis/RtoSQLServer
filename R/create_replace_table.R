@@ -1,7 +1,7 @@
 # If error found on checks drop staging table before stop msg
 process_fail <- function(message, db_params) {
   delete_staging_table(db_params, silent = TRUE)
-  stop(cli::format_error(message), call. = FALSE)
+  stop(format_message(message), call. = FALSE)
 }
 
 # Column in to load dataframe, but not existing SQL table
@@ -13,7 +13,10 @@ missing_col_error <- function(compare_col_df) {
       "Column {column_name} not found in existing table."
     )
 
-    c(error_message, "Use option append_to_existing=FALSE to overwrite")
+    glue::glue(
+      error_message,
+      "Use option append_to_existing=FALSE to overwrite"
+    )
   }
 }
 
@@ -40,7 +43,10 @@ mismatch_datatype_error <- function(compare_col_df) {
       dataframe column"
     )
 
-    c(error_message, "Use option append_to_existing=FALSE to overwrite")
+    glue::glue(
+      error_message,
+      "Use option append_to_existing=FALSE to overwrite"
+    )
   }
 }
 
@@ -114,17 +120,17 @@ check_existing_table <- function(db_params,
   } else if (!is.null(is_incompatible)) {
     process_fail(is_incompatible, db_params)
   } else if (!is.null(is_warning)) {
-    warning(cli::format_warning(is_warning), call. = FALSE)
+    warning(format_message(is_warning), call. = FALSE)
   }
 
 
   resize_datatypes(compare_col_df, db_params)
 
-  message(format_message(paste0(
-    "Checked existing columns in '",
-    db_params$schema, ".", db_params$table_name,
-    "' are compatible with those in the dataframe to be loaded."
-  )))
+  message(format_message(
+    "Checked existing columns in ",
+    "{db_params$schema}.{db_params$table_name}",
+    "are compatible with those in the dataframe to be loaded."
+  ))
 }
 
 
@@ -142,8 +148,10 @@ alter_sql_character_col <- function(db_params,
     sql,
     FALSE
   )
-  format_message(glue::glue("Resizing column {column_name}
-                            to {new_char_type}."))
+  message(format_message(
+    "Resizing column {column_name}",
+    "to {new_char_type}."
+  ))
 }
 
 id_col_name <- function(table_name) {
@@ -214,13 +222,8 @@ create_staging_table <- function(db_params, dataframe) {
     FALSE
   )
   message(format_message(
-    paste0(
-      "Table: '", db_params$schema, ".", db_params$table_name, "_staging_",
-      "' successfully created in database: '",
-      db_params$database,
-      "' on server '",
-      db_params$server, "'"
-    )
+    "Table: {db_params$schema}.{db_params$table_name}_staging_",
+    "successfully created in database."
   ))
 }
 
@@ -249,13 +252,10 @@ populate_staging_table <- function(db_params,
     db_params$database
   )
   batch_list <- get_df_batches(dataframe = dataframe, batch_size = batch_size)
-  message(format_message(paste(
-    "Loading to staging in", length(batch_list$batch_starts),
-    "batches of up to", format(batch_size,
-      scientific =
-        FALSE
-    ), "rows..."
-  )))
+  message(format_message(
+    "Loading to staging in {length(batch_list$batch_starts)}",
+    "batches of up to {format(batch_size, scientific = FALSE)} rows..."
+  ))
   for (i in seq_along(batch_list$batch_starts)) {
     batch_start <- batch_list$batch_starts[[i]]
     batch_end <- batch_list$batch_ends[[i]]
@@ -271,8 +271,10 @@ populate_staging_table <- function(db_params,
         )
       },
       error = function(cond) {
-        stop(format_message(paste0("Failed to write staging
-                    data to database.\nOriginal error message: ", cond)))
+        stop(format_message(
+          "Failed to write staging",
+          "data to database.\n", cond
+        ))
       }
     )
     message(format_message(paste(
@@ -280,6 +282,12 @@ populate_staging_table <- function(db_params,
       "-", format(batch_end, scientific = FALSE), "of",
       tail(batch_list$batch_ends, 1)
     )))
+
+    message(format_message(
+      "Loaded rows {format(batch_start, scientific = FALSE)}",
+      "- {format(batch_end, scientific = FALSE)} of",
+      "{tail(batch_list$batch_ends, 1)}"
+    ))
   }
   DBI::dbDisconnect(connection)
 }
@@ -312,10 +320,10 @@ populate_table_from_staging <- function(db_params) {
   sql <- create_insert_sql(db_params, metadata)
 
   execute_sql(db_params$server, db_params$database, sql, FALSE)
-  message(format_message(paste0(
-    "Table: '", db_params$schema, ".", db_params$table_name,
-    "' successfully populated from staging"
-  )))
+  message(format_message(
+    "Table: {db_params$schema}.{db_params$table_name}",
+    "{successfully populated from staging"
+  ))
 }
 
 
@@ -330,12 +338,10 @@ delete_staging_table <- function(db_params, silent = FALSE) {
     TRUE
   )
   if (!silent) {
-    message(format_message(paste0(
-      "Staging table: '", db_params$schema, ".",
-      db_params$table_name, "_staging_",
-      "' successfully deleted from database: '",
-      db_params$database, "' on server '", db_params$server, "'"
-    )))
+    message(format_message(
+      "Staging table: {db_params$schema}.{db_params$table_name}_staging_",
+      "successfully deleted from database."
+    ))
   }
 }
 
@@ -364,11 +370,10 @@ create_table <- function(db_params, silent = FALSE) {
     FALSE
   )
   if (!silent) {
-    message(format_message(paste0(
-      "Table: '", paste0(db_params$schema, ".", db_params$table_name),
-      "' successfully created in database: '", db_params$database,
-      "' on server '", db_params$server, "'"
-    )))
+    message(format_message(
+      "Table: {db_params$schema}.{db_params$table_name}",
+      "successfully created in database"
+    ))
   }
 }
 
@@ -381,11 +386,11 @@ clean_table_name <- function(table_name) {
   new_name <- gsub("[^0-9a-z_]", "", new_name, ignore.case = TRUE)
   # Advise if changing target table name
   if (new_name != table_name) {
-    message(format_message(paste0(
-      "Cannot name a table'", table_name,
-      "' replacing with name '", new_name,
-      "' (see ODBC table name limitations)"
-    )))
+    warning(format_message(
+      "Cannot name a table {table_name}\n",
+      "replacing with name {new_name}",
+      "(see ODBC table name limitations)"
+    ))
   }
   return(new_name)
 }
@@ -491,10 +496,10 @@ write_dataframe_to_db <- function(server,
     check_existing_table(db_params, dataframe)
     # If not appending and exists then inform that will be overwritten
   } else {
-    (message(format_message(paste0(
-      "Existing table '", schema, "'.'", table_name,
-      "' will be over-written."
-    ))))
+    warning(format_message(
+      "Existing database table: {schema}.{table_name}",
+      "will be over-written."
+    ))
     # Drop the existing table
     drop_table_from_db(
       server,
@@ -518,20 +523,17 @@ write_dataframe_to_db <- function(server,
       populate_table_from_staging(db_params)
     },
     error = function(cond) {
-      stop(format_message(paste0(
-        "Failed to write dataframe to database: '",
-        database, "'\nOriginal error message: ", cond
-      )))
+      stop(format_message(
+        "Failed to write dataframe to database.\n", cond
+      ))
     }
   )
   # Drop the staging table and finished
   delete_staging_table(db_params)
   end_time <- Sys.time()
-  message(format_message(paste(
+  message(format_message(
     "Loading completed in",
-    round(difftime(end_time, start_time,
-      units = "mins"
-    )[[1]], 2),
-    " minutes."
-  )))
+    "{round(difftime(end_time, start_time,
+      units = 'mins')[[1]], 2)} minutes."
+  ))
 }

@@ -11,11 +11,11 @@ create_sqlserver_connection <- function(server, database, timeout = 10) {
       )
     },
     error = function(cond) {
-      stop(format_message(paste0(
-        "Failed to create connection to database: '",
-        database, "' on server: '",
-        server, "'\nOriginal error message: '", cond, "'"
-      )))
+      stop(format_message(
+        "Failed to create connection to database:",
+        "{database} on server: {server}",
+        "\n{cond}"
+      ))
     }
   )
 }
@@ -226,9 +226,9 @@ compatible_cols <- function(existing_col_type,
   }
 }
 
-# function to format multiline message, stop, warn strings due to 80 char limit
-format_message <- function(message_string) {
-  strwrap(message_string, prefix = " ", initial = "")
+# function to glue message lines
+format_message <- function(...) {
+  glue::glue(..., .sep = " ")
 }
 
 # TRUE or FALSE test for table in schema

@@ -92,10 +92,9 @@ drop_table_from_db <- function(server,
     schema,
     table_name
   )) {
-    stop(format_message(paste0(
-      "Table '", schema, ".", table_name,
-      "' does not exist in the database."
-    )))
+    stop(format_message(
+      "Table: {schema}.{table_name} does not exist in the database."
+    ))
   }
 
   # Create drop sql
@@ -119,11 +118,7 @@ drop_table_from_db <- function(server,
 
   # Output message if required
   if (!silent) {
-    show_message <- glue::glue(
-      "Table: {schema}.{table_name}",
-      "successfully deleted."
-    )
-
-    message(format_message(show_message))
+    message(format_message("Table: {schema}.{table_name}",
+                           "successfully deleted."))
   }
 }

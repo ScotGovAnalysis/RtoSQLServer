@@ -1,20 +1,16 @@
 table_select_list <- function(columns) {
-  select_list <- ""
   if (is.null(columns)) {
-    select_list <- "*"
+    "*"
   } else {
-    for (column in columns) {
-      select_list <- paste0(select_list, "[", column, "], ")
-    }
-    select_list <- substr(select_list, 1, nchar(select_list) - 2)
+    glue::glue_collapse(columns, sep = ", ")
   }
-  select_list
 }
 
 create_read_sql <- function(select_list, schema, table_name) {
-  paste0(
-    "SELECT ", select_list,
-    " FROM [", schema, "].[", table_name, "];"
+  glue::glue(
+    "SELECT {select_list}",
+    "FROM [{schema}].[{table_name}];",
+    .sep = " "
   )
 }
 
@@ -50,10 +46,9 @@ read_table_from_db <- function(database,
     schema,
     table_name
   )) {
-    stop(format_message(paste0(
-      "Table '", schema, ".", table_name,
-      "' does not exist in the database."
-    )))
+    stop(format_message(
+      "Table: {schema}.{table_name} does not exist in the database."
+    ))
   }
   select_list <- table_select_list(columns)
 
