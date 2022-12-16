@@ -66,6 +66,7 @@ check_columns <- function(compare_col_df) {
     compare_col_df$data_type,
     compare_col_df$df_data_type
   )
+  compare_col_df
 }
 
 # Create metadata column name and datatype tbls for existing SQL table
@@ -266,7 +267,7 @@ populate_staging_table <- function(db_params,
       {
         DBI::dbWriteTable(connection,
           name = DBI::Id(
-            schema = schema,
+            schema = db_params$schema,
             table = paste0(db_params$table_name, "_staging_")
           ), value = load_df,
           overwrite = FALSE, append = TRUE
