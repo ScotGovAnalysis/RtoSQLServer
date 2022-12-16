@@ -324,26 +324,12 @@ populate_table_from_staging <- function(db_params) {
 
 
 delete_staging_table <- function(db_params, silent = FALSE) {
-  connection <- create_sqlserver_connection(
-    db_params$server,
-    db_params$database
-  )
-  tryCatch(
-    {
-      odbc::dbRemoveTable(conn = connection, DBI::Id(
-        schema = db_params$schema,
-        table = paste0(db_params$table_name, "_staging_")
-      ))
-    },
-    error = function(cond) {
-      stop(format_message(paste0(
-        "Failed to delete staging table: '", db_params$table_name,
-        "' from database: '", db_params$database, "' on server: '",
-        db_params$server, "'\nOriginal error message: ", cond
-      )))
-    }
-  )
-  DBI::dbDisconnect(connection)
+  drop_table_from_db(db_params$server,
+                     db_params$database,
+                     db_params$schema,
+                     paste0(db_params$table_name, "_staging_"),
+                     FALSE,
+                     TRUE)
   if (!silent) {
     message(format_message(paste0(
       "Staging table: '", db_params$schema, ".",
