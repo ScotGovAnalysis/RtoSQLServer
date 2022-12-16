@@ -131,10 +131,11 @@ check_existing_table <- function(db_params,
 alter_sql_character_col <- function(db_params,
                                     column_name,
                                     new_char_type) {
-  sql <- paste0(
-    "ALTER TABLE [", db_params$schema, "].[", db_params$table_name,
-    "] ALTER COLUMN [", column_name, "] ", new_char_type, ";"
+  sql <- glue::glue("ALTER TABLE [{db_params$schema}].[{db_params$table_name}]",
+    "ALTER COLUMN [{column_name}] {new_char_type};",
+    .sep = " "
   )
+
   execute_sql(
     db_params$server,
     db_params$database,
@@ -151,22 +152,18 @@ id_col_name <- function(table_name) {
 }
 
 sql_create_table <- function(schema, table_name, metadata_df) {
-  sql <- paste0(
-    "CREATE TABLE [", schema,
-    "].[", table_name, "] ([",
-    id_col_name(table_name), "] INT NOT NULL IDENTITY PRIMARY KEY,"
+  sql <- glue::glue("CREATE TABLE [{schema}].[{table_name}]",
+    "([{id_col_name(table_name)}] INT NOT NULL IDENTITY PRIMARY KEY,",
+    .sep = " "
   )
   for (row in seq_len(nrow(metadata_df))) {
     if (metadata_df[row, "column_name"] != paste0(table_name, "ID")) {
       column_name <- metadata_df[row, "column_name"]
       data_type <- metadata_df[row, "data_type"]
-      sql <- paste0(
-        sql, " [", column_name, "] ",
-        data_type, ","
-      )
+      sql <- glue::glue(sql, "[{column_name}] {data_type},", .sep=" ")
     }
   }
-  paste0(substr(sql, 1, nchar(sql) - 1), ");")
+  glue::glue(substr(sql, 1, nchar(sql) - 1), ");")
 }
 
 
@@ -324,12 +321,14 @@ populate_table_from_staging <- function(db_params) {
 
 
 delete_staging_table <- function(db_params, silent = FALSE) {
-  drop_table_from_db(db_params$server,
-                     db_params$database,
-                     db_params$schema,
-                     paste0(db_params$table_name, "_staging_"),
-                     FALSE,
-                     TRUE)
+  drop_table_from_db(
+    db_params$server,
+    db_params$database,
+    db_params$schema,
+    paste0(db_params$table_name, "_staging_"),
+    FALSE,
+    TRUE
+  )
   if (!silent) {
     message(format_message(paste0(
       "Staging table: '", db_params$schema, ".",

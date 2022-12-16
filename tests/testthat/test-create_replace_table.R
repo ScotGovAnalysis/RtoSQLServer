@@ -26,7 +26,7 @@ test_that("create table sql correct", {
     "[Species] nvarchar(50));"
   )
   metadata_df <- df_to_metadata(iris)
-  expect_identical(
+  expect_equal(
     sql_create_table("test", "test_tbl", metadata_df),
     correct_sql
   )
