@@ -160,7 +160,7 @@ sql_create_table <- function(schema, table_name, metadata_df) {
     if (metadata_df[row, "column_name"] != paste0(table_name, "ID")) {
       column_name <- metadata_df[row, "column_name"]
       data_type <- metadata_df[row, "data_type"]
-      sql <- glue::glue(sql, "[{column_name}] {data_type},", .sep=" ")
+      sql <- glue::glue(sql, "[{column_name}] {data_type},", .sep = " ")
     }
   }
   glue::glue(substr(sql, 1, nchar(sql) - 1), ");")
@@ -171,13 +171,13 @@ sql_versioned_table <- function(sql, db_params) {
   # To remove the trailing );
   sql <- substr(sql, 1, nchar(sql) - 2)
   # The versioned table sql
-  paste0(
-    sql,
-    "SysStartTime DATETIME2 GENERATED ALWAYS AS ROW START NOT NULL, ",
-    "SysEndTime DATETIME2 GENERATED ALWAYS AS ROW END NOT NULL, ",
-    "PERIOD FOR SYSTEM_TIME (SysStartTime, SysEndTime)) ",
-    "WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE = [",
-    db_params$schema, "].[", db_params$table_name, "History]));"
+  glue::glue(sql,
+    "SysStartTime DATETIME2 GENERATED ALWAYS AS ROW START NOT NULL,",
+    "SysEndTime DATETIME2 GENERATED ALWAYS AS ROW END NOT NULL,",
+    "PERIOD FOR SYSTEM_TIME (SysStartTime, SysEndTime))",
+    "WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE =",
+    "[{db_params$schema}].[{db_params$table_name}History]));",
+    .sep = " "
   )
 }
 

@@ -32,6 +32,31 @@ test_that("create table sql correct", {
   )
 })
 
+test_that("create table works", {
+  test_versioned_create <- readRDS(test_path(
+    "testdata",
+    "test_versioned_create.rds"
+  ))
+
+  metadata_df <- df_to_metadata(iris)
+
+  mockery::stub(create_table, "db_table_metadata", metadata_df)
+
+  m <- mockery::mock(1)
+
+  mockery::stub(create_table, "execute_sql", m)
+
+  create_table(list(
+    schema = "test",
+    table_name = "test_tbl",
+    versioned_table = TRUE
+  ))
+
+  args <- mockery::mock_args(m)
+
+  expect_equal(args[[1]][[3]], test_versioned_create)
+})
+
 test_that("compare columns is correct", {
   test_iris <- readRDS(test_path("testdata", "test_iris.rds"))
   test_iris2 <- readRDS(test_path("testdata", "test_iris2.rds"))
@@ -66,7 +91,7 @@ test_that("populate staging loads correct", {
     schema = "t",
     table_name = "t"
   )
-  m <- mockery::mock(1, cycle=TRUE)
+  m <- mockery::mock(1, cycle = TRUE)
   mockery::stub(populate_staging_table, "create_sqlserver_connection", 1)
   mockery::stub(populate_staging_table, "DBI::dbWriteTable", m)
   mockery::stub(populate_staging_table, "DBI::dbDisconnect", 1)
@@ -75,17 +100,18 @@ test_that("populate staging loads correct", {
   args <- mockery::mock_args(m)
 
   mockery::expect_called(m, 2)
-  expect_identical(args[[1]]$value, iris[1:75,])
-  expect_identical(args[[2]]$value, iris[76:150,])
+  expect_identical(args[[1]]$value, iris[1:75, ])
+  expect_identical(args[[2]]$value, iris[76:150, ])
 })
 
 
 test_that("insert sql created correctly", {
-
-  db_params<-list(server="test",
-                  database="test",
-                  schema="test",
-                  table_name="test_iris")
+  db_params <- list(
+    server = "test",
+    database = "test",
+    schema = "test",
+    table_name = "test_iris"
+  )
 
   test_md <- readRDS(test_path("testdata", "test_iris_md.rds"))
   check_sql <- readRDS(test_path("testdata", "test_insert_sql.rds"))
@@ -98,5 +124,4 @@ test_that("insert sql created correctly", {
   args <- mockery::mock_args(m)
 
   expect_identical(args[[1]][[3]], check_sql)
-}
-)
+})
