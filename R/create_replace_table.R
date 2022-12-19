@@ -319,7 +319,6 @@ populate_table_from_staging <- function(db_params) {
   sql <- create_insert_sql(db_params, metadata)
 
   execute_sql(db_params$server, db_params$database, sql, FALSE)
-  print("done")
   message(glue::glue(
     "Table: {db_params$schema}.{db_params$table_name}",
     "successfully populated from staging",
