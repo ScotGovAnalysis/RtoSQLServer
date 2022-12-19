@@ -7,6 +7,7 @@
 
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://www.tidyverse.org/lifecycle/#experimental)
+[![R-CMD-check](https://github.com/DataScienceScotland/RtoSQLServer/workflows/R-CMD-check/badge.svg)](https://github.com/DataScienceScotland/RtoSQLServer/actions)
 <!-- badges: end -->
 
 R package used to import R dataframes into a MS SQL Server database,
@@ -31,7 +32,7 @@ If the above does not work, install by downloading:
 3.  Save the file locally and unzip.
 4.  Install with install.packages():
 
-<!-- -->
+<!-- end list -->
 
     install.packages("C:/my_repos/RtoSQLServer", repos = NULL, type="source")
 
@@ -40,9 +41,9 @@ If the above does not work, install by downloading:
 As well as loading R dataframes into SQL Server databases, functions are
 also currently available to:
 
--   Select all rows of specific columns of a database table.
--   Drop a table from the database.
--   Run any other input sql in the database and return dataframe if a
+  - Select all rows of specific columns of a database table.
+  - Drop a table from the database.
+  - Run any other input sql in the database and return dataframe if a
     select statement.
 
 It is recommend to ensure using the latest versions of
@@ -60,25 +61,25 @@ When loading an R dataframe into SQL Server using
 1.  The R dataframe is loaded into a staging table in the database in
     batches of n rows at a time.
 
-2.  1.  If table of the specified name does NOT already exist in the
+2.  1)  If table of the specified name does NOT already exist in the
         database schema:
-        1.  Create target table in the database.  
-        2.  Insert all rows from staging table to target table.
+        1)  Create target table in the database.  
+        2)  Insert all rows from staging table to target table.
 
-3.  2.  If table of same name does already exist in the database schema:
-
-    If ‘append_to_existing’=FALSE (this will result in an overwrite):
-
-    1.  Drop the existing copy of the target table and create a new one
+3.  2)  If table of same name does already exist in the database schema:
+    
+    If ‘append\_to\_existing’=FALSE (this will result in an overwrite):
+    
+    1)  Drop the existing copy of the target table and create a new one
         from staging table definition.  
-    2.  Insert all rows from staging table into target table.
-
-    If ‘append_to_existing’=TRUE:
-
-    1.  Check that staging table columns and existing target table
+    2)  Insert all rows from staging table into target table.
+    
+    If ‘append\_to\_existing’=TRUE:
+    
+    1)  Check that staging table columns and existing target table
         columns are the same. If not, cancel loading and give a
         warning.  
-    2.  If check passes, insert all rows from staging table into target
+    2)  If check passes, insert all rows from staging table into target
         table.
 
 4.  Delete the staging table.
