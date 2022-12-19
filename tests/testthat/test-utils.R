@@ -44,7 +44,10 @@ test_that("Char size to nvarchar type mapping works", {
 
 
 test_that("Formatting column select sql works", {
-  expect_equal(table_select_list(c("species", "petal_length")), "[species], [petal_length]")
+  expect_equal(
+    table_select_list(c("species", "petal_length")),
+    "[species], [petal_length]"
+  )
 })
 
 test_that("Incorrect connection gives error", {
@@ -54,5 +57,8 @@ test_that("Incorrect connection gives error", {
 test_that("Check table exists works", {
   test_meta <- data.frame(Schema = "mytestschema", Name = "mytesttable")
   mockery::stub(check_table_exists, "get_db_tables", test_meta)
-  expect_true(check_table_exists("test", "test", "mytestschema", "mytesttable"), TRUE)
+  expect_true(check_table_exists(
+    "test", "test", "mytestschema",
+    "mytesttable"
+  ), TRUE)
 })

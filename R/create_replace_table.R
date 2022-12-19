@@ -1,3 +1,6 @@
+#' @import utils
+utils::globalVariables(c("column_name", "data_type", "start_time", "end_time"))
+
 # If error found on checks drop staging table before stop msg
 process_fail <- function(message, db_params) {
   delete_staging_table(db_params, silent = TRUE)
@@ -64,7 +67,7 @@ resize_datatypes <- function(compare_col_df, db_params) {
   resize_df <- compare_col_df[compare_col_df$col_issue == "resize", ]
 
   if (nrow(resize_df) > 0) {
-    for (row in 1:nrow(resize_df)) {
+    for (row in seq_len(nrow(resize_df))) {
       alter_sql_character_col(
         db_params, resize_df[row, "column_name"],
         resize_df[row, "df_data_type"]
@@ -187,9 +190,10 @@ sql_create_table <- function(schema, table_name, metadata_df) {
 sql_versioned_table <- function(sql, db_params) {
   # To remove the trailing );
   sql <- substr(sql, 1, nchar(sql) - 2)
+  sql <- glue::glue(sql, ",")
   # The versioned table sql
   glue::glue(sql,
-    ", SysStartTime DATETIME2 GENERATED ALWAYS AS ROW START NOT NULL,",
+    "SysStartTime DATETIME2 GENERATED ALWAYS AS ROW START NOT NULL,",
     "SysEndTime DATETIME2 GENERATED ALWAYS AS ROW END NOT NULL,",
     "PERIOD FOR SYSTEM_TIME (SysStartTime, SysEndTime))",
     "WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE =",
@@ -531,18 +535,7 @@ write_dataframe_to_db <- function(server,
   )
 
   populate_table_from_staging(db_params)
-  # Then populate the target table from staging
-  #  tryCatch(
-  #    {
-  #      populate_table_from_staging(db_params)
-  #    },
-  #    error = function(cond) {
-  #      stop(glue::glue(
-  #        "Failed to write dataframe to database\n {cond}",
-  #        .sep = " "
-  #      ))
-  #    }
-  #  )
+
   # Drop the staging table and finished
   delete_staging_table(db_params)
   end_time <- Sys.time()

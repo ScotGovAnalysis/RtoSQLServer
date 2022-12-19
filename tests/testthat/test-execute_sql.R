@@ -28,7 +28,7 @@ test_that("Output FALSE calls correct DBI function", {
 
 test_that("Output FALSE returns message", {
   fake_sql <- "delete from test"
-  fake_msg <- paste0(fake_sql, " executed successfully")
+  fake_msg <- paste0("SQL: ", fake_sql, "\nexecuted successfully")
 
   mockery::stub(execute_sql, "create_sqlserver_connection", 1)
   mockery::stub(execute_sql, "DBI::dbDisconnect", 1)
