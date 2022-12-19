@@ -24,6 +24,10 @@ missing_col_error <- function(compare_col_df) {
 # Column existing SQL table, not in to load df - can still be loaded
 missing_col_warning <- function(compare_col_df) {
   missing_df <- compare_col_df[compare_col_df$col_issue == "missing df", ]
+  missing_df <- missing_df[!missing_df$column_name %in% c(
+    "SysStartTime",
+    "SysEndTime"
+  ), ]
   if (nrow(missing_df) > 0) {
     glue::glue_collapse(glue::glue_data(
       missing_df,
@@ -185,7 +189,7 @@ sql_versioned_table <- function(sql, db_params) {
   sql <- substr(sql, 1, nchar(sql) - 2)
   # The versioned table sql
   glue::glue(sql,
-    "SysStartTime DATETIME2 GENERATED ALWAYS AS ROW START NOT NULL,",
+    ", SysStartTime DATETIME2 GENERATED ALWAYS AS ROW START NOT NULL,",
     "SysEndTime DATETIME2 GENERATED ALWAYS AS ROW END NOT NULL,",
     "PERIOD FOR SYSTEM_TIME (SysStartTime, SysEndTime))",
     "WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE =",

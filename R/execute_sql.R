@@ -38,7 +38,7 @@ execute_sql <- function(server, database, sql, output = FALSE) {
     tryCatch(
       {
         DBI::dbExecute(connection, sql)
-        output_data <- paste0(sql, " executed successfully")
+        output_data <- glue::glue("SQL: {sql}\nexecuted successfully")
       },
       error = function(cond) {
         stop(glue::glue(
