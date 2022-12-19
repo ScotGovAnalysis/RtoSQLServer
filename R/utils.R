@@ -1,4 +1,4 @@
-create_sqlserver_connection <- function(server, database) {
+create_sqlserver_connection <- function(server, database, timeout = 10) {
   tryCatch(
     {
       odbc::dbConnect(
@@ -6,15 +6,17 @@ create_sqlserver_connection <- function(server, database) {
         Driver = "SQL Server",
         Trusted_Connection = "True",
         DATABASE = database,
-        SERVER = server
+        SERVER = server,
+        timeout = timeout
       )
     },
     error = function(cond) {
-      stop(format_message(paste0(
-        "Failed to create connection to database: '",
-        database, "' on server: '",
-        server, "'\nOriginal error message: '", cond, "'"
-      )))
+      stop(glue::glue(
+        "Failed to create connection to database:",
+        "{database} on server: {server}",
+        "\n{cond}",
+        .sep = " "
+      ))
     }
   )
 }
@@ -33,13 +35,13 @@ db_table_metadata <- function(server, database, schema, table_name) {
                 @distinct_values int,
                 @minimum_value nvarchar(225),
                 @maximum_value nvarchar(225);
-                DECLARE @T1 AS TABLE	(ColumnName nvarchar(128),
-                DataType nvarchar(128),
+                DECLARE @T1 AS TABLE	(column_name nvarchar(128),
+                data_type nvarchar(128),
                 NullCount int,
                 DistinctValues int,
                 MinimumValue nvarchar(255),
                 MaximumValue nvarchar(255));
-                INSERT INTO @T1 (ColumnName, DataType)
+                INSERT INTO @T1 (column_name, data_type)
                 SELECT	COLUMN_NAME,
                 REPLACE(CONCAT(DATA_TYPE, '(',
                 CHARACTER_MAXIMUM_LENGTH, ')'), '()', '')
@@ -48,7 +50,7 @@ db_table_metadata <- function(server, database, schema, table_name) {
                 AND TABLE_SCHEMA = @table_schema
                 AND TABLE_NAME = @table_name;
                 DECLARE column_cursor CURSOR
-                FOR SELECT ColumnName, DataType FROM @T1;
+                FOR SELECT column_name, data_type FROM @T1;
                 OPEN column_cursor;
                 FETCH NEXT FROM column_cursor
                 INTO @column_name, @data_type;
@@ -105,7 +107,7 @@ db_table_metadata <- function(server, database, schema, table_name) {
                 DistinctValues = @distinct_values,
                 MinimumValue = @minimum_value,
                 MaximumValue = @maximum_value
-                WHERE ColumnName = @column_name;
+                WHERE column_name = @column_name;
                 FETCH NEXT FROM column_cursor
                 INTO @column_name, @data_type;
                 END
@@ -118,40 +120,10 @@ db_table_metadata <- function(server, database, schema, table_name) {
     sql = sql,
     output = TRUE
   )
-  data[data$DataType == "nvarchar(-1)", "DataType"] <- "nvarchar(max)"
+  data[data$data_type == "nvarchar(-1)", "data_type"] <- "nvarchar(max)"
+  data[] <- lapply(data, function(x) if (is.factor(x)) as.character(x) else x)
   data
 }
-
-
-
-table_select_list <- function(columns) {
-  select_list <- ""
-  if (is.null(columns)) {
-    select_list <- "*"
-  } else {
-    for (column in columns) {
-      select_list <- paste0(select_list, "[", column, "], ")
-    }
-    select_list <- substr(select_list, 1, nchar(select_list) - 2)
-  }
-  select_list
-}
-
-
-
-table_where_clause <- function(id_column, start_row, end_row) {
-  dplyr::case_when(
-    is.null(start_row) & is.null(end_row) ~ "",
-    is.null(start_row) & !is.null(end_row) ~
-    paste0(" WHERE [", id_column, "] <= ", end_row),
-    !is.null(start_row) & is.null(end_row) ~
-    paste0(" WHERE [", id_column, "] >= ", start_row),
-    !is.null(start_row) & !is.null(end_row) ~
-    paste0(" WHERE [", id_column, "] BETWEEN ", start_row, " AND ", end_row)
-  )
-}
-
-
 
 get_db_tables <- function(server, database) {
   sql <- "SELECT SCHEMA_NAME(t.schema_id) AS 'Schema',
@@ -167,6 +139,7 @@ get_db_tables <- function(server, database) {
 }
 
 r_to_sql_character_sizes <- function(max_string) {
+  max_string <- as.numeric(max_string)
   if (max_string <= 50) {
     "nvarchar(50)"
   } else if (max_string > 50 & max_string <= 255) {
@@ -178,8 +151,16 @@ r_to_sql_character_sizes <- function(max_string) {
   }
 }
 
+df_to_metadata <- function(dataframe) {
+  col_types <- sapply(dataframe, r_to_sql_data_type)
+  data.frame(
+    column_name = names(col_types), data_type = unname(col_types),
+    stringsAsFactors = FALSE
+  )
+}
 
-r_to_sql_datatype <- function(col_v) {
+
+r_to_sql_data_type <- function(col_v) {
   r_data_type <- class(col_v)
   if (r_data_type %in% c("character", "factor")) {
     col_v <- as.character(col_v) # to ensure factor cols are character
@@ -192,6 +173,7 @@ r_to_sql_datatype <- function(col_v) {
     "factor" = r_to_sql_character_sizes(max_string),
     "POSIXct" = "datetime2(3)",
     "POSIXlt" = "datetime2(3)",
+    "Date" = "datetime2(3)",
     "integer" = "int"
   )
 }
@@ -201,13 +183,28 @@ get_nvarchar_size <- function(input_char_type) {
 }
 
 
-compatible_character_cols <- function(existing_col_type,
-                                      to_load_col_type) {
-  # Only if both column datatypes contain "nvarchar" then proceed
-  if (!(grepl("nvarchar", existing_col_type) & grepl(
-    "nvarchar",
-    to_load_col_type
-  ))) {
+compatible_cols <- function(existing_col_type,
+                            to_load_col_type) {
+
+  # If existing is na then column not in sql db
+  if (is.na(existing_col_type)) {
+    return("missing sql")
+  }
+
+  # If to load is na then not in to load df
+  else if (is.na(to_load_col_type)) {
+    return("missing df")
+  }
+
+  # Identical columns of any type are fine
+  else if (existing_col_type == to_load_col_type) {
+    return("compatible")
+  }
+  # Else only if both column data_types contain "nvarchar" then proceed
+
+  else if (!(grepl("nvarchar", existing_col_type) &
+    grepl("nvarchar", to_load_col_type)
+  )) {
     return("incompatible")
   }
   else {
@@ -215,12 +212,12 @@ compatible_character_cols <- function(existing_col_type,
     existing_col_size <- get_nvarchar_size(existing_col_type)
     to_load_col_size <- get_nvarchar_size(to_load_col_type)
     if (existing_col_size == "max") {
-      "compatible" # If existing is max then to load will be fine
+      return("compatible") # If existing is max then to load will be fine
     } else if (to_load_col_size == "max") {
-      "resize" # If existing not max but to load is then must resize
+      return("resize") # If existing not max but to load is then must resize
     } else if (as.numeric(to_load_col_size)
     <= as.numeric(existing_col_size)) {
-      "compatible" # If neither is max, but existing greater
+      return("compatible") # If neither is max, but existing greater
       # than or equal to load then will be fine
     }
     else {
@@ -230,7 +227,14 @@ compatible_character_cols <- function(existing_col_type,
   }
 }
 
-# function to format multiline message, stop, warn strings due to 80 char limit
-format_message <- function(message_string) {
-  strwrap(message_string, prefix = " ", initial = "")
+
+# TRUE or FALSE test for table in schema
+check_table_exists <- function(server,
+                               database,
+                               schema,
+                               table_name) {
+  all_tables <- get_db_tables(database = database, server = server)
+  # return TRUE if exists or else false
+  nrow(all_tables[all_tables$Schema == schema &
+    all_tables$Name == table_name, ]) == 1
 }
