@@ -390,7 +390,7 @@ clean_table_name <- function(table_name) {
   # Advise if changing target table name
   if (new_name != table_name) {
     warning(glue::glue(
-      "Cannot name a table {table_name}\n",
+      "Cannot name a table {table_name}",
       "replacing with name {new_name}",
       "(see ODBC table name limitations)",
       .sep = " "
