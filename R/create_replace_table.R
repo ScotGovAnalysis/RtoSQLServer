@@ -8,14 +8,15 @@ process_fail <- function(message, db_params) {
 missing_col_error <- function(compare_col_df) {
   missing_df <- compare_col_df[compare_col_df$col_issue == "missing sql", ]
   if (nrow(missing_df) > 0) {
-    error_message <- glue::glue_data(
+    error_message <- glue::glue_collapse(glue::glue_data(
       missing_df,
       "Column {column_name} not found in existing table."
-    )
+    ), sep = "\n")
 
-    glue::glue(
+    error_message <- glue::glue(
       error_message,
-      "Use option append_to_existing=FALSE to overwrite"
+      "Use option append_to_existing=FALSE to overwrite.",
+      .sep = "\n"
     )
   }
 }
@@ -24,10 +25,12 @@ missing_col_error <- function(compare_col_df) {
 missing_col_warning <- function(compare_col_df) {
   missing_df <- compare_col_df[compare_col_df$col_issue == "missing df", ]
   if (nrow(missing_df) > 0) {
-    glue::glue_data(
+    glue::glue_collapse(glue::glue_data(
       missing_df,
-      "Column {column_name} in existing table not found in dataframe to append."
-    )
+      "Column {column_name} in existing table",
+      "not found in dataframe to append.",
+      .sep = " "
+    ), sep = "\n")
   }
 }
 
@@ -36,16 +39,18 @@ mismatch_datatype_error <- function(compare_col_df) {
   incompatible_df <- compare_col_df[compare_col_df$col_issue
   == "incompatible", ]
   if (nrow(incompatible_df) > 0) {
-    error_message <- glue::glue_data(
+    error_message <- glue::glue_collapse(glue::glue_data(
       incompatible_df,
-      "Column {column_name} existing datatype
-      {data_type} not compatible with matching
-      dataframe column"
-    )
+      "Column {column_name} existing datatype",
+      "{data_type} is not compatible with the datatype of",
+      "this column in the dataframe to be loaded.",
+      .sep = " "
+    ), sep = "\n")
 
-    glue::glue(
+    error_message <- glue::glue(
       error_message,
-      "Use option append_to_existing=FALSE to overwrite"
+      "Use option append_to_existing=FALSE to overwrite.",
+      .sep = "\n"
     )
   }
 }
@@ -114,7 +119,6 @@ check_existing_table <- function(db_params,
   is_missing <- missing_col_error(compare_col_df)
   is_incompatible <- mismatch_datatype_error(compare_col_df)
   is_warning <- missing_col_warning(compare_col_df)
-
   if (!is.null(is_missing)) {
     process_fail(is_missing, db_params)
   } else if (!is.null(is_incompatible)) {
