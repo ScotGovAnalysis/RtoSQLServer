@@ -1,7 +1,8 @@
 test_that("cleaning table name works", {
   unclean_name <- "this is-a! test?1"
   clean_name <- "this_is_a_test1"
-  expect_equal(clean_table_name(unclean_name), clean_name)
+  warn_msg <- "replacing with name this_is_a_test1"
+  expect_warning(clean_table_name(unclean_name),warn_msg)
 })
 
 test_that("cleaning column names works", {

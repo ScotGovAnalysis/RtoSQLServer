@@ -2,7 +2,7 @@ table_select_list <- function(columns) {
   if (is.null(columns)) {
     "*"
   } else {
-    glue::glue_collapse(columns, sep = ", ")
+    glue::glue_collapse(glue::glue("[{columns}]"), sep=", ")
   }
 }
 
