@@ -164,7 +164,7 @@ r_to_sql_data_type <- function(col_v) {
   r_data_type <- class(col_v)
   if (r_data_type %in% c("character", "factor")) {
     col_v <- as.character(col_v) # to ensure factor cols are character
-    max_string <- max(nchar(col_v))
+    max_string <- max(nchar(col_v), na.rm=TRUE)
   }
   switch(r_data_type,
     "numeric" = "float",
