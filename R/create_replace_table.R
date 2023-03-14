@@ -249,8 +249,7 @@ get_df_batches <- function(dataframe, batch_size) {
     if (tail(batch_ends, 1) < nrow(dataframe)) {
       batch_ends <- c(batch_ends, nrow(dataframe))
     }
-  }
-  else {
+  } else {
     batch_ends <- c(nrow(dataframe))
   }
 
@@ -260,7 +259,7 @@ get_df_batches <- function(dataframe, batch_size) {
 
 populate_staging_table <- function(db_params,
                                    dataframe,
-                                   batch_size = 5e5) {
+                                   batch_size) {
   connection <- create_sqlserver_connection(
     db_params$server,
     db_params$database
@@ -479,7 +478,6 @@ write_dataframe_to_db <- function(server,
                                   append_to_existing = FALSE,
                                   batch_size = 1e5,
                                   versioned_table = FALSE) {
-
   # Put db params in list for convernience in internal fn calls
   db_params <- list(
     server = server,
@@ -531,7 +529,8 @@ write_dataframe_to_db <- function(server,
 
   # Populate the staging table using batch import of rows from R dataframe
   populate_staging_table(db_params,
-    dataframe = dataframe
+    dataframe = dataframe,
+    batch_size = batch_size
   )
 
   populate_table_from_staging(db_params)

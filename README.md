@@ -17,34 +17,37 @@ enabled.
 
 ## Installation
 
-R package can be installed directly from Github or locally from zip.
+R package can be installed directly from Github or locally from zip.  
+To install directly from GitHub:
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("datasciencescotland/rtosqlserver@main")
+remotes::install_github(
+  "DataScienceScotland/rtosqlserver",
+  upgrade = "never"
+)
 ```
 
 If the above does not work, install by downloading:
 
-1.  Go to the [repository on
-    Github](https://github.com/datasciencescotland/rtosqlserverver)
-2.  Click Clone or download then Download ZIP.
-3.  Save the file locally and unzip.
-4.  Install with install.packages():
+1.  Download the [zip of the
+    repository](https://github.com/DataScienceScotland/sgplot/archive/refs/heads/main.zip)
+    from GitHub.
+2.  Save the downloaded zip to a specific directory (e.g. C:/temp).
+3.  Install with this command specifying the path to the downloaded zip:
 
-<!-- end list -->
+<!-- -->
 
-    install.packages("C:/my_repos/RtoSQLServer", repos = NULL, type="source")
+    remotes::install_local("C:/temp/RtoSQLServer-main.zip", upgrade="never")
 
 ## Functionality
 
 As well as loading R dataframes into SQL Server databases, functions are
 also currently available to:
 
-  - Select all rows of specific columns of a database table.
-  - Drop a table from the database.
-  - Run any other input sql in the database and return dataframe if a
-    select statement.
+- Select all rows of specific columns of a database table.
+- Drop a table from the database.
+- Run any other input sql in the database and return dataframe if a
+  select statement.
 
 It is recommend to ensure using the latest versions of
 [Rcpp](https://cran.r-project.org/web/packages/Rcpp/index.html),
@@ -67,15 +70,15 @@ When loading an R dataframe into SQL Server using
         2)  Insert all rows from staging table to target table.
 
 3.  2)  If table of same name does already exist in the database schema:
-    
-    If ‘append\_to\_existing’=FALSE (this will result in an overwrite):
-    
+
+    If ‘append_to_existing’=FALSE (this will result in an overwrite):
+
     1)  Drop the existing copy of the target table and create a new one
         from staging table definition.  
     2)  Insert all rows from staging table into target table.
-    
-    If ‘append\_to\_existing’=TRUE:
-    
+
+    If ‘append_to_existing’=TRUE:
+
     1)  Check that staging table columns and existing target table
         columns are the same. If not, cancel loading and give a
         warning.  
