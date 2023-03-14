@@ -259,7 +259,7 @@ get_df_batches <- function(dataframe, batch_size) {
 
 populate_staging_table <- function(db_params,
                                    dataframe,
-                                   batch_size = 5e5) {
+                                   batch_size) {
   connection <- create_sqlserver_connection(
     db_params$server,
     db_params$database
