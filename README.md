@@ -21,23 +21,20 @@ R package can be installed directly from Github or locally from zip.
 To install directly from GitHub:
 
 ``` r
-remotes::install_github(
-  "DataScienceScotland/rtosqlserver",
-  upgrade = "never"
-)
+remotes::install_github("DataScienceScotland/rtosqlserver", upgrade = "never")
 ```
 
 If the above does not work, install by downloading:
 
 1.  Download the [zip of the
-    repository](https://github.com/DataScienceScotland/sgplot/archive/refs/heads/main.zip)
+    repository](https://github.com/DataScienceScotland/RtoSQLServer/archive/refs/heads/main.zip)
     from GitHub.
 2.  Save the downloaded zip to a specific directory (e.g. C:/temp).
 3.  Install with this command specifying the path to the downloaded zip:
 
-<!-- -->
-
-    remotes::install_local("C:/temp/RtoSQLServer-main.zip", upgrade="never")
+``` r
+remotes::install_local("C:/temp/RtoSQLServer-main.zip", upgrade="never")
+```
 
 ## Functionality
 
