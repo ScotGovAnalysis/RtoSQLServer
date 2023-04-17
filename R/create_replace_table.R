@@ -273,7 +273,7 @@ populate_staging_table <- function(db_params,
   for (i in seq_along(batch_list$batch_starts)) {
     batch_start <- batch_list$batch_starts[[i]]
     batch_end <- batch_list$batch_ends[[i]]
-    load_df <- data.frame(dataframe[batch_start:batch_end, ])
+    load_df <- dataframe[batch_start:batch_end, ]
     tryCatch(
       {
         DBI::dbWriteTable(connection,
