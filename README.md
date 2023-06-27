@@ -10,10 +10,8 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 [![R-CMD-check](https://github.com/DataScienceScotland/RtoSQLServer/workflows/R-CMD-check/badge.svg)](https://github.com/DataScienceScotland/RtoSQLServer/actions)
 <!-- badges: end -->
 
-R package used to import R dataframes into a MS SQL Server database,
-optionally with [System
-Versioning](https://docs.microsoft.com/en-us/sql/relational-databases/tables/creating-a-system-versioned-temporal-table?view=sql-server-ver15)
-enabled.
+R package aiming to make importing of R dataframes into a MS SQL Server
+database more robust.
 
 ## Installation
 
@@ -91,7 +89,7 @@ Here is an example using the main functions:
 ``` r
 # Make a test dataframe with n rows
 test_n_rows <- 1234567
-test_df <- data.frame(a=rep("a", test_n_rows), b=rep("b", test_n_rows))
+test_df <- data.frame(a = rep("a", test_n_rows), b = rep("b", test_n_rows))
 
 # Set database connection details for use in functions:
 server <- "server\\instance"
@@ -99,33 +97,139 @@ database <- "my_database_name"
 schema <- "my_schema_name"
 
 # Write the test dataframe to a SQL Server table in 100K batches (by default system versioning is FALSE)
-write_dataframe_to_db(server=server, 
-                      database=database, 
-                      schema=schema, 
-                      table_name="test_r_tbl", 
-                      dataframe=test_df, 
-                      append_to_existing = FALSE,
-                      batch_size=1e5, 
-                      versioned_table=FALSE)
+write_dataframe_to_db(
+  server = server,
+  database = database,
+  schema = schema,
+  table_name = "test_r_tbl",
+  dataframe = test_df,
+  append_to_existing = FALSE,
+  batch_size = 1e5,
+  versioned_table = FALSE
+)
 
 # Read the SQL Server table into an R dataframe
-read_df <- read_table_from_db(server=server, 
-                              database=database, 
-                              schema=schema, 
-                              table_name="test_r_tbl")
-                              
+read_df <- read_table_from_db(
+  server = server,
+  database = database,
+  schema = schema,
+  table_name = "test_r_tbl"
+)
+
 # Run other SQL for example select specific column
 sql <- paste0("select a from ", schema, ".test_r_tbl")
 
-read_selected_df <- execute_sql(server=server,
-                                database=database,
-                                sql=sql,
-                                output=TRUE)
-                              
+read_selected_df <- execute_sql(
+  server = server,
+  database = database,
+  sql = sql,
+  output = TRUE
+)
 
-# Drop the table from the database
-drop_table_from_db(server=server, 
-                   database=database, 
-                   schema=schema, 
-                   table_name="test_r_tbl")
+# SQL to return the names of all existing tables-----
+# in the database into an R dataframe
+
+sql2 <- "SELECT SCHEMA_NAME(t.schema_id) AS 'Schema',
+  t.name AS 'Name'
+  FROM sys.tables t
+  order by 1,2;"
+
+db_all_tables <- execute_sql(
+  server = server,
+  database = database,
+  sql = sql2,
+  output = TRUE
+)
+
+
+# Drop a table from the database
+drop_table_from_db(
+  server = server,
+  database = database,
+  schema = schema,
+  table_name = "test_r_tbl"
+)
 ```
+
+## Why use this package
+
+The `RtoSQLServer` package relies on `DBI` and `odbc` packages for its
+database functionality, however you should consider using it instead of
+`DBI` or `odbc` for the following reasons:
+
+#### Importing large dataframes
+
+The main reason to use the package is to ensure the data loading process
+is more robust than using `DBI` / `odbc` packages alone.
+
+When loading large dataframes from R into MS SQL Server using `DBI` it
+was found that the loading process will often hang and never complete.
+
+People using R to load data into SQL Server may be working at home and
+have varying quality of connection to the database server.
+
+`RtoSQLServer` does two things to help with data loading:
+
+1.  Loading the dataframe into a staging table in the database first of
+    all. When the load into the staging table is complete, the target
+    table is created as a copy of the staging table. This helps to
+    prevent misleading problems of incomplete loads. The staging table
+    is dropped once the target table has been created successfully.
+
+2.  Loading in batches. The `RtoSQLServer` package’s
+    `write_dataframe_to_db` function includes a `batch_size` argument.
+    Batch size is the number of rows of the R dataframe that are loaded
+    into the database staging table at once. Using the batch loading
+    process in `RtoSQLServer` it has been possible to load large tables
+    it was not possible to load in one using `DBI`. The batch size is
+    set for the user at a default of 100K so the user does not need to
+    worry about a suitable batch size or splitting up the source
+    dataframe in R.
+
+#### Self-contained database transactions
+
+Unlike `DBI` and `odbc` where user must open a database connection
+object in R and then pass this connection to functions (before hopefully
+remembering to close it at the end of the R session), in `RtoSQLServer`
+a database connection is established when calling each function and
+closed at the end of that function. This means there are not hung
+connections to the database, waiting until the user closes R.
+
+The `RtoSQLServer` functions can be used within user custom functions as
+self-contained tasks and do not rely on an open connection input
+argument. This also means a user does not need to know how to setup a
+connection, they simply pass the server and database name to the
+function. This can make it easier to run code others have written.
+
+Repeatedly opening and closing connections might make things slightly
+slower, however it is thought this will not have much impact on the
+workflow of the average R user where there will be only a few database
+transactions in an R session.
+
+#### Checking of table, column names and datatypes from R to SQL Server
+
+The `DBI` and `odbc` packages are designed to work with many different
+database engines. The `RtoSQLServer` package has focused on Microsoft
+SQL Server. This allows checks to be written to ensure the table name is
+compatible with SQL Server when being read by an ODBC driver.
+
+The package maps R dataframe datatypes to specific SQL Server datatypes
+ensuring consistent, predictable data storage. The current max length of
+string in an R character column vector is used to select the size of the
+SQL Server `nvarchar()` database column.
+
+#### System Versioning
+
+`RtoSQLServer` allows a user to create a table with MS SQL Server
+[System
+Versioning](https://docs.microsoft.com/en-us/sql/relational-databases/tables/creating-a-system-versioned-temporal-table?view=sql-server-ver15)
+enabled. To do this using `RtoSQLServer` the `write_dataframe_to_db`
+function is used with the `versioned_table` argument set to TRUE.
+
+System Versioning adds date / timestamp (SQL Server datatype
+`DATETIME2`) start and end columns to the table. A `<table name>History`
+table is created in the database schema, storing the history of previous
+records following updates and deletes. This allows users to maintain an
+archive of their table setup in R, without needing to know the SQL used
+to establish System Versioning as part of a `create table` SQL
+expression.
