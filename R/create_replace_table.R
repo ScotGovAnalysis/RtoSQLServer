@@ -424,8 +424,9 @@ rename_reserved_column <- function(column_name, table_name) {
 clean_column_names <- function(input_df, table_name) {
   # Get column names as vector
   column_names <- colnames(input_df)
-  # Truncate any names that have > 128 characters
-  column_names <- sapply(column_names, substr, start = 1, stop = 128)
+  # Truncate long column names (126 not
+  # 128 so room for make.unique numbering in case results in duplicates)
+  column_names <- sapply(column_names, substr, start = 1, stop = 126)
   # Rename any column names that are SQL Server reserved
   column_names <- sapply(column_names, rename_reserved_column, table_name)
   # . is exceptable in R dataframe column name not good for SQL select
@@ -433,6 +434,8 @@ clean_column_names <- function(input_df, table_name) {
     pattern = "\\.",
     replacement = "_"
   ))
+  # Make unique by numbering duplicates
+  column_names <- make.unique(column_names, sep="")
   # Assign and return df
   colnames(input_df) <- column_names
   input_df
