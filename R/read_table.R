@@ -2,7 +2,7 @@ table_select_list <- function(columns) {
   if (is.null(columns)) {
     "*"
   } else {
-    glue::glue_collapse(glue::glue("{columns}"), sep = ", ")
+    glue::glue_collapse(glue::glue("[{columns}]"), sep = ", ")
   }
 }
 
@@ -11,9 +11,10 @@ format_filter <- function(server, database, filter_stmt) {
     server = server,
     database = database
   )
-  sql <- dbplyr::translate_sql(!! rlang::parse_expr(filter_stmt), con=connection)
+  sql <- dbplyr::translate_sql(!! rlang::parse_expr(filter_stmt),
+                               con=connection)
   DBI::dbDisconnect(connection)
-  sql
+  gsub("\"(.*?)\"", "\\[\\1]", sql)
 }
 
 create_read_sql <- function(server,
