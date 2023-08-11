@@ -25,16 +25,16 @@ read_table_from_db(
 \item{columns}{Optional vector of column names to select.}
 
 \item{filter_stmt}{Optional filter statement - this should be a character
-expression in the format of a \code{dplyr::filter()} query,
-for example \verb{"Species == "virginica"} and it will be translated to SQL
-using \link[dbplyr]{translate_sql}.}
+expression in the format of a \code{\link[dplyr:filter]{dplyr::filter()}} query,
+for example \code{"Species == 'virginica'"} and it will be translated to SQL
+using \code{\link[dbplyr:translate_sql]{dbplyr::translate_sql()}}.}
 }
 \value{
 Dataframe of table.
 }
 \description{
 If you are confident in writing SQL you may prefer to
-Use \link[RtoSQLServer]{execute_sql} function instead.
+use the \code{\link[=execute_sql]{execute_sql()}} function instead.
 }
 \examples{
 \dontrun{
