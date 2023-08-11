@@ -2,7 +2,7 @@ table_select_list <- function(columns) {
   if (is.null(columns)) {
     "*"
   } else {
-    glue::glue_collapse(glue::glue("[{columns}]"), sep = ", ")
+    glue::glue_collapse(glue::glue("{columns}"), sep = ", ")
   }
 }
 
@@ -43,7 +43,7 @@ create_read_sql <- function(server,
 #' Read a SQL Server table into an R dataframe.
 #'
 #' If you are confident in writing SQL you may prefer to
-#' Use \link[RtoSQLServer]{execute_sql} function instead.
+#' use the [RtoSQLServer::execute_sql()] function instead.
 #'
 #'
 #' @param server Server instance where SQL Server database running.
@@ -52,9 +52,9 @@ create_read_sql <- function(server,
 #' @param table_name Name of table in database to read.
 #' @param columns Optional vector of column names to select.
 #' @param filter_stmt Optional filter statement - this should be a character
-#' expression in the format of a `dplyr::filter()` query,
-#' for example `"Species == "virginica"` and it will be translated to SQL
-#' using \link[dbplyr]{translate_sql}.
+#' expression in the format of a [dplyr::filter()] query,
+#' for example `"Species == 'virginica'"` and it will be translated to SQL
+#' using [dbplyr::translate_sql()].
 #'
 #' @return Dataframe of table.
 #' @export
