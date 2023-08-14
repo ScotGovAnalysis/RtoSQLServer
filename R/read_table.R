@@ -11,8 +11,9 @@ format_filter <- function(server, database, filter_stmt) {
     server = server,
     database = database
   )
-  sql <- dbplyr::translate_sql(!! rlang::parse_expr(filter_stmt),
-                               con=connection)
+  sql <- dbplyr::translate_sql(!!rlang::parse_expr(filter_stmt),
+    con = connection
+  )
   DBI::dbDisconnect(connection)
   gsub("\"(.*?)\"", "\\[\\1]", sql)
 }

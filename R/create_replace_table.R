@@ -435,7 +435,7 @@ clean_column_names <- function(input_df, table_name) {
     replacement = "_"
   ))
   # Make unique by numbering duplicates
-  column_names <- make.unique(column_names, sep="")
+  column_names <- make.unique(column_names, sep = "")
   # Assign and return df
   colnames(input_df) <- column_names
   input_df
