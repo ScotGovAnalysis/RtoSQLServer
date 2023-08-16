@@ -13,7 +13,8 @@ test_that("select sql works", {
   select_list <- "[col_a], [col_b]"
 
   filter_ex <- dbplyr::translate_sql(col_a == "test1" & col_b == "test2",
-                                     con = dbplyr::simulate_mssql())
+    con = dbplyr::simulate_mssql()
+  )
 
   filter_ex <- gsub("(`|\")([^=]*)\\1", "[\\2]", filter_ex)
 

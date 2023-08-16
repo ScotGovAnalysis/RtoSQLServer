@@ -36,7 +36,7 @@ write_dataframe_to_db(
 # In this example we are just appending the same dataframe to the existing
 # table.
 # Must ensure the existing table and the dataframe to be appended hold the same
-#columns
+# columns
 # If specified append_to_existing=FALSE then the existing table is overwritten
 
 write_dataframe_to_db(

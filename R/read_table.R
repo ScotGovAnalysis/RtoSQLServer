@@ -68,7 +68,7 @@ create_read_sql <- function(server,
 #'   server = "my_server",
 #'   table_name = "my_table",
 #'   columns = c("column1", "column2"),
-#'   filter_stmt = "column1 < 5 & column2 == 'b'")
+#'   filter_stmt = "column1 < 5 & column2 == 'b'"
 #' )
 #' }
 read_table_from_db <- function(database,

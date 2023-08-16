@@ -190,7 +190,7 @@ compatible_cols <- function(existing_col_type,
     return("missing sql")
   } else if (is.na(to_load_col_type)) {
     return("missing df")
-  }else if (existing_col_type == to_load_col_type) {
+  } else if (existing_col_type == to_load_col_type) {
     return("compatible")
   } else if (!(grepl("nvarchar", existing_col_type) &&
     grepl("nvarchar", to_load_col_type)
