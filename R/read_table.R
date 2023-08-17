@@ -15,6 +15,7 @@ format_filter <- function(server, database, filter_stmt) {
     con = connection
   )
   DBI::dbDisconnect(connection)
+  sql <- as.character(sql)
   gsub("(`|\")([^=]*)\\1", "[\\2]", sql)
 }
 
