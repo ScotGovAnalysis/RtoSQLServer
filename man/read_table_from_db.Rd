@@ -43,7 +43,7 @@ read_table_from_db(
   server = "my_server",
   table_name = "my_table",
   columns = c("column1", "column2"),
-  filter_stmt = "column1 < 5 & column2 == 'b'")
+  filter_stmt = "column1 < 5 & column2 == 'b'"
 )
 }
 }
