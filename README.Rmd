@@ -44,9 +44,9 @@ remotes::install_local("C:/temp/RtoSQLServer-main.zip", upgrade="never")
 
 As well as loading R dataframes into SQL Server databases, functions are also currently available to: 
 
-- Select all rows of specific columns of a database table.
+- Read a database table into an R dataframe, optionally specifying a subset of table columns or row filter.
 - Drop a table from the database.
-- Run any other input sql in the database and return dataframe if a select statement.  
+- Run any other input sql in the database and return a dataframe if a select statement.  
 
 It is recommend to ensure using the latest versions of [Rcpp](https://cran.r-project.org/web/packages/Rcpp/index.html), [odbc](https://cran.r-project.org/web/packages/odbc/index.html) and [DBI](https://cran.r-project.org/web/packages/DBI/index.html). If using Windows in a secure environment install these from source or a Windows binary compiled at the version of R you are using.
 
@@ -137,8 +137,28 @@ drop_table_from_db(
   table_name = "test_r_tbl"
 )
 ```
+## Read database table with column or row filtering
+The `read_table_from_db` function includes optional arguments so you can read only specific columns into an R dataframe or so you can filter which rows are read.  
 
-## Why use this package
+To select only specific columns, specify a vector of column_names for example `c("Sepal_Length", "Species")` for the `columns` argument of `read_table_from_db`.  
+
+To select only specific rows, specify a filter string using R syntax (not SQL syntax) for the `filter_stmt` argument. For example `"(Species == 'setosa' | Species == 'virginica') & Sepal_Length > 5.0"`. The function will convert this to SQL.
+
+Here's a full example of both column and row selection using the `columns` and `filter_stmt` arguments of `read_table_from_db` for a copy of the iris data loaded into the database:
+
+```{r eval=FALSE}
+db_test_iris <- read_table_from_db(
+  server = server,
+  database = database,
+  schema = schema,
+  table_name = "test_iris",
+  columns = c("Sepal_Length", "Species"),
+  filter_stmt = "(Species == 'setosa' | Species == 'virginica') & Sepal_Length > 5.0"
+)
+```
+If you are comfortable with SQL, you may prefer to use the `execute_sql` function where a SQL select statement can be input to return an R dataframe from a database.
+
+## Background Information - Why use this package
 The `RtoSQLServer` package relies on `DBI` and `odbc` packages for its database functionality, however you should consider using it instead of `DBI` or `odbc` for the following reasons:
 
 #### Importing large dataframes
