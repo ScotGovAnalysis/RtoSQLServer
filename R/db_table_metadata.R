@@ -20,7 +20,18 @@
 #' )
 #' }
 db_table_metadata <- function(server, database, schema, table_name) {
-  sql <- paste0("SET NOCOUNT ON;
+  if (!check_table_exists(
+    server,
+    database,
+    schema,
+    table_name
+  )) {
+    stop(glue::glue(
+      "Table: {schema}.{table_name} does not exist in the database."
+    ))
+  }
+  sql <- paste0("
+                SET NOCOUNT ON;
                 DECLARE	@table_catalog nvarchar(128) = '", database, "',
                 @table_schema nvarchar(128) = '", schema, "',
                 @table_name nvarchar(128) = '", table_name, "';
@@ -28,12 +39,14 @@ db_table_metadata <- function(server, database, schema, table_name) {
                 @param_definition nvarchar(500),
                 @column_name nvarchar(128),
                 @data_type nvarchar(128),
+                @row_count int,
                 @null_count int,
                 @distinct_values int,
                 @minimum_value nvarchar(225),
                 @maximum_value nvarchar(225);
                 DECLARE @T1 AS TABLE	(column_name nvarchar(128),
                 data_type nvarchar(128),
+                row_count int,
                 NullCount int,
                 DistinctValues int,
                 MinimumValue nvarchar(255),
@@ -54,7 +67,10 @@ db_table_metadata <- function(server, database, schema, table_name) {
                 WHILE @@FETCH_STATUS = 0
                 BEGIN
                 SET @sql_statement =
-                CONCAT(N'SET @null_countOUT =
+                CONCAT(N'SET @row_count_out =
+                (SELECT COUNT(*) FROM [', @table_catalog, '].
+                [', @table_schema, '].[', @table_name, '])
+                SET @null_countOUT =
                 (SELECT COUNT(*)
                 FROM [', @table_catalog, '].
                 [', @table_schema, '].[', @table_name, ']
@@ -88,19 +104,22 @@ db_table_metadata <- function(server, database, schema, table_name) {
                 'SET @minimum_valueOUT = NULL
                 SET @maximum_valueOUT = NULL');
                 END
-                SET @param_definition = N'@null_countOUT int OUTPUT,
+                SET @param_definition = N'@row_count_out int OUTPUT,
+                @null_countOUT int OUTPUT,
                 @distinct_valuesOUT int OUTPUT,
                 @minimum_valueOUT nvarchar(255) OUTPUT,
                 @maximum_valueOUT nvarchar(255) OUTPUT';
                 print(@sql_statement)
                 EXECUTE sp_executesql	@sql_statement,
                 @param_definition,
+                @row_count_out = @row_count OUTPUT,
                 @null_countOUT = @null_count OUTPUT,
                 @distinct_valuesOUT = @distinct_values OUTPUT,
                 @minimum_valueOUT = @minimum_value OUTPUT,
                 @maximum_valueOUT = @maximum_value OUTPUT;
                 UPDATE @T1
-                SET NullCount = @null_count,
+                SET row_count = @row_count,
+                NullCount = @null_count,
                 DistinctValues = @distinct_values,
                 MinimumValue = @minimum_value,
                 MaximumValue = @maximum_value
@@ -110,7 +129,8 @@ db_table_metadata <- function(server, database, schema, table_name) {
                 END
                 CLOSE column_cursor;
                 DEALLOCATE column_cursor;
-                SELECT * FROM @T1;")
+                SELECT * FROM @T1;
+                ")
   data <- execute_sql(
     server = server,
     database = database,
