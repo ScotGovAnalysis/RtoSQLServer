@@ -13,9 +13,10 @@ database <- "admdemothemeadmdemotopic"
 schema <- "admdemodataitem"
 
 
-# Write a new dataframe to the database -----------------------------------------
+# Write a new dataframe to the database --------------------------------------
 
-#  NOTE: When loading, make sure the table_name specified above only contains chracters, numbers and _ (this will be automatically corrected if not)
+#  NOTE: When loading, make sure the table_name specified above only contains
+# chracters, numbers and _ (this will be automatically corrected if not)
 
 
 write_dataframe_to_db(
@@ -25,15 +26,17 @@ write_dataframe_to_db(
   table_name = "test_iris",
   dataframe = test_iris,
   append_to_existing = FALSE, # Set as FALSE to overwrite table if exists
-  batch_size = 1e5, # Set as any integer or leave as default if less than about 100 K rows
+  batch_size = 1e5, # Set as any integer or leave as default
   versioned_table = FALSE
 ) # Unless definitely need history table, set as FALSE (default)
 
 
 # Append to existing table in the database --------------------------------
 
-# In this example we are just appending the same dataframe to the existing table.
-# Must ensure the existing table and the dataframe to be appended hold the same columns
+# In this example we are just appending the same dataframe to the existing
+# table.
+# Must ensure the existing table and the dataframe to be appended hold the same
+# columns
 # If specified append_to_existing=FALSE then the existing table is overwritten
 
 write_dataframe_to_db(
@@ -42,8 +45,8 @@ write_dataframe_to_db(
   schema = schema,
   table_name = "test_iris",
   dataframe = test_iris,
-  append_to_existing = TRUE, # Setting this as TRUE ensures append to existing - default is FALSE
-  batch_size = 1e5, # Set as any integer or leave as default if less than about 100 K rows
+  append_to_existing = TRUE, # Setting this as TRUE ensures append to existing
+  batch_size = 1e5, # Set as any integer or leave as default
   versioned_table = FALSE
 ) # Unless definitely need history table, set as FALSE (default)
 

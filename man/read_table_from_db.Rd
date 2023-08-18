@@ -2,9 +2,16 @@
 % Please edit documentation in R/read_table.R
 \name{read_table_from_db}
 \alias{read_table_from_db}
-\title{Read a SQL Server table into an R dataframe,}
+\title{Read a SQL Server table into an R dataframe.}
 \usage{
-read_table_from_db(database, server, schema, table_name, columns = NULL)
+read_table_from_db(
+  database,
+  server,
+  schema,
+  table_name,
+  columns = NULL,
+  filter_stmt = NULL
+)
 }
 \arguments{
 \item{database}{Database containing table to read.}
@@ -16,12 +23,18 @@ read_table_from_db(database, server, schema, table_name, columns = NULL)
 \item{table_name}{Name of table in database to read.}
 
 \item{columns}{Optional vector of column names to select.}
+
+\item{filter_stmt}{Optional filter statement - this should be a character
+expression in the format of a \code{\link[dplyr:filter]{dplyr::filter()}} query,
+for example \code{"Species == 'virginica'"} and it will be translated to SQL
+using \code{\link[dbplyr:translate_sql]{dbplyr::translate_sql()}}.}
 }
 \value{
 Dataframe of table.
 }
 \description{
-Read a SQL Server table into an R dataframe,
+If you are confident in writing SQL you may prefer to
+use the \code{\link[=execute_sql]{execute_sql()}} function instead.
 }
 \examples{
 \dontrun{
@@ -29,7 +42,8 @@ read_table_from_db(
   database = "my_database",
   server = "my_server",
   table_name = "my_table",
-  columns = c("column1", "column2")
+  columns = c("column1", "column2"),
+  filter_stmt = "column1 < 5 & column2 == 'b'"
 )
 }
 }

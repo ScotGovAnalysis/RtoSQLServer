@@ -34,7 +34,6 @@ create_drop_sql <- function(server,
                             table_name,
                             versioned_table) {
   if (versioned_table) {
-
     # Check is versioned table regardless of versioned_table input arg
     check_sql <- create_check_sql(schema, table_name)
     check_df <- execute_sql(
@@ -45,14 +44,10 @@ create_drop_sql <- function(server,
     )
     if (is_versioned(check_df)) {
       drop_sql <- create_drop_sql_versioned(schema, table_name)
-    }
-    # In case use the versioned_table argument as TRUE but not versioned table
-    else {
+    } else { # if not actually versioned:
       drop_sql <- create_drop_sql_nonversioned(schema, table_name)
     }
-  }
-  # If versioned_table argument is FALSE
-  else {
+  } else { # If versioned_table argument is FALSE
     drop_sql <- create_drop_sql_nonversioned(schema, table_name)
   }
   return(drop_sql)

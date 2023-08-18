@@ -142,9 +142,9 @@ r_to_sql_character_sizes <- function(max_string) {
   max_string <- as.numeric(max_string)
   if (max_string <= 50) {
     "nvarchar(50)"
-  } else if (max_string > 50 & max_string <= 255) {
+  } else if (max_string > 50 && max_string <= 255) {
     "nvarchar(255)"
-  } else if (max_string > 255 & max_string <= 4000) {
+  } else if (max_string > 255 && max_string <= 4000) {
     "nvarchar(4000)"
   } else {
     "nvarchar(max)"
@@ -164,7 +164,7 @@ r_to_sql_data_type <- function(col_v) {
   r_data_type <- class(col_v)
   if (r_data_type %in% c("character", "factor")) {
     col_v <- as.character(col_v) # to ensure factor cols are character
-    max_string <- max(nchar(col_v), na.rm=TRUE)
+    max_string <- max(nchar(col_v), na.rm = TRUE)
   }
   switch(r_data_type,
     "numeric" = "float",
@@ -185,29 +185,18 @@ get_nvarchar_size <- function(input_char_type) {
 
 compatible_cols <- function(existing_col_type,
                             to_load_col_type) {
-
   # If existing is na then column not in sql db
   if (is.na(existing_col_type)) {
     return("missing sql")
-  }
-
-  # If to load is na then not in to load df
-  else if (is.na(to_load_col_type)) {
+  } else if (is.na(to_load_col_type)) {
     return("missing df")
-  }
-
-  # Identical columns of any type are fine
-  else if (existing_col_type == to_load_col_type) {
+  } else if (existing_col_type == to_load_col_type) {
     return("compatible")
-  }
-  # Else only if both column data_types contain "nvarchar" then proceed
-
-  else if (!(grepl("nvarchar", existing_col_type) &
+  } else if (!(grepl("nvarchar", existing_col_type) &&
     grepl("nvarchar", to_load_col_type)
   )) {
     return("incompatible")
-  }
-  else {
+  } else {
     # Extract the nvarchar column size, e.g. 255 from nvarchar(255)
     existing_col_size <- get_nvarchar_size(existing_col_type)
     to_load_col_size <- get_nvarchar_size(to_load_col_type)
@@ -219,8 +208,7 @@ compatible_cols <- function(existing_col_type,
     <= as.numeric(existing_col_size)) {
       return("compatible") # If neither is max, but existing greater
       # than or equal to load then will be fine
-    }
-    else {
+    } else {
       return("resize") # If neither is max, but existing smaller
       # than to load then must resize
     }
