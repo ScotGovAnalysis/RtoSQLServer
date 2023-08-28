@@ -452,6 +452,7 @@ nan_to_na <- function(dataframe) {
       )
     }
   )
+  dataframe
 }
 
 
