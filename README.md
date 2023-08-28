@@ -167,6 +167,9 @@ To select only specific rows, specify a filter string using R syntax
 `"(Species == 'setosa' | Species == 'virginica') & Sepal_Length > 5.0"`.
 The function will convert this to SQL.
 
+If you are unsure of column names in an existing database table, use the
+`db_table_metadata` function to check.
+
 Here’s a full example of both column and row selection using the
 `columns` and `filter_stmt` arguments of `read_table_from_db` for a copy
 of the iris data loaded into the database:
