@@ -144,6 +144,8 @@ To select only specific columns, specify a vector of column_names for example `c
 
 To select only specific rows, specify a filter string using R syntax (not SQL syntax) for the `filter_stmt` argument. For example `"(Species == 'setosa' | Species == 'virginica') & Sepal_Length > 5.0"`. The function will convert this to SQL.
 
+If you are unsure of column names in an existing database table, use the `db_table_metadata` function to check.
+
 Here's a full example of both column and row selection using the `columns` and `filter_stmt` arguments of `read_table_from_db` for a copy of the iris data loaded into the database:
 
 ```{r eval=FALSE}
