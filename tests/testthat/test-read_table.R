@@ -13,6 +13,15 @@ test_that("select sql works", {
 
   select_list <- table_select_list(c("col_a", "col_b"), DBI::ANSI())
 
+  filter_ex <- dbplyr::translate_sql(col_a == "test1" & col_b == "test2",
+                                     con = dbplyr::simulate_mssql()
+  )
+
+  filter_ex <- gsub("`", "\"", filter_ex)
+
+  mockery::stub(create_read_sql, "format_filter", filter_ex)
+
+
   expect_equal(as.character(create_read_sql(
     connection = DBI::ANSI(),
     schema = "test_schema",
