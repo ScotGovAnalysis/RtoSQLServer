@@ -1,8 +1,10 @@
 test_that("column formatting works", {
   test_cols <- "\"col_a\", \"col_b\""
   cols <- c("col_a", "col_b")
-  expect_equal(as.character(table_select_list(cols, connection = DBI::ANSI())),
-               test_cols)
+  expect_equal(
+    as.character(table_select_list(cols, connection = DBI::ANSI())),
+    test_cols
+  )
 })
 
 test_that("select sql works", {
@@ -14,7 +16,7 @@ test_that("select sql works", {
   select_list <- table_select_list(c("col_a", "col_b"), DBI::ANSI())
 
   filter_ex <- dbplyr::translate_sql(col_a == "test1" & col_b == "test2",
-                                     con = dbplyr::simulate_mssql()
+    con = dbplyr::simulate_mssql()
   )
 
   filter_ex <- gsub("`", "\"", filter_ex)

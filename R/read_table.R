@@ -22,7 +22,8 @@ create_read_sql <- function(connection,
                             select_list,
                             table_name,
                             filter_stmt) {
-  schema_tbl <- DBI::dbQuoteIdentifier(connection,
+  schema_tbl <- DBI::dbQuoteIdentifier(
+    connection,
     DBI::Id(schema = schema, table = table_name)
   )
   initial_sql <- glue::glue_sql(
