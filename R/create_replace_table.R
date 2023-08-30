@@ -441,6 +441,20 @@ clean_column_names <- function(input_df, table_name) {
   input_df
 }
 
+# NaN values cause loading issues, convert them to NA
+nan_to_na <- function(dataframe) {
+  dataframe[] <- lapply(
+    colnames(dataframe),
+    function(x) {
+      replace(
+        dataframe[[x]],
+        is.nan(dataframe[[x]]), NA
+      )
+    }
+  )
+  dataframe
+}
+
 
 #' Write an R dataframe to SQL Server table optionally with system
 #' versioning on.
@@ -497,6 +511,8 @@ write_dataframe_to_db <- function(server,
   table_name <- clean_table_name(table_name)
   # Clean df column names
   dataframe <- clean_column_names(dataframe, table_name)
+  # Replace NaN values with NA
+  dataframe <- nan_to_na(dataframe)
   # Create staging table
   create_staging_table(db_params, dataframe)
   # Check if target table already exists
