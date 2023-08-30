@@ -1,37 +1,37 @@
-table_select_list <- function(columns) {
+# Safer select column list using dbQuoteIdentifier
+table_select_list <- function(columns, connection) {
   if (is.null(columns)) {
     "*"
   } else {
-    glue::glue_collapse(glue::glue("[{columns}]"), sep = ", ")
+    glue::glue_sql_collapse(DBI::dbQuoteIdentifier(connection, columns),
+      sep = ", "
+    )
   }
 }
 
-format_filter <- function(server, database, filter_stmt) {
-  connection <- create_sqlserver_connection(
-    server = server,
-    database = database
-  )
+
+format_filter <- function(connection, filter_stmt) {
   sql <- dbplyr::translate_sql(!!rlang::parse_expr(filter_stmt),
     con = connection
   )
   DBI::dbDisconnect(connection)
   sql <- as.character(sql)
-  gsub("(`|\")([^=]*)\\1", "[\\2]", sql)
 }
 
-create_read_sql <- function(server,
-                            database,
+create_read_sql <- function(connection,
                             schema,
                             select_list,
                             table_name,
                             filter_stmt) {
-  initial_sql <- glue::glue(
-    "SELECT {select_list}",
-    "FROM [{schema}].[{table_name}]",
-    .sep = " "
+  schema_tbl <- DBI::dbQuoteIdentifier(connection,
+    DBI::Id(schema = schema, table = table_name)
+  )
+  initial_sql <- glue::glue_sql(
+    "SELECT {`select_list`} FROM {`schema_tbl`}",
+    .con = connection
   )
   if (!is.null(filter_stmt)) {
-    filter_stmt <- format_filter(server, database, filter_stmt)
+    filter_stmt <- format_filter(connection, filter_stmt)
     glue::glue(
       initial_sql,
       "WHERE {filter_stmt};",
@@ -88,11 +88,15 @@ read_table_from_db <- function(database,
       "Table: {schema}.{table_name} does not exist in the database."
     ))
   }
-  select_list <- table_select_list(columns)
+  connection <- create_sqlserver_connection(
+    server = server,
+    database = database
+  )
+
+  select_list <- table_select_list(columns, connection)
 
   read_sql <- create_read_sql(
-    server,
-    database,
+    connection,
     schema,
     select_list,
     table_name,
