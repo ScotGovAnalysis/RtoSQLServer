@@ -14,7 +14,6 @@ format_filter <- function(connection, filter_stmt) {
   sql <- dbplyr::translate_sql(!!rlang::parse_expr(filter_stmt),
     con = connection
   )
-  DBI::dbDisconnect(connection)
   sql <- as.character(sql)
 }
 
@@ -102,6 +101,7 @@ read_table_from_db <- function(database,
     table_name,
     filter_stmt
   )
+  DBI::dbDisconnect(connection)
   message(glue::glue("Read SQL statement:\n{read_sql}"))
   execute_sql(
     database = database, server =
