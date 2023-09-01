@@ -125,3 +125,11 @@ check_table_exists <- function(server,
   nrow(all_tables[all_tables$Schema == schema &
     all_tables$Name == table_name, ]) == 1
 }
+
+# Prevent SQL injection with quoted schema table name construction
+quoted_schema_tbl <- function(schema, table_name) {
+  DBI::dbQuoteIdentifier(
+    DBI::ANSI(),
+    DBI::Id(schema = schema, table = table_name)
+  )
+}
