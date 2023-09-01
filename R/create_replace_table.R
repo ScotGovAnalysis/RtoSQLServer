@@ -149,9 +149,10 @@ check_existing_table <- function(db_params,
 alter_sql_character_col <- function(db_params,
                                     column_name,
                                     new_char_type) {
-  sql <- glue::glue("ALTER TABLE [{db_params$schema}].[{db_params$table_name}]",
-    "ALTER COLUMN [{column_name}] {new_char_type};",
-    .sep = " "
+  sql <- glue::glue_sql("ALTER TABLE ",
+    "{`quoted_schema_tbl(db_params$schema, db_params$table_name)`} ",
+    "ALTER COLUMN {`column_name`} {DBI::SQL(new_char_type)};",
+    .con = DBI::ANSI()
   )
 
   execute_sql(
@@ -172,33 +173,40 @@ id_col_name <- function(table_name) {
 }
 
 sql_create_table <- function(schema, table_name, metadata_df) {
-  sql <- glue::glue("CREATE TABLE [{schema}].[{table_name}]",
-    "([{id_col_name(table_name)}] INT NOT NULL IDENTITY PRIMARY KEY,",
-    .sep = " "
+  metadata_df <- metadata_df[
+    metadata_df$column_name != paste0(table_name, "ID"),
+  ]
+
+  initial_sql <- glue::glue_sql("CREATE TABLE ",
+    "{`quoted_schema_tbl(schema, table_name)`} (",
+    "{`id_col_name(table_name)`} INT NOT NULL IDENTITY PRIMARY KEY,",
+    .con = DBI::ANSI()
   )
-  for (row in seq_len(nrow(metadata_df))) {
-    if (metadata_df[row, "column_name"] != paste0(table_name, "ID")) {
-      column_name <- metadata_df[row, "column_name"]
-      data_type <- metadata_df[row, "data_type"]
-      sql <- glue::glue(sql, "[{column_name}] {data_type},", .sep = " ")
-    }
-  }
-  glue::glue(substr(sql, 1, nchar(sql) - 1), ");")
+
+  col_sql <- glue::glue_sql_collapse(
+    glue::glue_data_sql("{`column_name`} {DBI::SQL(data_type)},",
+      .con = DBI::ANSI(), .x = metadata_df
+    ),
+    sep = " "
+  )
+
+  glue::glue_sql(initial_sql, substr(col_sql, 1, nchar(col_sql) - 1), ");")
 }
 
 
 sql_versioned_table <- function(sql, db_params) {
-  # To remove the trailing );
-  sql <- substr(sql, 1, nchar(sql) - 2)
-  sql <- glue::glue(sql, ",")
+  # To remove the trailing ); and replace with ,
+  sql <- glue::glue_sql(substr(sql, 1, nchar(sql) - 2), ",")
+  history_table <- quoted_schema_tbl(db_params$schema,
+                            glue::glue(db_params$table_name, "History"))
   # The versioned table sql
-  glue::glue(sql,
-    "SysStartTime DATETIME2 GENERATED ALWAYS AS ROW START NOT NULL,",
-    "SysEndTime DATETIME2 GENERATED ALWAYS AS ROW END NOT NULL,",
-    "PERIOD FOR SYSTEM_TIME (SysStartTime, SysEndTime))",
-    "WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE =",
-    "[{db_params$schema}].[{db_params$table_name}History]));",
-    .sep = " "
+  glue::glue_sql(sql,
+    " \"SysStartTime\" DATETIME2 GENERATED ALWAYS AS ROW START NOT NULL, ",
+    " \"SysEndTime\" DATETIME2 GENERATED ALWAYS AS ROW END NOT NULL, ",
+    "PERIOD FOR SYSTEM_TIME (SysStartTime, SysEndTime)) ",
+    "WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE = ",
+    "{`history_table`}));",
+    .con = DBI::ANSI()
   )
 }
 
