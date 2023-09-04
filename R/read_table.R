@@ -84,12 +84,15 @@ create_read_sql <- function(connection,
 #' @param table_name Name of table in database to read.
 #' @param columns Optional vector of column names to select.
 #' @param filter_stmt Optional filter statement - this should be a character
-#' @param include_pk Whether to include primary key column in output dataframe.
-#' The primary key is added automatically when a table is loaded into the
-#' database as <table_name>ID. Defaults to FALSE.
 #' expression in the format of a [dplyr::filter()] query,
 #' for example `"Species == 'virginica'"` and it will be translated to SQL
-#' using [dbplyr::translate_sql()].
+#' using [dbplyr::translate_sql()]. One way to achieve the right
+#' syntax for this argument is to pass a [dplyr::filter()] expression
+#' through `deparse1(substitute())`, for example
+#' `deparse1(substitute(Species == "virginica"))`
+#' @param include_pk Whether to include primary key column in output dataframe.
+#' A primary key  column is added automatically when a table is loaded into the
+#' database using `create_replace_table` as <table_name>ID. Defaults to FALSE.
 #'
 #' @return Dataframe of table.
 #' @export
@@ -121,6 +124,8 @@ read_table_from_db <- function(database,
       "Table: {schema}.{table_name} does not exist in the database."
     ))
   }
+
+  # Use a genuine connection, so the filter translation SQL is correct
   connection <- create_sqlserver_connection(
     server = server,
     database = database
