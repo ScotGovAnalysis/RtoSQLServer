@@ -243,7 +243,7 @@ create_staging_table <- function(db_params, dataframe) {
     FALSE
   )
   message(glue::glue(
-    "Table: {db_params$schema}.{db_params$table_name}_staging_",
+    "Table: {db_params$schema}.{staging_name}",
     "successfully created in database.",
     .sep = " "
   ))
@@ -314,16 +314,11 @@ create_insert_sql <- function(db_params, metadata_df) {
   metadata_df <- metadata_df[metadata_df$column_name !=
     paste0(db_params$table_name, "ID"), ]
 
-  column_selects <- glue::glue_collapse(
-    glue::glue_data(metadata_df, "[{column_name}]"), ", "
-  )
-
-
-  glue::glue(
-    "INSERT INTO [{db_params$schema}].[{db_params$table_name}]",
-    "({column_selects}) select {column_selects} from",
-    "[{db_params$schema}].[{db_params$table_name}_staging_];",
-    .sep = " "
+  glue::glue_sql(
+    "INSERT INTO {`quoted_schema_tbl(db_params$schema, db_params$table_name)`} ",
+    "({`metadata_df$column_name`*}) select {`metadata_df$column_name`*} from ",
+    "{`quoted_schema_tbl(db_params$schema, paste0(db_params$table_name,'_staging_'))`};",
+    .con = DBI::ANSI()
   )
 }
 
