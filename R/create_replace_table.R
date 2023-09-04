@@ -202,7 +202,7 @@ sql_versioned_table <- function(sql, db_params) {
   # The versioned table sql
   glue::glue_sql(sql,
     " \"SysStartTime\" DATETIME2 GENERATED ALWAYS AS ROW START NOT NULL, ",
-    " \"SysEndTime\" DATETIME2 GENERATED ALWAYS AS ROW END NOT NULL, ",
+    "\"SysEndTime\" DATETIME2 GENERATED ALWAYS AS ROW END NOT NULL, ",
     "PERIOD FOR SYSTEM_TIME (SysStartTime, SysEndTime)) ",
     "WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE = ",
     "{`history_table`}));",
