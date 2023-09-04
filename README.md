@@ -181,9 +181,16 @@ db_test_iris <- read_table_from_db(
   schema = schema,
   table_name = "test_iris",
   columns = c("Sepal_Length", "Species"),
-  filter_stmt = "(Species == 'setosa' | Species == 'virginica') & Sepal_Length > 5.0"
+  filter_stmt = "(Species == 'setosa' | Species == 'virginica') & Sepal_Length > 5.0",
+  include_pk = FALSE
 )
 ```
+
+For the `filter_stmt` argument, this should be passed as a string. If
+you find the syntax confusing when wrapping your filter within quotation
+marks, then instead try using `deparse1(substitute())`. For example, the
+above filter example could be passed as
+`deparse1(substitute((Species == 'setosa' | Species == 'virginica') & Sepal_Length > 5.0))`.
 
 If you are comfortable with SQL, you may prefer to use the `execute_sql`
 function where a SQL select statement can be input to return an R

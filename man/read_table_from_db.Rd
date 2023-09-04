@@ -25,13 +25,17 @@ read_table_from_db(
 
 \item{columns}{Optional vector of column names to select.}
 
-\item{filter_stmt}{Optional filter statement - this should be a character
+\item{filter_stmt}{Optional filter statement to only read a subset of
+rows from the specified database table.
+\itemize{
+\item this should be a character
 expression in the format of a \code{\link[dplyr:filter]{dplyr::filter()}} query,
 for example \code{"Species == 'virginica'"} and it will be translated to SQL
 using \code{\link[dbplyr:translate_sql]{dbplyr::translate_sql()}}. One way to achieve the right
 syntax for this argument is to pass a \code{\link[dplyr:filter]{dplyr::filter()}} expression
 through \code{deparse1(substitute())}, for example
-\code{deparse1(substitute(Species == "virginica"))}}
+\code{deparse1(substitute(Species == "virginica"))}
+}}
 
 \item{include_pk}{Whether to include primary key column in output dataframe.
 A primary key  column is added automatically when a table is loaded into the
