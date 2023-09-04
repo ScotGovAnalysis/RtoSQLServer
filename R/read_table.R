@@ -83,7 +83,9 @@ create_read_sql <- function(connection,
 #' @param schema Name of database schema containing table to read.
 #' @param table_name Name of table in database to read.
 #' @param columns Optional vector of column names to select.
-#' @param filter_stmt Optional filter statement - this should be a character
+#' @param filter_stmt Optional filter statement to only read a subset of
+#' rows from the specified database table.
+#'  - this should be a character
 #' expression in the format of a [dplyr::filter()] query,
 #' for example `"Species == 'virginica'"` and it will be translated to SQL
 #' using [dbplyr::translate_sql()]. One way to achieve the right
