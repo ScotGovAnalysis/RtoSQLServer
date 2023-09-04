@@ -125,3 +125,30 @@ check_table_exists <- function(server,
   nrow(all_tables[all_tables$Schema == schema &
     all_tables$Name == table_name, ]) == 1
 }
+
+# Prevent SQL injection with quoted schema table name construction
+quoted_schema_tbl <- function(schema, table_name) {
+  DBI::dbQuoteIdentifier(
+    DBI::ANSI(),
+    DBI::Id(schema = schema, table = table_name)
+  )
+}
+
+# Get primary key
+get_pk_name <- function(server,
+                        database,
+                        schema,
+                        table_name) {
+  sql <- glue::glue_sql(
+    "select C.COLUMN_NAME FROM
+    INFORMATION_SCHEMA.TABLE_CONSTRAINTS T
+    JOIN INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE C
+    ON C.CONSTRAINT_NAME = T.CONSTRAINT_NAME
+    WHERE  C.TABLE_NAME = {table_name}
+    AND T.CONSTRAINT_SCHEMA = {schema}
+    AND T.CONSTRAINT_TYPE = 'PRIMARY KEY';",
+    .con = DBI::ANSI()
+  )
+  df <- execute_sql(server, database, sql, output = TRUE)
+  df$COLUMN_NAME
+}

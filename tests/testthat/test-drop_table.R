@@ -9,12 +9,12 @@ test_that("versioned drop sql created correctly", {
     temporal_type_desc = "SYSTEM_VERSIONED_TEMPORAL_TABLE"
   )
 
-  drop_ver_sql <- paste0(
-    "ALTER TABLE [test_schema].[test_tbl] ",
-    "SET ( SYSTEM_VERSIONING = OFF ); ",
-    "DROP TABLE [test_schema].[test_tbl]; ",
-    "DROP TABLE [test_schema].[test_tblHistory];"
-  )
+  drop_ver_sql <- DBI::SQL(paste0(
+    "ALTER TABLE \"test_schema\".\"test_tbl\" ",
+    "SET ( SYSTEM_VERSIONING = OFF );",
+    "DROP TABLE \"test_schema\".\"test_tbl\";",
+    "DROP TABLE \"test_schema\".\"test_tblHistory\";"
+  ))
 
   mockery::stub(create_drop_sql, "execute_sql", check_df)
 
@@ -28,7 +28,7 @@ test_that("non-versioned drop sql created correctly", {
     temporal_type_desc = "NOT APPLICABLE"
   )
 
-  drop_nonver_sql <- "DROP TABLE [test_schema].[test_tbl];"
+  drop_nonver_sql <- DBI::SQL("DROP TABLE \"test_schema\".\"test_tbl\";")
 
   mockery::stub(create_drop_sql, "execute_sql", check_df)
 
@@ -42,7 +42,7 @@ test_that("user error non-versioned drop sql created correctly", {
     temporal_type_desc = "NOT APPLICABLE"
   )
 
-  drop_nonver_sql <- "DROP TABLE [test_schema].[test_tbl];"
+  drop_nonver_sql <- DBI::SQL("DROP TABLE \"test_schema\".\"test_tbl\";")
 
   mockery::stub(create_drop_sql, "execute_sql", check_df)
 

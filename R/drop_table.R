@@ -1,25 +1,29 @@
 # sql to check if versioned table
 create_check_sql <- function(schema, table_name) {
-  glue::glue(
+  glue::glue_sql(
     "select name, temporal_type_desc from sys.tables where name = ",
-    "'{table_name}' and schema_name(schema_id) = '{schema}';"
+    "{table_name} and schema_name(schema_id) = {schema};",
+    .con = DBI::ANSI()
   )
 }
 
 
 # create versioned table sql
 create_drop_sql_versioned <- function(schema, table_name) {
-  glue::glue("ALTER TABLE [{schema}].[{table_name}]",
+  history_table <- quoted_schema_tbl(schema, glue::glue(table_name, "History"))
+  glue::glue_sql("ALTER TABLE {`quoted_schema_tbl(schema, table_name)`} ",
     "SET ( SYSTEM_VERSIONING = OFF );",
-    "DROP TABLE [{schema}].[{table_name}];",
-    "DROP TABLE [{schema}].[{table_name}History];",
-    .sep = " "
+    "DROP TABLE {`quoted_schema_tbl(schema, table_name)`};",
+    "DROP TABLE {`history_table`};",
+    .con = DBI::ANSI()
   )
 }
 
 # create non versioned table sql
 create_drop_sql_nonversioned <- function(schema, table_name) {
-  glue::glue("DROP TABLE [{schema}].[{table_name}];")
+  glue::glue_sql("DROP TABLE {`quoted_schema_tbl(schema, table_name)`};",
+    .con = DBI::ANSI()
+  )
 }
 
 # Ensure a versioned table based on metadata

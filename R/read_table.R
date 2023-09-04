@@ -1,11 +1,44 @@
-# Safer select column list using dbQuoteIdentifier
-table_select_list <- function(columns, connection) {
-  if (is.null(columns)) {
-    "*"
+table_select_list <- function(server,
+                              database,
+                              schema,
+                              table_name,
+                              columns,
+                              include_pk) {
+  # all column names found in existing table
+  existing_cols <- db_table_metadata(
+    server,
+    database,
+    schema,
+    table_name
+  )$column_name
+
+  # Get the primary key column name
+  pk <- get_pk_name(server, database, schema, table_name)
+
+  # if user specified column list - add pk to it if they've set to TRUE
+  if (!is.null(columns)) {
+    if (include_pk) {
+      if (!pk %in% columns) {
+        columns <- c(pk, columns)
+      }
+    }
+    # check the columns all exist, if not fail
+    not_exist_cols <- setdiff(columns, existing_cols)
+    if (length(not_exist_cols) > 0) {
+      stop(glue::glue(
+        "Column {not_exist_cols} not found in {schema}.{table_name}."
+      ))
+    } else {
+      return(columns)
+    }
+
+    # where no user specified list of columns
   } else {
-    glue::glue_sql_collapse(DBI::dbQuoteIdentifier(connection, columns),
-      sep = ", "
-    )
+    if (!include_pk) {
+      return(existing_cols[existing_cols != pk])
+    } else {
+      return(existing_cols)
+    }
   }
 }
 
@@ -22,12 +55,8 @@ create_read_sql <- function(connection,
                             select_list,
                             table_name,
                             filter_stmt) {
-  schema_tbl <- DBI::dbQuoteIdentifier(
-    connection,
-    DBI::Id(schema = schema, table = table_name)
-  )
   initial_sql <- glue::glue_sql(
-    "SELECT {`select_list`} FROM {`schema_tbl`}",
+    "SELECT {`select_list`*} FROM {`quoted_schema_tbl(schema, table_name)`}",
     .con = connection
   )
   if (!is.null(filter_stmt)) {
@@ -54,10 +83,18 @@ create_read_sql <- function(connection,
 #' @param schema Name of database schema containing table to read.
 #' @param table_name Name of table in database to read.
 #' @param columns Optional vector of column names to select.
-#' @param filter_stmt Optional filter statement - this should be a character
+#' @param filter_stmt Optional filter statement to only read a subset of
+#' rows from the specified database table.
+#'  - this should be a character
 #' expression in the format of a [dplyr::filter()] query,
 #' for example `"Species == 'virginica'"` and it will be translated to SQL
-#' using [dbplyr::translate_sql()].
+#' using [dbplyr::translate_sql()]. One way to achieve the right
+#' syntax for this argument is to pass a [dplyr::filter()] expression
+#' through `deparse1(substitute())`, for example
+#' `deparse1(substitute(Species == "virginica"))`
+#' @param include_pk Whether to include primary key column in output dataframe.
+#' A primary key  column is added automatically when a table is loaded into the
+#' database using `create_replace_table` as <table_name>ID. Defaults to FALSE.
 #'
 #' @return Dataframe of table.
 #' @export
@@ -77,7 +114,8 @@ read_table_from_db <- function(database,
                                schema,
                                table_name,
                                columns = NULL,
-                               filter_stmt = NULL) {
+                               filter_stmt = NULL,
+                               include_pk = FALSE) {
   if (!check_table_exists(
     server,
     database,
@@ -88,12 +126,21 @@ read_table_from_db <- function(database,
       "Table: {schema}.{table_name} does not exist in the database."
     ))
   }
+
+  # Use a genuine connection, so the filter translation SQL is correct
   connection <- create_sqlserver_connection(
     server = server,
     database = database
   )
 
-  select_list <- table_select_list(columns, connection)
+  select_list <- table_select_list(
+    server,
+    database,
+    schema,
+    table_name,
+    columns,
+    include_pk
+  )
 
   read_sql <- create_read_sql(
     connection,
