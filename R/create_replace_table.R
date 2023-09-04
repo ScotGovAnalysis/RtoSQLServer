@@ -197,8 +197,10 @@ sql_create_table <- function(schema, table_name, metadata_df) {
 sql_versioned_table <- function(sql, db_params) {
   # To remove the trailing ); and replace with ,
   sql <- glue::glue_sql(substr(sql, 1, nchar(sql) - 2), ",")
-  history_table <- quoted_schema_tbl(db_params$schema,
-                            glue::glue(db_params$table_name, "History"))
+  history_table <- quoted_schema_tbl(
+    db_params$schema,
+    glue::glue(db_params$table_name, "History")
+  )
   # The versioned table sql
   glue::glue_sql(sql,
     " \"SysStartTime\" DATETIME2 GENERATED ALWAYS AS ROW START NOT NULL, ",
@@ -315,9 +317,11 @@ create_insert_sql <- function(db_params, metadata_df) {
     paste0(db_params$table_name, "ID"), ]
 
   glue::glue_sql(
-    "INSERT INTO {`quoted_schema_tbl(db_params$schema, db_params$table_name)`} ",
+    "INSERT INTO ",
+    "{`quoted_schema_tbl(db_params$schema, db_params$table_name)`} ",
     "({`metadata_df$column_name`*}) select {`metadata_df$column_name`*} from ",
-    "{`quoted_schema_tbl(db_params$schema, paste0(db_params$table_name,'_staging_'))`};",
+    "{`quoted_schema_tbl(db_params$schema,
+    paste0(db_params$table_name,'_staging_'))`};",
     .con = DBI::ANSI()
   )
 }

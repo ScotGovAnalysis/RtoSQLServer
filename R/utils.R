@@ -138,7 +138,7 @@ quoted_schema_tbl <- function(schema, table_name) {
 get_pk_name <- function(server,
                         database,
                         schema,
-                        table_name){
+                        table_name) {
   sql <- glue::glue_sql(
     "select C.COLUMN_NAME FROM
     INFORMATION_SCHEMA.TABLE_CONSTRAINTS T
