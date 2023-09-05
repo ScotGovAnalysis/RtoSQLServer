@@ -34,7 +34,7 @@ table_select_list <- function(server,
 
     # where no user specified list of columns
   } else {
-    if (!include_pk) {
+    if (!include_pk & !is.null(pk)) {
       return(existing_cols[existing_cols != pk])
     } else {
       return(existing_cols)
