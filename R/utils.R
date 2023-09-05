@@ -150,5 +150,9 @@ get_pk_name <- function(server,
     .con = DBI::ANSI()
   )
   df <- execute_sql(server, database, sql, output = TRUE)
-  df$COLUMN_NAME
+  if (length(df$COLUMN_NAME) > 0) {
+    df$COLUMN_NAME
+  } else {
+    NULL
+  }
 }
