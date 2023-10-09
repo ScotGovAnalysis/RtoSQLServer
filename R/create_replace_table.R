@@ -462,6 +462,14 @@ nan_to_na <- function(dataframe) {
   dataframe
 }
 
+clean_row_names <- function(dataframe){
+  if (.row_names_info(dataframe) >= 0){
+    warning("non-default rownames in input df will not be loaded")
+    rownames(dataframe) <- NULL
+  }
+  dataframe
+}
+
 
 #' Write an R dataframe to SQL Server table optionally with system
 #' versioning on.
@@ -520,6 +528,8 @@ write_dataframe_to_db <- function(server,
   dataframe <- clean_column_names(dataframe, table_name)
   # Replace NaN values with NA
   dataframe <- nan_to_na(dataframe)
+  # Check for and remove rownames
+  dataframe <- clean_row_names(dataframe)
   # Create staging table
   create_staging_table(db_params, dataframe)
   # Check if target table already exists
