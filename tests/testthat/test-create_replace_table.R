@@ -126,3 +126,7 @@ test_that("insert sql created correctly", {
 
   expect_identical(args[[1]][[3]], check_sql)
 })
+
+test_that("non-default rownames removed", {
+  expect_warning(clean_row_names(mtcars))
+})
