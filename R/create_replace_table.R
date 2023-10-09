@@ -462,8 +462,8 @@ nan_to_na <- function(dataframe) {
   dataframe
 }
 
-clean_row_names <- function(dataframe){
-  if (.row_names_info(dataframe) >= 0){
+clean_row_names <- function(dataframe) {
+  if (.row_names_info(dataframe) >= 0) {
     warning("non-default rownames in input df will not be loaded")
     rownames(dataframe) <- NULL
   }
