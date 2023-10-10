@@ -61,7 +61,7 @@ df_to_metadata <- function(dataframe) {
 
 r_to_sql_data_type <- function(col_v) {
   r_data_type <- class(col_v)[1]
-  if (r_data_type %in% c("character", "factor")) {
+  if (r_data_type %in% c("character", "factor", "ordered")) {
     col_v <- as.character(col_v) # to ensure factor cols are character
     max_string <- max(nchar(col_v), na.rm = TRUE)
   }
@@ -70,10 +70,12 @@ r_to_sql_data_type <- function(col_v) {
     "logical" = "bit",
     "character" = r_to_sql_character_sizes(max_string),
     "factor" = r_to_sql_character_sizes(max_string),
+    "ordered" = r_to_sql_character_sizes(max_string),
     "POSIXct" = "datetime2(3)",
     "POSIXlt" = "datetime2(3)",
     "Date" = "datetime2(3)",
-    "integer" = "int"
+    "integer" = "int",
+    "nvarchar(255)"
   )
 }
 
