@@ -1,6 +1,11 @@
 test_that("SQL Server data type mapping works", {
   expect_equal(r_to_sql_data_type(iris$Species), "nvarchar(50)")
   expect_equal(r_to_sql_data_type(iris$Petal.Length), "float")
+  # make a difftime type - not explicitly mapped
+  df <- data.frame(
+    col1 = difftime("2023-10-10 12:00:00", "2023-10-10 11:00:00")
+  )
+  expect_equal(r_to_sql_data_type(df$col1), "nvarchar(255)")
 })
 
 test_that("Compatible character col check works", {
