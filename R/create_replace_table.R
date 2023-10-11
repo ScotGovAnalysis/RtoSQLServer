@@ -520,8 +520,9 @@ write_dataframe_to_db <- function(server,
     batch_size = batch_size,
     versioned_table = versioned_table
   )
-
   start_time <- Sys.time()
+  # Make sure starting with df not tbl etc
+  dataframe <- data.frame(dataframe)
   # Clean table_name in case special characters included
   table_name <- clean_table_name(table_name)
   # Clean df column names
