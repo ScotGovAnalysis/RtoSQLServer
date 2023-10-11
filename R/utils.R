@@ -74,7 +74,7 @@ r_to_sql_data_type <- function(col_v) {
     "POSIXct" = "datetime2(3)",
     "POSIXlt" = "datetime2(3)",
     "Date" = "datetime2(3)",
-    "difftime" = "time",
+    "difftime" = "nvarchar(255)",
     "integer" = "int",
     "nvarchar(255)"
   )
