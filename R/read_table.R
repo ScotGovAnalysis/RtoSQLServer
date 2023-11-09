@@ -1,16 +1,9 @@
-table_select_list <- function(server,
-                              database,
-                              schema,
+table_select_list <- function(table_metadata,
                               table_name,
                               columns,
                               include_pk) {
   # all column names found in existing table
-  existing_cols <- db_table_metadata(
-    server,
-    database,
-    schema,
-    table_name
-  )$column_name
+  existing_cols <- table_metadata$column_name
 
   # Get the primary key column name
   pk <- get_pk_name(server, database, schema, table_name)
@@ -50,13 +43,40 @@ format_filter <- function(connection, filter_stmt) {
   sql <- as.character(sql)
 }
 
+# Cast datetime2 columns to datetime- workaround due to old ODBC client drivers
+cast_if <- function(column_name, datetime_cols) {
+  if (column_name %in% datetime_cols) {
+    return(glue::glue_sql("CAST({`column_name`} AS datetime) ",
+      "AS {`column_name`}",
+      .con = DBI::ANSI()
+    ))
+  } else {
+    return(glue::glue_sql("{`column_name`}", .con = DBI::ANSI()))
+  }
+}
+
+create_select <- function(select_list,
+                          table_metadata) {
+  # Need to know the datetime2 cols to cast them
+  datetime2_cols <- table_metadata[table_metadata$data_type ==
+    "datetime2", "column_name"]
+  with_cast <- vapply(select_list,
+                      cast_if,
+                      FUN.VALUE = character(1),
+                      datetime_cols = datetime2_cols)
+  glue::glue_sql_collapse(with_cast, sep = ", ")
+}
+
+
 create_read_sql <- function(connection,
                             schema,
                             select_list,
                             table_name,
+                            table_metadata,
                             filter_stmt) {
+  column_sql <- create_select(select_list, table_metadata)
   initial_sql <- glue::glue_sql(
-    "SELECT {`select_list`*} FROM {`quoted_schema_tbl(schema, table_name)`}",
+    "SELECT {column_sql} FROM {`quoted_schema_tbl(schema, table_name)`}",
     .con = connection
   )
   if (!is.null(filter_stmt)) {
@@ -133,10 +153,15 @@ read_table_from_db <- function(database,
     database = database
   )
 
-  select_list <- table_select_list(
+  table_metadata <- db_table_metadata(
     server,
     database,
     schema,
+    table_name
+  )
+
+  select_list <- table_select_list(
+    table_metadata,
     table_name,
     columns,
     include_pk
@@ -147,6 +172,7 @@ read_table_from_db <- function(database,
     schema,
     select_list,
     table_name,
+    table_metadata,
     filter_stmt
   )
   DBI::dbDisconnect(connection)
