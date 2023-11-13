@@ -117,9 +117,6 @@ create_read_sql <- function(connection,
 #' @param table_name Name of table in database to read.
 #' @param columns Optional vector of column names to select.
 #' @param filter_stmt Optional filter statement to only read a subset of
-#' @param cast_datetime2 Cast `datetime2` data type columns to `datetime`.
-#' This is to help older ODBC drivers where datetime2 columns are read into R
-#' as character when should be POSIXct. Defaults to TRUE.
 #' rows from the specified database table.
 #'  - this should be a character
 #' expression in the format of a [dplyr::filter()] query,
@@ -128,6 +125,11 @@ create_read_sql <- function(connection,
 #' syntax for this argument is to pass a [dplyr::filter()] expression
 #' through `deparse1(substitute())`, for example
 #' `deparse1(substitute(Species == "virginica"))`
+#' @param cast_datetime2 Cast `datetime2` data type columns to `datetime`.
+#' This is to help older ODBC drivers where datetime2 columns are read into R
+#' as character when should be POSIXct. Defaults to TRUE.
+
+
 #' @param include_pk Whether to include primary key column in output dataframe.
 #' A primary key  column is added automatically when a table is loaded into the
 #' database using `create_replace_table` as <table_name>ID. Defaults to FALSE.
