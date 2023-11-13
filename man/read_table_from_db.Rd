@@ -11,7 +11,8 @@ read_table_from_db(
   table_name,
   columns = NULL,
   filter_stmt = NULL,
-  include_pk = FALSE
+  include_pk = FALSE,
+  cast_datetime2 = TRUE
 )
 }
 \arguments{
@@ -25,7 +26,15 @@ read_table_from_db(
 
 \item{columns}{Optional vector of column names to select.}
 
-\item{filter_stmt}{Optional filter statement to only read a subset of
+\item{filter_stmt}{Optional filter statement to only read a subset of}
+
+\item{include_pk}{Whether to include primary key column in output dataframe.
+A primary key  column is added automatically when a table is loaded into the
+database using \code{create_replace_table} as <table_name>ID. Defaults to FALSE.}
+
+\item{cast_datetime2}{Cast \code{datetime2} data type columns to \code{datetime}.
+This is to help older ODBC drivers where datetime2 columns are read into R
+as character when should be POSIXct. Defaults to TRUE.
 rows from the specified database table.
 \itemize{
 \item this should be a character
@@ -36,10 +45,6 @@ syntax for this argument is to pass a \code{\link[dplyr:filter]{dplyr::filter()}
 through \code{deparse1(substitute())}, for example
 \code{deparse1(substitute(Species == "virginica"))}
 }}
-
-\item{include_pk}{Whether to include primary key column in output dataframe.
-A primary key  column is added automatically when a table is loaded into the
-database using \code{create_replace_table} as <table_name>ID. Defaults to FALSE.}
 }
 \value{
 Dataframe of table.
