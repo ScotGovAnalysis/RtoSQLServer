@@ -1,1 +1,1 @@
-linters: with_defaults(open_curly_linter=NULL)
+linters: linters_with_defaults(open_curly_linter=NULL)
