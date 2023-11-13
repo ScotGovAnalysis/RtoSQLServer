@@ -1,4 +1,7 @@
-table_select_list <- function(table_metadata,
+table_select_list <- function(server,
+                              database,
+                              schema,
+                              table_metadata,
                               table_name,
                               columns,
                               include_pk) {
@@ -175,6 +178,9 @@ read_table_from_db <- function(database,
   )
 
   select_list <- table_select_list(
+    server,
+    database,
+    schema,
     table_metadata,
     table_name,
     columns,
