@@ -1,16 +1,12 @@
 table_select_list <- function(server,
                               database,
                               schema,
+                              table_metadata,
                               table_name,
                               columns,
                               include_pk) {
   # all column names found in existing table
-  existing_cols <- db_table_metadata(
-    server,
-    database,
-    schema,
-    table_name
-  )$column_name
+  existing_cols <- table_metadata$column_name
 
   # Get the primary key column name
   pk <- get_pk_name(server, database, schema, table_name)
@@ -50,13 +46,50 @@ format_filter <- function(connection, filter_stmt) {
   sql <- as.character(sql)
 }
 
+# Cast datetime2 columns to datetime- workaround due to old ODBC client drivers
+col_select <- function(column_name, datetime2_cols_to_cast) {
+  if (column_name %in% datetime2_cols_to_cast) {
+    return(glue::glue_sql("CAST({`column_name`} AS datetime) ",
+      "AS {`column_name`}",
+      .con = DBI::ANSI()
+    ))
+  } else {
+    return(glue::glue_sql("{`column_name`}", .con = DBI::ANSI()))
+  }
+}
+
+cols_select_format <- function(select_list,
+                               table_metadata,
+                               cast_datetime2) {
+  datetime2_cols_to_cast <- NULL
+  if (cast_datetime2) {
+    # Need to know the datetime2 cols to cast them
+    datetime2_cols_to_cast <- table_metadata[table_metadata$data_type ==
+      "datetime2", "column_name"]
+    if (length(datetime2_cols_to_cast) == 0) {
+      datetime2_cols_to_cast <- NULL
+    }
+  }
+  formatted_cols <- vapply(select_list,
+    col_select,
+    FUN.VALUE = character(1),
+    datetime2_cols_to_cast = datetime2_cols_to_cast
+  )
+  glue::glue_sql_collapse(formatted_cols, sep = ", ")
+}
+
+
 create_read_sql <- function(connection,
                             schema,
                             select_list,
                             table_name,
-                            filter_stmt) {
+                            table_metadata,
+                            filter_stmt,
+                            cast_datetime2) {
+  column_sql <- cols_select_format(select_list, table_metadata, cast_datetime2)
+
   initial_sql <- glue::glue_sql(
-    "SELECT {`select_list`*} FROM {`quoted_schema_tbl(schema, table_name)`}",
+    "SELECT {column_sql} FROM {`quoted_schema_tbl(schema, table_name)`}",
     .con = connection
   )
   if (!is.null(filter_stmt)) {
@@ -84,6 +117,9 @@ create_read_sql <- function(connection,
 #' @param table_name Name of table in database to read.
 #' @param columns Optional vector of column names to select.
 #' @param filter_stmt Optional filter statement to only read a subset of
+#' @param cast_datetime2 Cast `datetime2` data type columns to `datetime`.
+#' This is to help older ODBC drivers where datetime2 columns are read into R
+#' as character when should be POSIXct. Defaults to TRUE.
 #' rows from the specified database table.
 #'  - this should be a character
 #' expression in the format of a [dplyr::filter()] query,
@@ -115,7 +151,8 @@ read_table_from_db <- function(database,
                                table_name,
                                columns = NULL,
                                filter_stmt = NULL,
-                               include_pk = FALSE) {
+                               include_pk = FALSE,
+                               cast_datetime2 = TRUE) {
   if (!check_table_exists(
     server,
     database,
@@ -133,10 +170,18 @@ read_table_from_db <- function(database,
     database = database
   )
 
+  table_metadata <- db_table_metadata(
+    server,
+    database,
+    schema,
+    table_name
+  )
+
   select_list <- table_select_list(
     server,
     database,
     schema,
+    table_metadata,
     table_name,
     columns,
     include_pk
@@ -147,7 +192,9 @@ read_table_from_db <- function(database,
     schema,
     select_list,
     table_name,
-    filter_stmt
+    table_metadata,
+    filter_stmt,
+    cast_datetime2
   )
   DBI::dbDisconnect(connection)
   message(glue::glue("Read SQL statement:\n{read_sql}"))
