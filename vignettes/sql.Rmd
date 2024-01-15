@@ -12,9 +12,65 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+knitr::opts_chunk$set(eval = FALSE)
 ```
 
-```{r setup}
+```{r setup package}
 library(RtoSQLServer)
 ```
-# SQL Examples
+## Using SQL in RtoSQLServer
+This guide shows how SQL can be used in conjunction with RtoSQLServer to conduct various different tasks.
+RtoSQLServer has high level functions for some of the most common tasks, but beyond a certain point it makes sense to use SQL rather than creating functions in the package for everything a user might need to do.
+
+This covers some of those tasks that people have asked for previously. It may be added to periodically.
+
+## Setup
+
+The examples in this document use `glue::glue_sql` as a safer way of constructing SQL strings.
+
+The SQL code shown here will execute with the RtoSQLServer package, connected to an ADM SQL Server 2017 database. Note this code is not run in the process of including this documentation in the package as an external facing database connection is not available.
+
+The setup code for the examples shown below is executed once and then not repeated in each example to keep this more concise.
+
+To setup a test dataset for these examples we will make a copy of the base iris dataframe and add an extra column to it.
+```{r setup dataframe}
+# Create a copy of the iris dataset
+test_iris <- iris
+
+# Add a test column to this test_iris dataframe
+test_iris$test_col <- "a"
+```
+
+We will then set the database connection details (in this case just placeholders) and load the `test_iris` dataframe into it. 
+
+
+```{r setup database details}
+# Set database setup details
+server <- "server\\instance"
+database <- "my_database_name"
+schema <- "my_schema_name"
+
+# Load the test data into the database
+write_dataframe_to_db(
+  server = server,
+  database = database,
+  schema = schema,
+  table_name = "test_iris",
+  dataframe = test_iris,
+  append_to_existing = FALSE,
+  batch_size = 100,
+  versioned_table = FALSE
+)
+```
+
+For ease of constructing SQL in these examples, we then use `glue::glue_sql` to safely create a quoted schema table name object.
+
+Using the generic `.con = DBI::ANSI()` to create a quoted schema.table object, creates a syntax usable in SQL Server databases.
+
+```{r setup table-schema, eval = TRUE}
+schema <- "my_schema_name"
+database_table_name <- "test_iris"
+
+formatted_table_schema <- glue::glue_sql("{`schema`}.{`database_table_name`}", .con = DBI::ANSI())
+formatted_table_schema
+```
