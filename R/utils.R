@@ -52,10 +52,13 @@ r_to_sql_character_sizes <- function(max_string) {
 
 df_to_metadata <- function(dataframe) {
   col_types <- sapply(dataframe, r_to_sql_data_type)
-  data.frame(
+  df <- data.frame(
     column_name = names(col_types), data_type = unname(col_types),
     stringsAsFactors = FALSE
   )
+  # db_table_metdata stored procedure does not specify size of datetime2 cols
+  df[df$data_type == "datetime2(3)", "data_type"] <- "datetime2"
+  df
 }
 
 
