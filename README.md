@@ -278,3 +278,8 @@ records following updates and deletes. This allows users to maintain an
 archive of their table setup in R, without needing to know the SQL used
 to establish System Versioning as part of a `create table` SQL
 expression.
+
+To drop a system versioned table using `drop_table_from_db` requires
+extra privileges in the SQL Server database. You may need to contact a
+system administrator to drop these tables for you if you receive an
+error.

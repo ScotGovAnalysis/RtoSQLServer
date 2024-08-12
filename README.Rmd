@@ -197,3 +197,5 @@ The package maps R dataframe datatypes to specific SQL Server datatypes ensuring
 `RtoSQLServer` allows a user to create a table with MS SQL Server  [System Versioning](https://docs.microsoft.com/en-us/sql/relational-databases/tables/creating-a-system-versioned-temporal-table?view=sql-server-ver15) enabled. To do this using `RtoSQLServer` the `write_dataframe_to_db` function is used with the `versioned_table` argument set to TRUE.   
 
 System Versioning adds date / timestamp (SQL Server datatype `DATETIME2`) start and end columns to the table. A `<table name>History` table is created in the database schema, storing the history of previous records following updates and deletes. This allows users to maintain an archive of their table setup in R, without needing to know the SQL used to establish System Versioning as part of a `create table` SQL expression.
+
+To drop a system versioned table using `drop_table_from_db` requires extra privileges in the SQL Server database. You may need to contact a system administrator to drop these tables for you if you receive an error.

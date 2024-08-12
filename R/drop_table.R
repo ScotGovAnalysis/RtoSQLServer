@@ -35,23 +35,24 @@ is_versioned <- function(check_df) {
 create_drop_sql <- function(server,
                             database,
                             schema,
-                            table_name,
-                            versioned_table) {
-  if (versioned_table) {
-    # Check is versioned table regardless of versioned_table input arg
-    check_sql <- create_check_sql(schema, table_name)
-    check_df <- execute_sql(
-      server = server,
-      database = database,
-      sql = check_sql,
-      output = TRUE
-    )
-    if (is_versioned(check_df)) {
-      drop_sql <- create_drop_sql_versioned(schema, table_name)
-    } else { # if not actually versioned:
-      drop_sql <- create_drop_sql_nonversioned(schema, table_name)
-    }
-  } else { # If versioned_table argument is FALSE
+                            table_name) {
+  # Check is versioned table regardless of versioned_table input arg
+  check_sql <- create_check_sql(schema, table_name)
+  check_df <- execute_sql(
+    server = server,
+    database = database,
+    sql = check_sql,
+    output = TRUE
+  )
+  if (is_versioned(check_df)) {
+    warning(glue::glue(
+      "Attempting to drop system versioned table.",
+      "If receive permissions error will need to",
+      "ask admin to drop this table for you mentioning",
+      "it is a temporal/system versioned table."
+    ))
+    drop_sql <- create_drop_sql_versioned(schema, table_name)
+  } else { # if not actually versioned:
     drop_sql <- create_drop_sql_nonversioned(schema, table_name)
   }
   return(drop_sql)
@@ -64,7 +65,8 @@ create_drop_sql <- function(server,
 #' @param database Database containing the table to be dropped.
 #' @param schema Name of schema containing table to be dropped.
 #' @param table_name Name of the table to be dropped.
-#' @param versioned_table Is this a versioned table. Defaults to FALSE.
+#' @param versioned_table Is this a versioned table. Legacy parameter no
+#' longer used as this is now checked every time.
 #' @param silent If TRUE do not give message that dropping complete.
 #' Defaults to FALSE.
 #'
@@ -102,8 +104,7 @@ drop_table_from_db <- function(server,
     server,
     database,
     schema,
-    table_name,
-    versioned_table
+    table_name
   )
 
   # Run drop sql

@@ -19,7 +19,7 @@ test_that("versioned drop sql created correctly", {
   mockery::stub(create_drop_sql, "execute_sql", check_df)
 
   expect_equal(create_drop_sql(
-    "test", "test", "test_schema", "test_tbl", TRUE
+    "test", "test", "test_schema", "test_tbl"
   ), drop_ver_sql)
 })
 
@@ -33,7 +33,7 @@ test_that("non-versioned drop sql created correctly", {
   mockery::stub(create_drop_sql, "execute_sql", check_df)
 
   expect_equal(create_drop_sql(
-    "test", "test", "test_schema", "test_tbl", FALSE
+    "test", "test", "test_schema", "test_tbl"
   ), drop_nonver_sql)
 })
 
@@ -47,6 +47,6 @@ test_that("user error non-versioned drop sql created correctly", {
   mockery::stub(create_drop_sql, "execute_sql", check_df)
 
   expect_equal(create_drop_sql(
-    "test", "test", "test_schema", "test_tbl", TRUE
+    "test", "test", "test_schema", "test_tbl"
   ), drop_nonver_sql)
 })
