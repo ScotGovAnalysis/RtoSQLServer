@@ -1,6 +1,6 @@
 Package: RtoSQLServer
 Title: Load R Dataframes into SQL Server Database Tables
-Version: 0.1.8
+Version: 0.1.9
 Authors@R: c(
     person("Tom", "Wilson", email = "thomas.wilson@gov.scot", role = "cre"),
     person("Miles", "Drake", email = "miles.drake@gov.scot", role = "aut"),
@@ -17,7 +17,7 @@ Imports:
     glue
 Language: en-GB
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Suggests: 
     testthat (>= 2.1.0),
     mockery
