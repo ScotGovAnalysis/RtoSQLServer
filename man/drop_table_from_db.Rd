@@ -23,7 +23,8 @@ drop_table_from_db(
 
 \item{table_name}{Name of the table to be dropped.}
 
-\item{versioned_table}{Is this a versioned table. Defaults to FALSE.}
+\item{versioned_table}{Is this a versioned table. Legacy parameter no
+longer used as this is now checked every time.}
 
 \item{silent}{If TRUE do not give message that dropping complete.
 Defaults to FALSE.}
