@@ -488,7 +488,8 @@ clean_row_names <- function(dataframe) {
 #'  Server table in batches of this many rows at a time.
 #' @param versioned_table Create table with SQL Server system versioning.
 #' Defaults to FALSE. If table already exists in DB will not
-#' change existing versioning status.
+#' change existing versioning status. If overwriting an existing table
+#' may receive permissions error to contact system admin.
 #'
 #' @importFrom utils tail
 #' @export
