@@ -66,7 +66,7 @@ create_drop_sql <- function(server,
 #' @param schema Name of schema containing table to be dropped.
 #' @param table_name Name of the table to be dropped.
 #' @param versioned_table Is this a versioned table. Legacy parameter no
-#' longer used as this is checked every time.
+#' longer used as this is now checked every time.
 #' @param silent If TRUE do not give message that dropping complete.
 #' Defaults to FALSE.
 #'
