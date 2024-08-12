@@ -36,24 +36,25 @@ create_drop_sql <- function(server,
                             database,
                             schema,
                             table_name) {
-
-    # Check is versioned table regardless of versioned_table input arg
-    check_sql <- create_check_sql(schema, table_name)
-    check_df <- execute_sql(
-      server = server,
-      database = database,
-      sql = check_sql,
-      output = TRUE
-    )
-    if (is_versioned(check_df)) {
-      warning(glue::glue("Attempting to drop system versioned table.",
-                         "If receive permissions error will need to",
-                         "ask admin to drop this table for you mentioning",
-                         "it is a temporal/system versioned table."))
-      drop_sql <- create_drop_sql_versioned(schema, table_name)
-    } else { # if not actually versioned:
-      drop_sql <- create_drop_sql_nonversioned(schema, table_name)
-    }
+  # Check is versioned table regardless of versioned_table input arg
+  check_sql <- create_check_sql(schema, table_name)
+  check_df <- execute_sql(
+    server = server,
+    database = database,
+    sql = check_sql,
+    output = TRUE
+  )
+  if (is_versioned(check_df)) {
+    warning(glue::glue(
+      "Attempting to drop system versioned table.",
+      "If receive permissions error will need to",
+      "ask admin to drop this table for you mentioning",
+      "it is a temporal/system versioned table."
+    ))
+    drop_sql <- create_drop_sql_versioned(schema, table_name)
+  } else { # if not actually versioned:
+    drop_sql <- create_drop_sql_nonversioned(schema, table_name)
+  }
   return(drop_sql)
 }
 
