@@ -23,14 +23,14 @@ table_select_list <- function(server,
     if (length(not_exist_cols) > 0) {
       stop(glue::glue(
         "Column {not_exist_cols} not found in {schema}.{table_name}."
-      ))
+      ), call. = FALSE)
     } else {
       return(columns)
     }
 
     # where no user specified list of columns
   } else {
-    if (!include_pk & !is.null(pk)) {
+    if (!include_pk && !is.null(pk)) {
       return(existing_cols[existing_cols != pk])
     } else {
       return(existing_cols)
@@ -163,7 +163,7 @@ read_table_from_db <- function(database,
   )) {
     stop(glue::glue(
       "Table: {schema}.{table_name} does not exist in the database."
-    ))
+    ), call. = FALSE)
   }
 
   # Use a genuine connection, so the filter translation SQL is correct
