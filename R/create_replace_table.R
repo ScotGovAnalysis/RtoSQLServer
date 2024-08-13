@@ -582,7 +582,7 @@ write_dataframe_to_db <- function(server,
   delete_staging_table(db_params)
   if (versioned_table) {
     warning(glue::glue("Created {schema}.{table_name} as versioned table"),
-      .call = FALSE
+      call. = FALSE
     )
   }
   end_time <- Sys.time()
