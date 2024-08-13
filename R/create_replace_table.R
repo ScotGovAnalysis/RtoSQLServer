@@ -580,6 +580,11 @@ write_dataframe_to_db <- function(server,
 
   # Drop the staging table and finished
   delete_staging_table(db_params)
+  if (versioned_table) {
+    warning(glue::glue("Created {schema}.{table_name} as versioned table"),
+      .call = FALSE
+    )
+  }
   end_time <- Sys.time()
   message(glue::glue(
     "Loading completed in",
