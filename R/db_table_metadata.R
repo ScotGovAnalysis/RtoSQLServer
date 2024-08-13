@@ -28,7 +28,7 @@ db_table_metadata <- function(server, database, schema, table_name) {
   )) {
     stop(glue::glue(
       "Table: {schema}.{table_name} does not exist in the database."
-    ))
+    ), call. = FALSE)
   }
   sql <- paste0("
                 SET NOCOUNT ON;
