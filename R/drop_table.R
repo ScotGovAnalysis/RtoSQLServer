@@ -45,28 +45,26 @@ create_drop_sql <- function(server,
     output = TRUE
   )
   if (is_versioned(check_df)) {
-    warning(glue::glue(
-      "Attempting to drop system versioned table.",
-      "If receive permissions error will need to",
-      "ask admin to drop this table for you mentioning",
-      "it is a temporal/system versioned table."
-    ))
     drop_sql <- create_drop_sql_versioned(schema, table_name)
   } else { # if not actually versioned:
     drop_sql <- create_drop_sql_nonversioned(schema, table_name)
   }
-  return(drop_sql)
+  return(list(drop_sql = drop_sql, versioned = is_versioned(check_df)))
 }
 
-#' Drop SQL Server table from database. Check if versioned table and disable
-#' versioning and drop history table too if so.
+#' Drop SQL Server table from database
+#'
+#' Drop specified table. Check if versioned table. If so attempt to disable
+#' versioning and drop history table too if so. Extra permissions may be
+#' required to drop a versioned table so contact system admin if
+#' receive an error showing this is the case.
 #'
 #' @param server Server and instance where SQL Server database found.
 #' @param database Database containing the table to be dropped.
 #' @param schema Name of schema containing table to be dropped.
 #' @param table_name Name of the table to be dropped.
-#' @param versioned_table Is this a versioned table. Legacy parameter no
-#' longer used as this is now checked every time.
+#' @param versioned_table Is this a versioned table. Legacy argument no
+#' longer used. This is now checked every time regardless of T or F input.
 #' @param silent If TRUE do not give message that dropping complete.
 #' Defaults to FALSE.
 #'
@@ -108,12 +106,29 @@ drop_table_from_db <- function(server,
   )
 
   # Run drop sql
-
-  execute_sql(
-    server,
-    database,
-    drop_sql,
-    output = FALSE
+  tryCatch(
+    {
+      execute_sql(
+        server,
+        database,
+        drop_sql$drop_sql,
+        output = FALSE
+      )
+    },
+    error = function(cond) {
+      if (drop_sql$versioned) {
+        cond$message <- glue::glue(
+          "{cond$message}\n\n",
+          "{schema}.{table_name} is a VERSIONED TABLE.\n\n",
+          "Contact a system admin to request that they drop this versioned ",
+          "table for you as you do not have sufficient permissions.",
+        )
+      } else {
+        cond$message <- glue::glue("Error dropping table: {cond}")
+      }
+      cond$call <- NULL
+      stop(cond)
+    }
   )
 
   # Output message if required
