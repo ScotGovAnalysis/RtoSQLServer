@@ -55,33 +55,34 @@ binary compiled at the version of R you are using.
 ## Loading method used
 
 When loading an R dataframe into SQL Server using
-`write_dataframe_to_db`, following steps are followed:
+`write_dataframe_to_db`, the following steps are used:
 
 1.  The R dataframe is loaded into a staging table in the database in
     batches of n rows at a time.
 
-2.  1)  If table of the specified name does NOT already exist in the
-        database schema:
-        1)  Create target table in the database.  
-        2)  Insert all rows from staging table to target table.
+2.  Create target table in the database and load from staging to target.
 
-3.  2)  If table of same name does already exist in the database schema:
+    - If table of the specified name does NOT already exist in the
+      database schema:
 
-    If ‘append_to_existing’=FALSE (this will result in an overwrite):
+      - Create target table in the database.  
+      - Insert all rows from staging table to target table.
 
-    1)  Drop the existing copy of the target table and create a new one
-        from staging table definition.  
-    2)  Insert all rows from staging table into target table.
+    - If table of same name does already exist in the database schema:
 
-    If ‘append_to_existing’=TRUE:
+      - If argument `append_to_existing = FALSE` (this will result in an
+        overwrite):
+        - Drop the existing copy of the target table and create a new
+          one.
+        - Insert all rows from staging table into target table.
+      - If argument `append_to_existing = TRUE`:
+        - Check that staging table columns and existing target table
+          columns are the same. If not, cancel loading and give a
+          warning.  
+        - If check passes, insert all rows from staging table into
+          target table.
 
-    1)  Check that staging table columns and existing target table
-        columns are the same. If not, cancel loading and give a
-        warning.  
-    2)  If check passes, insert all rows from staging table into target
-        table.
-
-4.  Delete the staging table.
+3.  Delete the staging table.
 
 ## Example Usage
 
