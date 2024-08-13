@@ -20,7 +20,7 @@ test_that("versioned drop sql created correctly", {
 
   expect_equal(create_drop_sql(
     "test", "test", "test_schema", "test_tbl"
-  ), drop_ver_sql)
+  )$drop_sql, drop_ver_sql)
 })
 
 test_that("non-versioned drop sql created correctly", {
@@ -34,7 +34,7 @@ test_that("non-versioned drop sql created correctly", {
 
   expect_equal(create_drop_sql(
     "test", "test", "test_schema", "test_tbl"
-  ), drop_nonver_sql)
+  )$drop_sql, drop_nonver_sql)
 })
 
 test_that("user error non-versioned drop sql created correctly", {
@@ -48,5 +48,5 @@ test_that("user error non-versioned drop sql created correctly", {
 
   expect_equal(create_drop_sql(
     "test", "test", "test_schema", "test_tbl"
-  ), drop_nonver_sql)
+  )$drop_sql, drop_nonver_sql)
 })

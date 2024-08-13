@@ -2,8 +2,7 @@
 % Please edit documentation in R/create_replace_table.R
 \name{write_dataframe_to_db}
 \alias{write_dataframe_to_db}
-\title{Write an R dataframe to SQL Server table optionally with system
-versioning on.}
+\title{Write an R dataframe to a SQL Server table}
 \usage{
 write_dataframe_to_db(
   server,
@@ -37,13 +36,16 @@ database table (if exists). Default FALSE.}
 Server table in batches of this many rows at a time.}
 
 \item{versioned_table}{Create table with SQL Server system versioning.
-Defaults to FALSE. If table already exists in DB will not
-change existing versioning status. If overwriting an existing table
-may receive permissions error to contact system admin.}
+Defaults to FALSE. If appending to existing table will not
+change existing versioning status. If overwriting an existing
+versioned table may receive permissions error due to dropping existing
+versioned table failing. Contact a sysadmin to drop the
+versioned table for you.}
 }
 \description{
-Write an R dataframe to SQL Server table optionally with system
-versioning on.
+Can create table optionally with system versioning on. However, extra
+permissions may be required to drop or overwrite
+system versioned tables so use this option with caution.
 }
 \examples{
 \dontrun{

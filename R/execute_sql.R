@@ -23,30 +23,25 @@ execute_sql <- function(server, database, sql, output = FALSE) {
     server = server,
     database = database
   )
-  if (output) {
-    tryCatch(
-      {
+
+  tryCatch(
+    {
+      if (output) {
         output_data <- DBI::dbGetQuery(connection, sql)
-      },
-      error = function(cond) {
-        stop(glue::glue(
-          "Failed to execute SQL.\nODBC error message: {cond}"
-        ))
-      }
-    )
-  } else {
-    tryCatch(
-      {
+      } else {
         DBI::dbExecute(connection, sql)
         output_data <- glue::glue("SQL: {sql}\nexecuted successfully")
-      },
-      error = function(cond) {
-        stop(glue::glue(
-          "Failed to execute SQL.\nODBC error message: {cond}"
-        ))
       }
-    )
-  }
-  DBI::dbDisconnect(connection)
+    },
+    error = function(cond) {
+      stop(glue::glue(
+        "Failed to execute SQL. ODBC error message:\n{cond$message}"
+      ), call. = FALSE)
+    },
+    finally = {
+      DBI::dbDisconnect(connection)
+    }
+  )
+
   return(output_data)
 }
