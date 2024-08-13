@@ -299,7 +299,7 @@ populate_staging_table <- function(db_params,
           "Failed to write staging",
           "data to database.\n", cond,
           .sep = " "
-        ))
+        ), call. = FALSE)
       }
     )
     message(glue::glue(
@@ -471,8 +471,11 @@ clean_row_names <- function(dataframe) {
 }
 
 
-#' Write an R dataframe to SQL Server table optionally with system
-#' versioning on.
+#' Write an R dataframe to a SQL Server table
+#'
+#' Can create table optionally with system versioning on. However, extra
+#' permissions may be required to drop or overwrite
+#' system versioned tables so use this option with caution.
 #'
 #' @param server Server instance where SQL Server database running.
 #' @param database Name of SQL Server database where table will be written.
@@ -487,9 +490,11 @@ clean_row_names <- function(dataframe) {
 #' @param batch_size Source R dataframe rows will be loaded into a staging SQL
 #'  Server table in batches of this many rows at a time.
 #' @param versioned_table Create table with SQL Server system versioning.
-#' Defaults to FALSE. If table already exists in DB will not
-#' change existing versioning status. If overwriting an existing table
-#' may receive permissions error to contact system admin.
+#' Defaults to FALSE. If appending to existing table will not
+#' change existing versioning status. If overwriting an existing
+#' versioned table may receive permissions error due to dropping existing
+#' versioned table failing. Contact a sysadmin to drop the
+#' versioned table for you.
 #'
 #' @importFrom utils tail
 #' @export
@@ -548,8 +553,8 @@ write_dataframe_to_db <- function(server,
     # If not appending and exists then inform that will be overwritten
   } else {
     warning(glue::glue(
-      "Existing database table: {schema}.{table_name}",
-      "was over-written.",
+      "Database table: {schema}.{table_name} already exists",
+      "attempting to drop and replace it...",
       .sep = " "
     ), call. = FALSE)
     # Drop the existing table
