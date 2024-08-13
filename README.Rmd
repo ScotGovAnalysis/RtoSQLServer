@@ -51,23 +51,25 @@ As well as loading R dataframes into SQL Server databases, functions are also cu
 It is recommend to ensure using the latest versions of [Rcpp](https://cran.r-project.org/web/packages/Rcpp/index.html), [odbc](https://cran.r-project.org/web/packages/odbc/index.html) and [DBI](https://cran.r-project.org/web/packages/DBI/index.html). If using Windows in a secure environment install these from source or a Windows binary compiled at the version of R you are using.
 
 ## Loading method used
-When loading an R dataframe into SQL Server using `write_dataframe_to_db`, following steps are followed:
+When loading an R dataframe into SQL Server using `write_dataframe_to_db`, the following steps are used:
 
 1. The R dataframe is loaded into a staging table in the database in batches of n rows at a time.
 
-2. a) If table of the specified name does NOT already exist in the database schema:  
-      i) Create target table in the database.  
-      ii) Insert all rows from staging table to target table.
+2. Create target table in the database and load from staging to target.
+   
+   - If table of the specified name does NOT already exist in the database schema:  
+      - Create target table in the database.  
+      - Insert all rows from staging table to target table.
 
-3. b) If table of same name does already exist in the database schema:  
+   - If table of same name does already exist in the database schema:
+   
+     - If argument `append_to_existing = FALSE` (this will result in an overwrite):  
+        - Drop the existing copy of the target table and create a new one.
+        - Insert all rows from staging table into target table.  
 
-    If 'append_to_existing'=FALSE (this will result in an overwrite):  
-      i) Drop the existing copy of the target table and create a new one from staging table definition.  
-      ii) Insert all rows from staging table into target table.  
-
-    If 'append_to_existing'=TRUE:  
-      i) Check that staging table columns and existing target table columns are the same. If not, cancel loading and give a warning.  
-      ii) If check passes, insert all rows from staging table into target table.  
+     - If argument `append_to_existing = TRUE`:  
+        - Check that staging table columns and existing target table columns are the same. If not, cancel loading and give a warning.  
+        - If check passes, insert all rows from staging table into target table.  
 
 4. Delete the staging table.
 
