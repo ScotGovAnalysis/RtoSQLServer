@@ -16,7 +16,7 @@ create_sqlserver_connection <- function(server, database, timeout = 10) {
         "{database} on server: {server}",
         "\n{cond}",
         .sep = " "
-      ))
+      ), call. = FALSE)
     }
   )
 }
