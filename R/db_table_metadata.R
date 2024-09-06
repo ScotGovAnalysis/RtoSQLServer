@@ -26,7 +26,7 @@ update_col_query <- function(columns_info) {
 }
 
 # Add the value ranges, counts, distinct counts to each column description
-get_table_stats <- function(columns_info) {
+get_table_stats <- function(i, columns_info) {
   col <- columns_info$COLUMN_NAME[i]
   data_type <- columns_info$DATA_TYPE[i]
 
@@ -57,6 +57,7 @@ get_table_stats <- function(columns_info) {
   )
 }
 
+# building the metadata dataframe in stages...
 get_metadata <- function(server,
                          database,
                          schema,
@@ -70,7 +71,9 @@ get_metadata <- function(server,
     return(columns_info)
   }
 
-  sql_parts <- lapply(1:nrow(columns_info), get_table_stats)
+  sql_parts <- lapply(1:nrow(columns_info),
+                      get_table_stats,
+                      columns_info = columns_info)
 
   full_sql <- glue::glue_collapse(sql_parts, sep = " UNION ALL ")
 
