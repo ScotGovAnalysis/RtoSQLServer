@@ -15,8 +15,9 @@ db_table_metadata(server, database, schema, table_name, summary_stats)
 
 \item{table_name}{Name of the table.}
 
-\item{summary_stats}{Add summary stats of each col to metdata output.
-Defaults TRUE,}
+\item{summary_stats}{Add summary stats of each col to metadata output.
+Defaults TRUE, however much quicker if FALSE as just returns col names
+and types.}
 }
 \value{
 Dataframe of table / column metadata.

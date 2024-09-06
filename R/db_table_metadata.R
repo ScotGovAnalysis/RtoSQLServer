@@ -1,7 +1,7 @@
 # basic column name, datatype and length query
 col_query <- function(database, schema, table_name) {
   glue::glue_sql("
-  SELECT COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH
+  SELECT column_name, data_type, CHARACTER_MAXIMUM_LENGTH
   FROM INFORMATION_SCHEMA.COLUMNS
   WHERE TABLE_CATALOG = {database}
   AND TABLE_SCHEMA = {schema}
@@ -17,7 +17,7 @@ update_col_query <- function(columns_info) {
     "[! is.na(columns_info$CHARACTER_MAXIMUM_LENGTH), 3])})"
   )
 
-  columns_info$DATA_TYPE[!is.na(columns_info$CHARACTER_MAXIMUM_LENGTH)] <-
+  columns_info$data_type[!is.na(columns_info$CHARACTER_MAXIMUM_LENGTH)] <-
     update_char
 
   # Now drop this column from df as not required
@@ -26,7 +26,7 @@ update_col_query <- function(columns_info) {
 }
 
 # Add the value ranges, counts, distinct counts to each column description
-get_table_stats <- function(i, columns_info) {
+get_table_stats <- function(i, columns_info, table_name) {
   col <- columns_info$COLUMN_NAME[i]
   data_type <- columns_info$DATA_TYPE[i]
 
@@ -73,7 +73,8 @@ get_metadata <- function(server,
 
   sql_parts <- lapply(1:nrow(columns_info),
                       get_table_stats,
-                      columns_info = columns_info)
+                      columns_info = columns_info,
+                      table_name = table_name)
 
   full_sql <- glue::glue_collapse(sql_parts, sep = " UNION ALL ")
 
@@ -93,8 +94,9 @@ get_metadata <- function(server,
 #' @param database Name of SQL Server database where table is found.
 #' @param schema Name of schema in SQL Server database where table is found.
 #' @param table_name Name of the table.
-#' @param summary_stats Add summary stats of each col to metdata output.
-#' Defaults TRUE,
+#' @param summary_stats Add summary stats of each col to metadata output.
+#' Defaults TRUE, however much quicker if FALSE as just returns col names
+#' and types.
 #'
 #' @return Dataframe of table / column metadata.
 #' @export
