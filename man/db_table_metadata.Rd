@@ -4,7 +4,7 @@
 \alias{db_table_metadata}
 \title{Return metadata about an existing database table.}
 \usage{
-db_table_metadata(server, database, schema, table_name)
+db_table_metadata(server, database, schema, table_name, summary_stats)
 }
 \arguments{
 \item{server}{Server-instance where SQL Server database running.}
@@ -14,6 +14,9 @@ db_table_metadata(server, database, schema, table_name)
 \item{schema}{Name of schema in SQL Server database where table is found.}
 
 \item{table_name}{Name of the table.}
+
+\item{summary_stats}{Add summary stats of each col to metdata output.
+Defaults TRUE,}
 }
 \value{
 Dataframe of table / column metadata.
