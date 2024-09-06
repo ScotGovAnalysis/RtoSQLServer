@@ -1,6 +1,6 @@
 Package: RtoSQLServer
 Title: Load R Dataframes into SQL Server Database Tables
-Version: 0.1.9
+Version: 0.2.0
 Authors@R: c(
     person("Tom", "Wilson", email = "thomas.wilson@gov.scot", role = "cre"),
     person("Miles", "Drake", email = "miles.drake@gov.scot", role = "aut"),
