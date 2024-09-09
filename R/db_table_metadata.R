@@ -26,31 +26,31 @@ update_col_query <- function(columns_info) {
 }
 
 # Add the value ranges, counts, distinct counts to each column description
-get_table_stats <- function(i, columns_info, table_name) {
-  col <- columns_info$COLUMN_NAME[i]
-  data_type <- columns_info$DATA_TYPE[i]
+get_table_stats <- function(i, columns_info, schema, table_name) {
+  col <- columns_info[i, "column_name"]
+  data_type <- columns_info[i, "data_type"]
 
-  # Dynamically generate the min/max query based on the data type
+  # Generate the min/max query based on the data type
   min_max_query <- if (data_type != "bit") {
-    glue::glue_sql("(SELECT MIN(CAST({col} AS NVARCHAR(225)))
+    glue::glue_sql("(SELECT MIN(CAST({`col`} AS NVARCHAR(225)))
                      FROM {`schema`}.{`table_name`}
                      WHERE {col} IS NOT NULL) AS minimum_value,
-                    (SELECT MAX(CAST({col} AS NVARCHAR(225)))
+                    (SELECT MAX(CAST({`col`} AS NVARCHAR(225)))
                      FROM {`schema`}.{`table_name`}
                      WHERE {col} IS NOT NULL) AS maximum_value",
       .con = DBI::ANSI()
     )
   } else {
-    "SELECT NULL AS minimum_value, NULL AS maximum_value"
+    glue::glue_sql("NULL AS minimum_value, NULL AS maximum_value")
   }
 
-  # Build the full SQL query using glue_sql
+  # Building the full SQL query
   glue::glue_sql("
     SELECT {col} AS column_name, {data_type} AS data_type,
     (SELECT COUNT(*) FROM {`schema`}.{`table_name`}) AS row_count,
     (SELECT COUNT(*) FROM {`schema`}.{`table_name`} WHERE {col} IS NULL)
     AS null_count,
-    (SELECT COUNT(DISTINCT {col}) FROM {`schema`}.{`table_name`}
+    (SELECT COUNT(DISTINCT {`col`}) FROM {`schema`}.{`table_name`}
     WHERE {col} IS NOT NULL) AS distinct_values,
     {min_max_query}",
     .con = DBI::ANSI()
@@ -72,13 +72,14 @@ get_metadata <- function(server,
   }
 
   sql_parts <- lapply(1:nrow(columns_info),
-                      get_table_stats,
-                      columns_info = columns_info,
-                      table_name = table_name)
+    get_table_stats,
+    columns_info = columns_info,
+    schema = schema,
+    table_name = table_name
+  )
 
   full_sql <- glue::glue_collapse(sql_parts, sep = " UNION ALL ")
 
-  # Step 4: Execute the dynamic SQL query in R using dbGetQuery
   columns_info <- execute_sql(server, database, full_sql, output = TRUE)
 
   columns_info
@@ -88,15 +89,17 @@ get_metadata <- function(server,
 #' Return metadata about an existing database table.
 #'
 #' Returns a dataframe of information about an existing table.
-#' This includes the name of each column, its datatype and its range of values.
+#' This includes the name of each column, its datatype and
+#' (optionally) its range of values.
 #'
 #' @param server Server-instance where SQL Server database running.
 #' @param database Name of SQL Server database where table is found.
 #' @param schema Name of schema in SQL Server database where table is found.
 #' @param table_name Name of the table.
 #' @param summary_stats Add summary stats of each col to metadata output.
-#' Defaults TRUE, however much quicker if FALSE as just returns col names
-#' and types.
+#' This includes ranges, number of distinct and number of NULL values.
+#' Defaults TRUE, however much query time is much quicker if FALSE as
+#' just returns col names and types.
 #'
 #' @return Dataframe of table / column metadata.
 #' @export
@@ -113,7 +116,7 @@ db_table_metadata <- function(server,
                               database,
                               schema,
                               table_name,
-                              summary_stats) {
+                              summary_stats = FALSE) {
   if (!check_table_exists(
     server,
     database,
