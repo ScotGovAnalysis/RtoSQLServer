@@ -4,7 +4,7 @@
 \alias{db_table_metadata}
 \title{Return metadata about an existing database table.}
 \usage{
-db_table_metadata(server, database, schema, table_name)
+db_table_metadata(server, database, schema, table_name, summary_stats = FALSE)
 }
 \arguments{
 \item{server}{Server-instance where SQL Server database running.}
@@ -14,13 +14,19 @@ db_table_metadata(server, database, schema, table_name)
 \item{schema}{Name of schema in SQL Server database where table is found.}
 
 \item{table_name}{Name of the table.}
+
+\item{summary_stats}{Add summary stats of each col to metadata output.
+This includes ranges, number of distinct and number of NULL values.
+Defaults TRUE, however much query time is much quicker if FALSE as
+just returns col names and types.}
 }
 \value{
 Dataframe of table / column metadata.
 }
 \description{
 Returns a dataframe of information about an existing table.
-This includes the name of each column, its datatype and its range of values.
+This includes the name of each column, its datatype and
+(optionally) its range of values.
 }
 \examples{
 \dontrun{
