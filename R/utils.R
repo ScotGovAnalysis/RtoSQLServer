@@ -150,3 +150,12 @@ get_pk_name <- function(server,
     NULL
   }
 }
+
+# format filter used in read and delete table rows functions
+format_filter <- function(connection, filter_stmt) {
+  sql <- dbplyr::translate_sql(!!rlang::parse_expr(filter_stmt),
+                               con = connection
+  )
+  sql <- as.character(sql)
+}
+

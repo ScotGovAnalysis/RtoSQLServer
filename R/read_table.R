@@ -39,13 +39,6 @@ table_select_list <- function(server,
 }
 
 
-format_filter <- function(connection, filter_stmt) {
-  sql <- dbplyr::translate_sql(!!rlang::parse_expr(filter_stmt),
-    con = connection
-  )
-  sql <- as.character(sql)
-}
-
 # Cast datetime2 columns to datetime- workaround due to old ODBC client drivers
 col_select <- function(column_name, datetime2_cols_to_cast) {
   if (column_name %in% datetime2_cols_to_cast) {
