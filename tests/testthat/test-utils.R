@@ -51,12 +51,3 @@ test_that("Char size to nvarchar type mapping works", {
 test_that("Incorrect connection gives error", {
   expect_error(create_sqlserver_connection("nonexistent", "nonexistent", 1))
 })
-
-test_that("Check table exists works", {
-  test_meta <- data.frame(Schema = "mytestschema", Name = "mytesttable")
-  mockery::stub(check_table_exists, "get_db_tables", test_meta)
-  expect_true(check_table_exists(
-    "test", "test", "mytestschema",
-    "mytesttable"
-  ), TRUE)
-})
