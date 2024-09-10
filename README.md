@@ -147,14 +147,16 @@ db_all_tables <- execute_sql(
 # column names, datatype and optionally summary info
 # use db_table_metadata
 
-db_table_metadata(server = server, 
-                  database = database, 
-                  schema = schema, 
-                  table_name = "test_r_tbl",
-                  summary_stats = FALSE)
+db_table_metadata(
+  server = server,
+  database = database,
+  schema = schema,
+  table_name = "test_r_tbl",
+  summary_stats = FALSE
+)
 
 # (use summary_stats = TRUE if want to know value ranges,
-# distinct counts, number of NULL records, 
+# distinct counts, number of NULL records,
 # but this is slower)
 
 
