@@ -22,21 +22,6 @@ create_sqlserver_connection <- function(server, database, timeout = 10) {
 }
 
 
-
-
-get_db_tables <- function(server, database) {
-  sql <- "SELECT SCHEMA_NAME(t.schema_id) AS 'Schema',
-  t.name AS 'Name'
-  FROM sys.tables t"
-  data <- execute_sql(
-    database = database,
-    server = server,
-    sql = sql,
-    output = TRUE
-  )
-  data
-}
-
 r_to_sql_character_sizes <- function(max_string) {
   max_string <- as.numeric(max_string)
   if (max_string <= 50) {
@@ -126,10 +111,13 @@ check_table_exists <- function(server,
                                database,
                                schema,
                                table_name) {
-  all_tables <- get_db_tables(database = database, server = server)
+  all_tables <- show_schema_tables(
+    database = database,
+    server = server,
+    schema = schema
+  )
   # return TRUE if exists or else false
-  nrow(all_tables[all_tables$Schema == schema &
-    all_tables$Name == table_name, ]) == 1
+  nrow(all_tables[all_tables$table == table_name, ]) == 1
 }
 
 # Prevent SQL injection with quoted schema table name construction
