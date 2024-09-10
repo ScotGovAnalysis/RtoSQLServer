@@ -56,8 +56,9 @@ use the \code{\link[=execute_sql]{execute_sql()}} function instead.
 \examples{
 \dontrun{
 read_table_from_db(
-  database = "my_database",
   server = "my_server",
+  database = "my_database",
+  schema = "my_schema",
   table_name = "my_table",
   columns = c("column1", "column2"),
   filter_stmt = "column1 < 5 & column2 == 'b'"
