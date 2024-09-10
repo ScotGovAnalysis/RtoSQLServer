@@ -22,11 +22,10 @@ jobs:
         with:
           use-public-rspm: true
 
-      - name: Install dependencies
-        uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          extra-packages: any::roxygen2
-          needs: roxygen2
+      - name: Install specific version of roxygen2
+        run: |
+          install.packages("remotes")
+          remotes::install_version("roxygen2", version = "7.3.1")
 
       - name: Document
         run: roxygen2::roxygenise()
