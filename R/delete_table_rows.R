@@ -28,18 +28,15 @@ add_filter_sql <- function(connection, initial_sql, filter_stmt) {
 #' @param database Database containing table with rows to delete.
 #' @param schema Name of database schema containing table.
 #' @param table_name Name of table with rows to delete.
-#' @param filter_stmt Optional filter statement to delete a subset of
-#' rows from the specified database table.
+#' @param filter_stmt Optional filter statement to delete only a subset
+#' of table rows where the filter is TRUE.
 #'  - this should be a character
 #' expression in the format of a [dplyr::filter()] query,
 #' for example `"Species == 'virginica'"` and it will be translated to SQL
 #' using [dbplyr::translate_sql()]. One way to achieve the right
 #' syntax for this argument is to pass a [dplyr::filter()] expression
-#' through `deparse1(substitute())`, for example
-#' `deparse1(substitute(Species == "virginica"))`
-#' @param cast_datetime2 Cast `datetime2` data type columns to `datetime`.
-#' This is to help older ODBC drivers where datetime2 columns are read into R
-#' as character when should be POSIXct. Defaults to TRUE.
+#' through `deparse1(substitute())`, for example:
+#' `deparse1(substitute(Species == "virginica"))`.
 #' @export
 #'
 #' @examples
