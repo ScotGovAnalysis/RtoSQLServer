@@ -15,7 +15,6 @@ test_that("select sql works", {
 
 
   expect_equal(as.character(create_read_sql(
-    connection = DBI::ANSI(),
     schema = "test_schema",
     select_list = select_list,
     table_name = "test_tbl",

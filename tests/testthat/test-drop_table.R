@@ -5,9 +5,6 @@ test_that("table not exist error works", {
 
 
 test_that("versioned drop sql created correctly", {
-  check_df <- data.frame(
-    temporal_type_desc = "SYSTEM_VERSIONED_TEMPORAL_TABLE"
-  )
 
   drop_ver_sql <- DBI::SQL(paste0(
     "ALTER TABLE \"test_schema\".\"test_tbl\" ",
@@ -16,7 +13,7 @@ test_that("versioned drop sql created correctly", {
     "DROP TABLE \"test_schema\".\"test_tblHistory\";"
   ))
 
-  mockery::stub(create_drop_sql, "execute_sql", check_df)
+  mockery::stub(create_drop_sql, "is_versioned", TRUE)
 
   expect_equal(create_drop_sql(
     "test", "test", "test_schema", "test_tbl"
@@ -24,13 +21,10 @@ test_that("versioned drop sql created correctly", {
 })
 
 test_that("non-versioned drop sql created correctly", {
-  check_df <- data.frame(
-    temporal_type_desc = "NOT APPLICABLE"
-  )
 
   drop_nonver_sql <- DBI::SQL("DROP TABLE \"test_schema\".\"test_tbl\";")
 
-  mockery::stub(create_drop_sql, "execute_sql", check_df)
+  mockery::stub(create_drop_sql, "is_versioned", FALSE)
 
   expect_equal(create_drop_sql(
     "test", "test", "test_schema", "test_tbl"
@@ -38,13 +32,10 @@ test_that("non-versioned drop sql created correctly", {
 })
 
 test_that("user error non-versioned drop sql created correctly", {
-  check_df <- data.frame(
-    temporal_type_desc = "NOT APPLICABLE"
-  )
 
   drop_nonver_sql <- DBI::SQL("DROP TABLE \"test_schema\".\"test_tbl\";")
 
-  mockery::stub(create_drop_sql, "execute_sql", check_df)
+  mockery::stub(create_drop_sql, "is_versioned", FALSE)
 
   expect_equal(create_drop_sql(
     "test", "test", "test_schema", "test_tbl"
