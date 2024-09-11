@@ -5,7 +5,6 @@ test_that("table not exist error works", {
 
 
 test_that("versioned drop sql created correctly", {
-
   drop_ver_sql <- DBI::SQL(paste0(
     "ALTER TABLE \"test_schema\".\"test_tbl\" ",
     "SET ( SYSTEM_VERSIONING = OFF );",
@@ -21,7 +20,6 @@ test_that("versioned drop sql created correctly", {
 })
 
 test_that("non-versioned drop sql created correctly", {
-
   drop_nonver_sql <- DBI::SQL("DROP TABLE \"test_schema\".\"test_tbl\";")
 
   mockery::stub(create_drop_sql, "is_versioned", FALSE)
@@ -32,7 +30,6 @@ test_that("non-versioned drop sql created correctly", {
 })
 
 test_that("user error non-versioned drop sql created correctly", {
-
   drop_nonver_sql <- DBI::SQL("DROP TABLE \"test_schema\".\"test_tbl\";")
 
   mockery::stub(create_drop_sql, "is_versioned", FALSE)
