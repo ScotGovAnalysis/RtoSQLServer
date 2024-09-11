@@ -114,7 +114,8 @@ check_table_exists <- function(server,
   all_tables <- show_schema_tables(
     database = database,
     server = server,
-    schema = schema
+    schema = schema,
+    include_views = TRUE
   )
   # return TRUE if exists or else false
   nrow(all_tables[all_tables$table == table_name, ]) == 1
@@ -156,5 +157,5 @@ format_filter <- function(connection, filter_stmt) {
   sql <- dbplyr::translate_sql(!!rlang::parse_expr(filter_stmt),
     con = connection
   )
-  sql <- as.character(sql)
+  as.character(sql)
 }
