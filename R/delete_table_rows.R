@@ -6,8 +6,8 @@ truncate_sql <- function(schema, table_name) {
   glue::glue_sql("TRUNCATE TABLE {`schema`}.{`table_name`}", .con = DBI::ANSI())
 }
 
-add_filter_sql <- function(connection, initial_sql, filter_stmt) {
-  filter_sql <- format_filter(connection, filter_stmt)
+add_filter_sql <- function(initial_sql, filter_stmt) {
+  filter_sql <- format_filter(filter_stmt)
   glue::glue(
     initial_sql,
     "WHERE {filter_sql};",
@@ -49,20 +49,46 @@ add_filter_sql <- function(connection, initial_sql, filter_stmt) {
 #'   filter_stmt = "Species == 'setosa'"
 #' )
 #' }
-delete_table_rows <- function(database,
-                              server,
+delete_table_rows <- function(server,
+                              database,
                               schema,
                               table_name,
                               filter_stmt = NULL) {
+  initial_row_count <- db_table_metadata(
+    server,
+    database,
+    schema,
+    table_name,
+    TRUE
+  )$row_count[1]
   if (is.null(filter_stmt)) {
-    sql <- truncate_sql(schema, table_name)
+    # Cannot use truncate on system versioned tables
+    if (is_versioned(server, database, schema, table_name)) {
+      sql <- delete_sql(schema, table_name)
+    } else {
+      sql <- truncate_sql(schema, table_name)
+    }
   } else {
-    connection <- create_sqlserver_connection(
-      server = server,
-      database = database
-    )
     initial_sql <- delete_sql(schema, table_name)
-    sql <- add_filter_sql(connection, initial_sql, filter_stmt)
+    sql <- add_filter_sql(initial_sql, filter_stmt)
   }
+
+  message(glue::glue("Delete SQL Statement:
+                     {sql}"))
+
   execute_sql(server, database, sql, output = FALSE)
+
+  end_row_count <- db_table_metadata(
+    server,
+    database,
+    schema,
+    table_name,
+    TRUE
+  )$row_count[1]
+
+  deleted_count <- initial_row_count - end_row_count
+
+  message(glue::glue("Deleted {deleted_count} rows \\
+                     from {schema}.{table_name}. \\
+                     Table now has {end_row_count} rows."))
 }
