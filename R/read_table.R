@@ -72,8 +72,7 @@ cols_select_format <- function(select_list,
 }
 
 
-create_read_sql <- function(connection,
-                            schema,
+create_read_sql <- function(schema,
                             select_list,
                             table_name,
                             table_metadata,
@@ -83,10 +82,10 @@ create_read_sql <- function(connection,
 
   initial_sql <- glue::glue_sql(
     "SELECT {column_sql} FROM {`quoted_schema_tbl(schema, table_name)`}",
-    .con = connection
+    .con = DBI::ANSI()
   )
   if (!is.null(filter_stmt)) {
-    filter_stmt <- format_filter(connection, filter_stmt)
+    filter_stmt <- format_filter(filter_stmt)
     glue::glue(
       initial_sql,
       "WHERE {filter_stmt};",
@@ -141,8 +140,8 @@ create_read_sql <- function(connection,
 #'   filter_stmt = "column1 < 5 & column2 == 'b'"
 #' )
 #' }
-read_table_from_db <- function(database,
-                               server,
+read_table_from_db <- function(server,
+                               database,
                                schema,
                                table_name,
                                columns = NULL,
@@ -159,12 +158,6 @@ read_table_from_db <- function(database,
       "Table: {schema}.{table_name} does not exist in the database."
     ), call. = FALSE)
   }
-
-  # Use a genuine connection, so the filter translation SQL is correct
-  connection <- create_sqlserver_connection(
-    server = server,
-    database = database
-  )
 
   table_metadata <- db_table_metadata(
     server,
@@ -184,7 +177,6 @@ read_table_from_db <- function(database,
   )
 
   read_sql <- create_read_sql(
-    connection,
     schema,
     select_list,
     table_name,
@@ -192,10 +184,11 @@ read_table_from_db <- function(database,
     filter_stmt,
     cast_datetime2
   )
-  DBI::dbDisconnect(connection)
   message(glue::glue("Read SQL statement:\n{read_sql}"))
-  execute_sql(
+  df <- execute_sql(
     database = database, server =
       server, sql = read_sql, output = TRUE
   )
+  message(glue::glue("returned {nrow(df)} rows to data frame"))
+  df
 }
