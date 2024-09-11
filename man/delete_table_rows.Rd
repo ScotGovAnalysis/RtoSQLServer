@@ -4,32 +4,28 @@
 \alias{delete_table_rows}
 \title{Delete rows from an existing database table.}
 \usage{
-delete_table_rows(database, server, schema, table_name, filter_stmt = NULL)
+delete_table_rows(server, database, schema, table_name, filter_stmt = NULL)
 }
 \arguments{
-\item{database}{Database containing table with rows to delete.}
-
 \item{server}{Server instance where SQL Server database running.}
+
+\item{database}{Database containing table with rows to delete.}
 
 \item{schema}{Name of database schema containing table.}
 
 \item{table_name}{Name of table with rows to delete.}
 
-\item{filter_stmt}{Optional filter statement to delete a subset of
-rows from the specified database table.
+\item{filter_stmt}{Optional filter statement to delete only a subset
+of table rows where the filter is TRUE.
 \itemize{
 \item this should be a character
 expression in the format of a \code{\link[dplyr:filter]{dplyr::filter()}} query,
 for example \code{"Species == 'virginica'"} and it will be translated to SQL
 using \code{\link[dbplyr:translate_sql]{dbplyr::translate_sql()}}. One way to achieve the right
 syntax for this argument is to pass a \code{\link[dplyr:filter]{dplyr::filter()}} expression
-through \code{deparse1(substitute())}, for example
-\code{deparse1(substitute(Species == "virginica"))}
+through \code{deparse1(substitute())}, for example:
+\code{deparse1(substitute(Species == "virginica"))}.
 }}
-
-\item{cast_datetime2}{Cast \code{datetime2} data type columns to \code{datetime}.
-This is to help older ODBC drivers where datetime2 columns are read into R
-as character when should be POSIXct. Defaults to TRUE.}
 }
 \description{
 Can either delete all rows from the input table or just a subset

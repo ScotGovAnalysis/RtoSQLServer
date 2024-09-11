@@ -5,8 +5,8 @@
 \title{Read a SQL Server table into an R dataframe.}
 \usage{
 read_table_from_db(
-  database,
   server,
+  database,
   schema,
   table_name,
   columns = NULL,
@@ -16,9 +16,9 @@ read_table_from_db(
 )
 }
 \arguments{
-\item{database}{Database containing table to read.}
-
 \item{server}{Server instance where SQL Server database running.}
+
+\item{database}{Database containing table to read.}
 
 \item{schema}{Name of database schema containing table to read.}
 
