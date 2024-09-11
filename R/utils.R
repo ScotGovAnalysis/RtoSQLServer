@@ -172,7 +172,7 @@ create_check_sql <- function(schema, table_name) {
 }
 
 # Check is versioned
-is_versioned <- function(server, database, schema, table_name){
+is_versioned <- function(server, database, schema, table_name) {
   check_sql <- create_check_sql(schema, table_name)
   check_df <- execute_sql(server, database, check_sql, output = TRUE)
   check_df[["temporal_type_desc"]] == "SYSTEM_VERSIONED_TEMPORAL_TABLE"

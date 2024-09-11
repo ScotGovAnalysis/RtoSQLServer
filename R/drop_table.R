@@ -28,11 +28,15 @@ create_drop_sql <- function(server,
   } else { # if not actually versioned:
     drop_sql <- create_drop_sql_nonversioned(schema, table_name)
   }
-  return(list(drop_sql = drop_sql,
-              versioned = is_versioned(server,
-                                       database,
-                                       schema,
-                                       table_name)))
+  return(list(
+    drop_sql = drop_sql,
+    versioned = is_versioned(
+      server,
+      database,
+      schema,
+      table_name
+    )
+  ))
 }
 
 #' Drop SQL Server table from database
