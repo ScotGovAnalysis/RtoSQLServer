@@ -153,9 +153,27 @@ get_pk_name <- function(server,
 }
 
 # format filter used in read and delete table rows functions
-format_filter <- function(connection, filter_stmt) {
+format_filter <- function(filter_stmt) {
   sql <- dbplyr::translate_sql(!!rlang::parse_expr(filter_stmt),
-    con = connection
+    con = dbplyr::simulate_mssql()
   )
-  as.character(sql)
+  sql <- as.character(sql)
+  # it quotes identifiers with `` which is invalid in MS SQL Server
+  gsub("`", "\"", sql)
+}
+
+# sql to check if versioned table
+create_check_sql <- function(schema, table_name) {
+  glue::glue_sql(
+    "select name, temporal_type_desc from sys.tables where name = \\
+    {table_name} and schema_name(schema_id) = {schema};",
+    .con = DBI::ANSI()
+  )
+}
+
+# Check is versioned
+is_versioned <- function(server, database, schema, table_name){
+  check_sql <- create_check_sql(schema, table_name)
+  check_df <- execute_sql(server, database, check_sql, output = TRUE)
+  check_df[["temporal_type_desc"]] == "SYSTEM_VERSIONED_TEMPORAL_TABLE"
 }
