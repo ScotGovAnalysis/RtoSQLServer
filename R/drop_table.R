@@ -22,7 +22,6 @@ create_drop_sql <- function(server,
                             database,
                             schema,
                             table_name) {
-  # Check is versioned table regardless of versioned_table input arg
   if (is_versioned(server, database, schema, table_name)) {
     drop_sql <- create_drop_sql_versioned(schema, table_name)
   } else { # if not actually versioned:
