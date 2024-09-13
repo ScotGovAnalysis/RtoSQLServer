@@ -46,7 +46,7 @@ get_table_stats <- function(i, columns_info, schema, table_name) {
 
   # Building the full SQL query
   glue::glue_sql(
-"SELECT {col} AS column_name, {data_type} AS data_type, \\
+    "SELECT {col} AS column_name, {data_type} AS data_type, \\
 (SELECT COUNT(*) FROM {`schema`}.{`table_name`}) AS row_count, \\
 (SELECT COUNT(*) FROM {`schema`}.{`table_name`} WHERE {col} IS NULL) \\
 AS null_count, \\
