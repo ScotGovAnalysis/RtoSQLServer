@@ -1,18 +1,18 @@
 table_sql <- function(schema) {
-  glue::glue_sql("SELECT name AS 'table',
-       create_date AS 'creation_date'
-       FROM sys.tables
-       WHERE SCHEMA_NAME(schema_id) = {schema}
-       order by 2", .con = DBI::ANSI())
+  glue::glue_sql("SELECT name AS 'table', \\
+                 create_date AS 'creation_date' \\
+                 FROM sys.tables \\
+                 WHERE SCHEMA_NAME(schema_id) = {schema} \\
+                 order by 2", .con = DBI::ANSI())
 }
 
 table_view_sql <- function(schema) {
-  glue::glue_sql("SELECT name AS 'table',
-  type_desc AS 'object_type',
-  create_date AS 'creation_date'
-  FROM sys.objects
-  WHERE type IN ('U', 'V')  -- 'U'ser tables, 'V'iews
-  AND SCHEMA_NAME(schema_id) = {schema}
+  glue::glue_sql("SELECT name AS 'table', \\
+  type_desc AS 'object_type', \\
+  create_date AS 'creation_date' \\
+  FROM sys.objects \\
+  WHERE type IN ('U', 'V')  -- 'U'ser tables, 'V'iews \\
+  AND SCHEMA_NAME(schema_id) = {schema} \\
   order by type, name", .con = DBI::ANSI())
 }
 

@@ -5,12 +5,12 @@ test_that("table not exist error works", {
 
 
 test_that("versioned drop sql created correctly", {
-  drop_ver_sql <- DBI::SQL(paste0(
-    "ALTER TABLE \"test_schema\".\"test_tbl\" ",
-    "SET ( SYSTEM_VERSIONING = OFF );",
-    "DROP TABLE \"test_schema\".\"test_tbl\";",
-    "DROP TABLE \"test_schema\".\"test_tblHistory\";"
-  ))
+  drop_ver_sql <- glue::glue_sql(
+    "ALTER TABLE \"test_schema\".\"test_tbl\" \\
+    SET ( SYSTEM_VERSIONING = OFF ); \\
+    DROP TABLE \"test_schema\".\"test_tbl\"; \\
+    DROP TABLE \"test_schema\".\"test_tblHistory\";"
+  )
 
   mockery::stub(create_drop_sql, "is_versioned", TRUE)
 

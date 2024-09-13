@@ -1,10 +1,10 @@
 # create versioned table sql
 create_drop_sql_versioned <- function(schema, table_name) {
   history_table <- quoted_schema_tbl(schema, glue::glue(table_name, "History"))
-  glue::glue_sql("ALTER TABLE {`quoted_schema_tbl(schema, table_name)`} ",
-    "SET ( SYSTEM_VERSIONING = OFF );",
-    "DROP TABLE {`quoted_schema_tbl(schema, table_name)`};",
-    "DROP TABLE {`history_table`};",
+  glue::glue_sql("ALTER TABLE {`quoted_schema_tbl(schema, table_name)`} \\
+    SET ( SYSTEM_VERSIONING = OFF ); \\
+    DROP TABLE {`quoted_schema_tbl(schema, table_name)`}; \\
+    DROP TABLE {`history_table`};",
     .con = DBI::ANSI()
   )
 }
@@ -104,10 +104,10 @@ drop_table_from_db <- function(server,
     error = function(cond) {
       if (drop_sql$versioned) {
         cond$message <- glue::glue(
-          "{cond$message}\n\n",
-          "{schema}.{table_name} is a VERSIONED TABLE.\n\n",
-          "Contact a system admin to request that they drop this versioned ",
-          "table for you as you do not have sufficient permissions.",
+          "{cond$message}\n\n \\
+          {schema}.{table_name} is a VERSIONED TABLE.\n\n \\
+          Contact a system admin to request that they drop this versioned \\
+          table for you as you do not have sufficient permissions.",
         )
       } else {
         cond$message <- glue::glue("Error dropping table: {cond}")
@@ -119,9 +119,7 @@ drop_table_from_db <- function(server,
 
   # Output message if required
   if (!silent) {
-    message(glue::glue("Table: {schema}.{table_name}",
-      "successfully deleted.",
-      .sep = " "
-    ))
+    message(glue::glue("Table: {schema}.{table_name} \\
+      successfully deleted."))
   }
 }

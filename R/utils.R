@@ -12,10 +12,9 @@ create_sqlserver_connection <- function(server, database, timeout = 10) {
     },
     error = function(cond) {
       stop(glue::glue(
-        "Failed to create connection to database:",
-        "{database} on server: {server}",
-        "\n{cond}",
-        .sep = " "
+        "Failed to create connection to database: \\
+        {database} on server: {server} \\
+        \n{cond}"
       ), call. = FALSE)
     }
   )
@@ -135,12 +134,12 @@ get_pk_name <- function(server,
                         schema,
                         table_name) {
   sql <- glue::glue_sql(
-    "select C.COLUMN_NAME FROM
-    INFORMATION_SCHEMA.TABLE_CONSTRAINTS T
-    JOIN INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE C
-    ON C.CONSTRAINT_NAME = T.CONSTRAINT_NAME
-    WHERE  C.TABLE_NAME = {table_name}
-    AND T.CONSTRAINT_SCHEMA = {schema}
+    "select C.COLUMN_NAME FROM \\
+    INFORMATION_SCHEMA.TABLE_CONSTRAINTS T \\
+    JOIN INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE C \\
+    ON C.CONSTRAINT_NAME = T.CONSTRAINT_NAME \\
+    WHERE  C.TABLE_NAME = {table_name} \\
+    AND T.CONSTRAINT_SCHEMA = {schema} \\
     AND T.CONSTRAINT_TYPE = 'PRIMARY KEY';",
     .con = DBI::ANSI()
   )

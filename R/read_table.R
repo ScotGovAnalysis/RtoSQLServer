@@ -42,8 +42,8 @@ table_select_list <- function(server,
 # Cast datetime2 columns to datetime- workaround due to old ODBC client drivers
 col_select <- function(column_name, datetime2_cols_to_cast) {
   if (column_name %in% datetime2_cols_to_cast) {
-    return(glue::glue_sql("CAST({`column_name`} AS datetime) ",
-      "AS {`column_name`}",
+    return(glue::glue_sql("CAST({`column_name`} AS datetime) \\
+                          AS {`column_name`}",
       .con = DBI::ANSI()
     ))
   } else {
@@ -86,13 +86,10 @@ create_read_sql <- function(schema,
   )
   if (!is.null(filter_stmt)) {
     filter_stmt <- format_filter(filter_stmt)
-    glue::glue(
-      initial_sql,
-      "WHERE {filter_stmt};",
-      .sep = " "
-    )
+    glue::glue_sql(glue::glue(initial_sql, " WHERE {filter_stmt};"),
+                   .con = DBI::ANSI())
   } else {
-    glue::glue(initial_sql, ";")
+    glue::glue_sql(glue::glue(initial_sql, ";"), .con = DBI::ANSI())
   }
 }
 

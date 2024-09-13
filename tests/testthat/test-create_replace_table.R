@@ -18,13 +18,13 @@ test_that("cleaning column names works", {
 
 test_that("create table sql correct", {
   correct_sql <- glue::glue_sql(
-    "CREATE TABLE \"test\".\"test_tbl\" ",
-    "(\"test_tblID\" INT NOT NULL IDENTITY PRIMARY KEY,",
-    "\"Sepal.Length\" float, ",
-    "\"Sepal.Width\" float, ",
-    "\"Petal.Length\" float, ",
-    "\"Petal.Width\" float, ",
-    "\"Species\" nvarchar(50));"
+    "CREATE TABLE \"test\".\"test_tbl\" \\
+    (\"test_tblID\" INT NOT NULL IDENTITY PRIMARY KEY,\\
+    \"Sepal.Length\" float, \\
+    \"Sepal.Width\" float, \\
+    \"Petal.Length\" float, \\
+    \"Petal.Width\" float, \\
+    \"Species\" nvarchar(50));"
   )
   metadata_df <- df_to_metadata(iris)
   expect_equal(

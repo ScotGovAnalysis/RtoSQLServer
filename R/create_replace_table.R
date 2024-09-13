@@ -138,10 +138,9 @@ check_existing_table <- function(db_params,
   resize_datatypes(compare_col_df, db_params)
 
   message(glue::glue(
-    "Checked existing columns in ",
-    "{db_params$schema}.{db_params$table_name}",
-    "are compatible with those in the dataframe to be loaded.",
-    .sep = " "
+    "Checked existing columns in \\
+    {db_params$schema}.{db_params$table_name} \\
+    are compatible with those in the dataframe to be loaded."
   ))
 }
 
@@ -149,9 +148,9 @@ check_existing_table <- function(db_params,
 alter_sql_character_col <- function(db_params,
                                     column_name,
                                     new_char_type) {
-  sql <- glue::glue_sql("ALTER TABLE ",
-    "{`quoted_schema_tbl(db_params$schema, db_params$table_name)`} ",
-    "ALTER COLUMN {`column_name`} {DBI::SQL(new_char_type)};",
+  sql <- glue::glue_sql("ALTER TABLE \\
+    {`quoted_schema_tbl(db_params$schema, db_params$table_name)`} \\
+    ALTER COLUMN {`column_name`} {DBI::SQL(new_char_type)};",
     .con = DBI::ANSI()
   )
 
@@ -162,9 +161,9 @@ alter_sql_character_col <- function(db_params,
     FALSE
   )
   message(glue::glue(
-    "Resizing column {column_name}",
-    "to {new_char_type}."
-  ), .sep = " ")
+    "Resizing column {column_name} \\
+    to {new_char_type}."
+  ))
 }
 
 id_col_name <- function(table_name) {
@@ -177,9 +176,9 @@ sql_create_table <- function(schema, table_name, metadata_df) {
     metadata_df$column_name != paste0(table_name, "ID"),
   ]
 
-  initial_sql <- glue::glue_sql("CREATE TABLE ",
-    "{`quoted_schema_tbl(schema, table_name)`} (",
-    "{`id_col_name(table_name)`} INT NOT NULL IDENTITY PRIMARY KEY,",
+  initial_sql <- glue::glue_sql("CREATE TABLE \\
+    {`quoted_schema_tbl(schema, table_name)`} (\\
+    {`id_col_name(table_name)`} INT NOT NULL IDENTITY PRIMARY KEY,",
     .con = DBI::ANSI()
   )
 
@@ -203,11 +202,11 @@ sql_versioned_table <- function(sql, db_params) {
   )
   # The versioned table sql
   glue::glue_sql(sql,
-    " \"SysStartTime\" DATETIME2 GENERATED ALWAYS AS ROW START NOT NULL, ",
-    "\"SysEndTime\" DATETIME2 GENERATED ALWAYS AS ROW END NOT NULL, ",
-    "PERIOD FOR SYSTEM_TIME (SysStartTime, SysEndTime)) ",
-    "WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE = ",
-    "{`history_table`}));",
+    " \"SysStartTime\" DATETIME2 GENERATED ALWAYS AS ROW START NOT NULL, \\
+    \"SysEndTime\" DATETIME2 GENERATED ALWAYS AS ROW END NOT NULL, \\
+    PERIOD FOR SYSTEM_TIME (SysStartTime, SysEndTime)) \\
+    WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE = \\
+    {`history_table`}));",
     .con = DBI::ANSI()
   )
 }
@@ -245,9 +244,8 @@ create_staging_table <- function(db_params, dataframe) {
     FALSE
   )
   message(glue::glue(
-    "Table: {db_params$schema}.{staging_name}",
-    "successfully created in database.",
-    .sep = " "
+    "Table: {db_params$schema}.{staging_name} \\
+    successfully created in database."
   ))
 }
 
@@ -276,9 +274,8 @@ populate_staging_table <- function(db_params,
   )
   batch_list <- get_df_batches(dataframe = dataframe, batch_size = batch_size)
   message(glue::glue(
-    "Loading to staging in {length(batch_list$batch_starts)}",
-    "batches of up to {format(batch_size, scientific = FALSE)} rows...",
-    .sep = " "
+    "Loading to staging in {length(batch_list$batch_starts)} \\
+    batches of up to {format(batch_size, scientific = FALSE)} rows..."
   ))
   for (i in seq_along(batch_list$batch_starts)) {
     batch_start <- batch_list$batch_starts[[i]]
@@ -296,17 +293,15 @@ populate_staging_table <- function(db_params,
       },
       error = function(cond) {
         stop(glue::glue(
-          "Failed to write staging",
-          "data to database.\n", cond,
-          .sep = " "
+          "Failed to write staging \\
+          data to database.\n", cond
         ), call. = FALSE)
       }
     )
     message(glue::glue(
-      "Loaded rows {format(batch_start, scientific = FALSE)}",
-      "- {format(batch_end, scientific = FALSE)} of",
-      "{tail(batch_list$batch_ends, 1)}",
-      .sep = " "
+      "Loaded rows {format(batch_start, scientific = FALSE)} \\
+      - {format(batch_end, scientific = FALSE)} of \\
+      {tail(batch_list$batch_ends, 1)}"
     ))
   }
   DBI::dbDisconnect(connection)
@@ -317,10 +312,10 @@ create_insert_sql <- function(db_params, metadata_df) {
     paste0(db_params$table_name, "ID"), ]
 
   glue::glue_sql(
-    "INSERT INTO ",
-    "{`quoted_schema_tbl(db_params$schema, db_params$table_name)`} ",
-    "({`metadata_df$column_name`*}) select {`metadata_df$column_name`*} from ",
-    "{`quoted_schema_tbl(db_params$schema,
+    "INSERT INTO \\
+    {`quoted_schema_tbl(db_params$schema, db_params$table_name)`} \\
+    ({`metadata_df$column_name`*}) select {`metadata_df$column_name`*} from \\
+    {`quoted_schema_tbl(db_params$schema,
     paste0(db_params$table_name,'_staging_'))`};",
     .con = DBI::ANSI()
   )
@@ -338,9 +333,8 @@ populate_table_from_staging <- function(db_params) {
 
   execute_sql(db_params$server, db_params$database, sql, FALSE)
   message(glue::glue(
-    "Table: {db_params$schema}.{db_params$table_name}",
-    "successfully populated from staging",
-    .sep = " "
+    "Table: {db_params$schema}.{db_params$table_name} \\
+    successfully populated from staging"
   ))
 }
 
@@ -357,9 +351,8 @@ delete_staging_table <- function(db_params, silent = FALSE) {
   )
   if (!silent) {
     message(glue::glue(
-      "Staging table: {db_params$schema}.{db_params$table_name}_staging_",
-      "successfully deleted from database.",
-      .sep = " "
+      "Staging table: {db_params$schema}.{db_params$table_name}_staging_ \\
+      successfully deleted from database."
     ))
   }
 }
@@ -390,9 +383,8 @@ create_table <- function(db_params, silent = FALSE) {
   )
   if (!silent) {
     message(glue::glue(
-      "Table: {db_params$schema}.{db_params$table_name}",
-      "successfully created in database",
-      .sep = " "
+      "Table: {db_params$schema}.{db_params$table_name} \\
+      successfully created in database"
     ))
   }
 }
@@ -407,10 +399,9 @@ clean_table_name <- function(table_name) {
   # Advise if changing target table name
   if (new_name != table_name) {
     warning(glue::glue(
-      "Cannot name a table {table_name}",
-      "replacing with name {new_name}",
-      "(see ODBC table name limitations)",
-      .sep = " "
+      "Cannot name a table {table_name} \\
+      replacing with name {new_name} \\
+      (see ODBC table name limitations)"
     ))
   }
   return(new_name)
@@ -553,9 +544,8 @@ write_dataframe_to_db <- function(server,
     # If not appending and exists then inform that will be overwritten
   } else {
     warning(glue::glue(
-      "Database table: {schema}.{table_name} already exists",
-      "attempting to drop and replace it...",
-      .sep = " "
+      "Database table: {schema}.{table_name} already exists \\
+      attempting to drop and replace it..."
     ), call. = FALSE)
     # Drop the existing table
     drop_table_from_db(
@@ -587,8 +577,7 @@ write_dataframe_to_db <- function(server,
   }
   end_time <- Sys.time()
   message(glue::glue(
-    "Loading completed in",
-    "{round(difftime(end_time, start_time,units = 'mins')[[1]], 2)} minutes.",
-    .sep = " "
+    "Loading completed in \\
+    {round(difftime(end_time, start_time,units = 'mins')[[1]], 2)} minutes."
   ))
 }
