@@ -73,7 +73,6 @@ jobs:
             git checkout ${{ github.ref_name }}  # Explicitly check out the triggering branch
             git commit ${FILES_TO_COMMIT[*]} -m "Style code (GHA)"
             git pull --ff-only
-            git push origin
             git push origin ${{ github.ref_name }}  # Push to the correct branch
           else
             echo "No changes to commit."
