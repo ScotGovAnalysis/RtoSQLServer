@@ -12,30 +12,14 @@ create_sqlserver_connection <- function(server, database, timeout = 10) {
     },
     error = function(cond) {
       stop(glue::glue(
-        "Failed to create connection to database:",
-        "{database} on server: {server}",
-        "\n{cond}",
-        .sep = " "
+        "Failed to create connection to database: \\
+        {database} on server: {server} \\
+        \n{cond}"
       ), call. = FALSE)
     }
   )
 }
 
-
-
-
-get_db_tables <- function(server, database) {
-  sql <- "SELECT SCHEMA_NAME(t.schema_id) AS 'Schema',
-  t.name AS 'Name'
-  FROM sys.tables t"
-  data <- execute_sql(
-    database = database,
-    server = server,
-    sql = sql,
-    output = TRUE
-  )
-  data
-}
 
 r_to_sql_character_sizes <- function(max_string) {
   max_string <- as.numeric(max_string)
@@ -126,10 +110,14 @@ check_table_exists <- function(server,
                                database,
                                schema,
                                table_name) {
-  all_tables <- get_db_tables(database = database, server = server)
+  all_tables <- show_schema_tables(
+    database = database,
+    server = server,
+    schema = schema,
+    include_views = TRUE
+  )
   # return TRUE if exists or else false
-  nrow(all_tables[all_tables$Schema == schema &
-    all_tables$Name == table_name, ]) == 1
+  nrow(all_tables[all_tables$table == table_name, ]) == 1
 }
 
 # Prevent SQL injection with quoted schema table name construction
@@ -146,12 +134,12 @@ get_pk_name <- function(server,
                         schema,
                         table_name) {
   sql <- glue::glue_sql(
-    "select C.COLUMN_NAME FROM
-    INFORMATION_SCHEMA.TABLE_CONSTRAINTS T
-    JOIN INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE C
-    ON C.CONSTRAINT_NAME = T.CONSTRAINT_NAME
-    WHERE  C.TABLE_NAME = {table_name}
-    AND T.CONSTRAINT_SCHEMA = {schema}
+    "select C.COLUMN_NAME FROM \\
+    INFORMATION_SCHEMA.TABLE_CONSTRAINTS T \\
+    JOIN INFORMATION_SCHEMA.CONSTRAINT_COLUMN_USAGE C \\
+    ON C.CONSTRAINT_NAME = T.CONSTRAINT_NAME \\
+    WHERE  C.TABLE_NAME = {table_name} \\
+    AND T.CONSTRAINT_SCHEMA = {schema} \\
     AND T.CONSTRAINT_TYPE = 'PRIMARY KEY';",
     .con = DBI::ANSI()
   )
@@ -161,4 +149,30 @@ get_pk_name <- function(server,
   } else {
     NULL
   }
+}
+
+# format filter used in read and delete table rows functions
+format_filter <- function(filter_stmt) {
+  sql <- dbplyr::translate_sql(!!rlang::parse_expr(filter_stmt),
+    con = dbplyr::simulate_mssql()
+  )
+  sql <- as.character(sql)
+  # it quotes identifiers with `` which is invalid in MS SQL Server
+  gsub("`", "\"", sql)
+}
+
+# sql to check if versioned table
+create_check_sql <- function(schema, table_name) {
+  glue::glue_sql(
+    "select name, temporal_type_desc from sys.tables where name = \\
+    {table_name} and schema_name(schema_id) = {schema};",
+    .con = DBI::ANSI()
+  )
+}
+
+# Check is versioned
+is_versioned <- function(server, database, schema, table_name) {
+  check_sql <- create_check_sql(schema, table_name)
+  check_df <- execute_sql(server, database, check_sql, output = TRUE)
+  check_df[["temporal_type_desc"]] == "SYSTEM_VERSIONED_TEMPORAL_TABLE"
 }

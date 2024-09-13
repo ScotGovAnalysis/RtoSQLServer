@@ -39,18 +39,11 @@ table_select_list <- function(server,
 }
 
 
-format_filter <- function(connection, filter_stmt) {
-  sql <- dbplyr::translate_sql(!!rlang::parse_expr(filter_stmt),
-    con = connection
-  )
-  sql <- as.character(sql)
-}
-
 # Cast datetime2 columns to datetime- workaround due to old ODBC client drivers
 col_select <- function(column_name, datetime2_cols_to_cast) {
   if (column_name %in% datetime2_cols_to_cast) {
-    return(glue::glue_sql("CAST({`column_name`} AS datetime) ",
-      "AS {`column_name`}",
+    return(glue::glue_sql("CAST({`column_name`} AS datetime) \\
+                          AS {`column_name`}",
       .con = DBI::ANSI()
     ))
   } else {
@@ -79,8 +72,7 @@ cols_select_format <- function(select_list,
 }
 
 
-create_read_sql <- function(connection,
-                            schema,
+create_read_sql <- function(schema,
                             select_list,
                             table_name,
                             table_metadata,
@@ -90,17 +82,15 @@ create_read_sql <- function(connection,
 
   initial_sql <- glue::glue_sql(
     "SELECT {column_sql} FROM {`quoted_schema_tbl(schema, table_name)`}",
-    .con = connection
+    .con = DBI::ANSI()
   )
   if (!is.null(filter_stmt)) {
-    filter_stmt <- format_filter(connection, filter_stmt)
-    glue::glue(
-      initial_sql,
-      "WHERE {filter_stmt};",
-      .sep = " "
+    filter_stmt <- format_filter(filter_stmt)
+    glue::glue_sql(glue::glue(initial_sql, " WHERE {filter_stmt};"),
+      .con = DBI::ANSI()
     )
   } else {
-    glue::glue(initial_sql, ";")
+    glue::glue_sql(glue::glue(initial_sql, ";"), .con = DBI::ANSI())
   }
 }
 
@@ -140,15 +130,16 @@ create_read_sql <- function(connection,
 #' @examples
 #' \dontrun{
 #' read_table_from_db(
-#'   database = "my_database",
 #'   server = "my_server",
+#'   database = "my_database",
+#'   schema = "my_schema",
 #'   table_name = "my_table",
 #'   columns = c("column1", "column2"),
 #'   filter_stmt = "column1 < 5 & column2 == 'b'"
 #' )
 #' }
-read_table_from_db <- function(database,
-                               server,
+read_table_from_db <- function(server,
+                               database,
                                schema,
                                table_name,
                                columns = NULL,
@@ -165,12 +156,6 @@ read_table_from_db <- function(database,
       "Table: {schema}.{table_name} does not exist in the database."
     ), call. = FALSE)
   }
-
-  # Use a genuine connection, so the filter translation SQL is correct
-  connection <- create_sqlserver_connection(
-    server = server,
-    database = database
-  )
 
   table_metadata <- db_table_metadata(
     server,
@@ -190,7 +175,6 @@ read_table_from_db <- function(database,
   )
 
   read_sql <- create_read_sql(
-    connection,
     schema,
     select_list,
     table_name,
@@ -198,10 +182,11 @@ read_table_from_db <- function(database,
     filter_stmt,
     cast_datetime2
   )
-  DBI::dbDisconnect(connection)
   message(glue::glue("Read SQL statement:\n{read_sql}"))
-  execute_sql(
+  df <- execute_sql(
     database = database, server =
       server, sql = read_sql, output = TRUE
   )
+  message(glue::glue("returned {nrow(df)} rows to data frame"))
+  df
 }

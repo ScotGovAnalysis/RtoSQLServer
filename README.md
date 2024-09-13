@@ -128,33 +128,31 @@ read_selected_df <- execute_sql(
   output = TRUE
 )
 
-# SQL to return the names of all existing tables-----
-# in the database into an R dataframe
+# To return the names and creation date of all
+# existing tables and views in a schema
+# into an R dataframe
 
-sql2 <- "SELECT SCHEMA_NAME(t.schema_id) AS 'Schema',
-  t.name AS 'Name'
-  FROM sys.tables t
-  order by 1,2;"
-
-db_all_tables <- execute_sql(
+schema_objects_df <- show_schema_tables(
   server = server,
   database = database,
-  sql = sql2,
-  output = TRUE
+  schema = schema,
+  include_views = TRUE
 )
 
 # To return information about existing database table
 # column names, datatype and optionally summary info
 # use db_table_metadata
 
-db_table_metadata(server = server, 
-                  database = database, 
-                  schema = schema, 
-                  table_name = "test_r_tbl",
-                  summary_stats = FALSE)
+db_table_metadata(
+  server = server,
+  database = database,
+  schema = schema,
+  table_name = "test_r_tbl",
+  summary_stats = FALSE
+)
 
 # (use summary_stats = TRUE if want to know value ranges,
-# distinct counts, number of NULL records, 
+# distinct counts, number of NULL records,
 # but this is slower)
 
 

@@ -1,20 +1,10 @@
-# sql to check if versioned table
-create_check_sql <- function(schema, table_name) {
-  glue::glue_sql(
-    "select name, temporal_type_desc from sys.tables where name = ",
-    "{table_name} and schema_name(schema_id) = {schema};",
-    .con = DBI::ANSI()
-  )
-}
-
-
 # create versioned table sql
 create_drop_sql_versioned <- function(schema, table_name) {
   history_table <- quoted_schema_tbl(schema, glue::glue(table_name, "History"))
-  glue::glue_sql("ALTER TABLE {`quoted_schema_tbl(schema, table_name)`} ",
-    "SET ( SYSTEM_VERSIONING = OFF );",
-    "DROP TABLE {`quoted_schema_tbl(schema, table_name)`};",
-    "DROP TABLE {`history_table`};",
+  glue::glue_sql("ALTER TABLE {`quoted_schema_tbl(schema, table_name)`} \\
+    SET ( SYSTEM_VERSIONING = OFF ); \\
+    DROP TABLE {`quoted_schema_tbl(schema, table_name)`}; \\
+    DROP TABLE {`history_table`};",
     .con = DBI::ANSI()
   )
 }
@@ -26,30 +16,26 @@ create_drop_sql_nonversioned <- function(schema, table_name) {
   )
 }
 
-# Ensure a versioned table based on metadata
-is_versioned <- function(check_df) {
-  check_df[["temporal_type_desc"]] == "SYSTEM_VERSIONED_TEMPORAL_TABLE"
-}
 
 # Derive the drop sql depending on if versioned (check first)
 create_drop_sql <- function(server,
                             database,
                             schema,
                             table_name) {
-  # Check is versioned table regardless of versioned_table input arg
-  check_sql <- create_check_sql(schema, table_name)
-  check_df <- execute_sql(
-    server = server,
-    database = database,
-    sql = check_sql,
-    output = TRUE
-  )
-  if (is_versioned(check_df)) {
+  if (is_versioned(server, database, schema, table_name)) {
     drop_sql <- create_drop_sql_versioned(schema, table_name)
   } else { # if not actually versioned:
     drop_sql <- create_drop_sql_nonversioned(schema, table_name)
   }
-  return(list(drop_sql = drop_sql, versioned = is_versioned(check_df)))
+  return(list(
+    drop_sql = drop_sql,
+    versioned = is_versioned(
+      server,
+      database,
+      schema,
+      table_name
+    )
+  ))
 }
 
 #' Drop SQL Server table from database
@@ -118,10 +104,10 @@ drop_table_from_db <- function(server,
     error = function(cond) {
       if (drop_sql$versioned) {
         cond$message <- glue::glue(
-          "{cond$message}\n\n",
-          "{schema}.{table_name} is a VERSIONED TABLE.\n\n",
-          "Contact a system admin to request that they drop this versioned ",
-          "table for you as you do not have sufficient permissions.",
+          "{cond$message}\n\n \\
+          {schema}.{table_name} is a VERSIONED TABLE.\n\n \\
+          Contact a system admin to request that they drop this versioned \\
+          table for you as you do not have sufficient permissions.",
         )
       } else {
         cond$message <- glue::glue("Error dropping table: {cond}")
@@ -133,9 +119,7 @@ drop_table_from_db <- function(server,
 
   # Output message if required
   if (!silent) {
-    message(glue::glue("Table: {schema}.{table_name}",
-      "successfully deleted.",
-      .sep = " "
-    ))
+    message(glue::glue("Table: {schema}.{table_name} \\
+      successfully deleted."))
   }
 }

@@ -1,10 +1,10 @@
 # basic column name, datatype and length query
 col_query <- function(database, schema, table_name) {
   glue::glue_sql("
-  SELECT column_name, data_type, CHARACTER_MAXIMUM_LENGTH
-  FROM INFORMATION_SCHEMA.COLUMNS
-  WHERE TABLE_CATALOG = {database}
-  AND TABLE_SCHEMA = {schema}
+  SELECT column_name, data_type, CHARACTER_MAXIMUM_LENGTH \\
+  FROM INFORMATION_SCHEMA.COLUMNS \\
+  WHERE TABLE_CATALOG = {database} \\
+  AND TABLE_SCHEMA = {schema} \\
   AND TABLE_NAME = {table_name}", .con = DBI::ANSI())
 }
 
@@ -12,9 +12,9 @@ col_query <- function(database, schema, table_name) {
 update_col_query <- function(columns_info) {
   # To add the length of nvarchar column so appears as e.g. nvarchar(50)
   update_char <- glue::glue(
-    "{columns_info[! is.na(columns_info$CHARACTER_MAXIMUM_LENGTH), 2]}",
-    "({as.character(columns_info",
-    "[! is.na(columns_info$CHARACTER_MAXIMUM_LENGTH), 3])})"
+    "{columns_info[! is.na(columns_info$CHARACTER_MAXIMUM_LENGTH), 2]}\\
+    ({as.character(columns_info\\
+    [! is.na(columns_info$CHARACTER_MAXIMUM_LENGTH), 3])})"
   )
 
   columns_info$data_type[!is.na(columns_info$CHARACTER_MAXIMUM_LENGTH)] <-
@@ -32,12 +32,12 @@ get_table_stats <- function(i, columns_info, schema, table_name) {
 
   # Generate the min/max query based on the data type
   min_max_query <- if (data_type != "bit") {
-    glue::glue_sql("(SELECT MIN(CAST({`col`} AS NVARCHAR(225)))
-                     FROM {`schema`}.{`table_name`}
-                     WHERE {col} IS NOT NULL) AS minimum_value,
-                    (SELECT MAX(CAST({`col`} AS NVARCHAR(225)))
-                     FROM {`schema`}.{`table_name`}
-                     WHERE {col} IS NOT NULL) AS maximum_value",
+    glue::glue_sql("(SELECT MIN(CAST({`col`} AS NVARCHAR(225))) \\
+                   FROM {`schema`}.{`table_name`} \\
+                   WHERE {col} IS NOT NULL) AS minimum_value, \\
+                   (SELECT MAX(CAST({`col`} AS NVARCHAR(225))) \\
+                   FROM {`schema`}.{`table_name`} \\
+                   WHERE {col} IS NOT NULL) AS maximum_value",
       .con = DBI::ANSI()
     )
   } else {
@@ -45,14 +45,13 @@ get_table_stats <- function(i, columns_info, schema, table_name) {
   }
 
   # Building the full SQL query
-  glue::glue_sql("
-    SELECT {col} AS column_name, {data_type} AS data_type,
-    (SELECT COUNT(*) FROM {`schema`}.{`table_name`}) AS row_count,
-    (SELECT COUNT(*) FROM {`schema`}.{`table_name`} WHERE {col} IS NULL)
-    AS null_count,
-    (SELECT COUNT(DISTINCT {`col`}) FROM {`schema`}.{`table_name`}
-    WHERE {col} IS NOT NULL) AS distinct_values,
-    {min_max_query}",
+  glue::glue_sql(
+    "SELECT {col} AS column_name, {data_type} AS data_type, \\
+(SELECT COUNT(*) FROM {`schema`}.{`table_name`}) AS row_count, \\
+(SELECT COUNT(*) FROM {`schema`}.{`table_name`} WHERE {col} IS NULL) \\
+AS null_count, \\
+(SELECT COUNT(DISTINCT {`col`}) FROM {`schema`}.{`table_name`} \\
+WHERE {col} IS NOT NULL) AS distinct_values, {min_max_query}",
     .con = DBI::ANSI()
   )
 }

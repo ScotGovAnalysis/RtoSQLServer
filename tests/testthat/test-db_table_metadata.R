@@ -1,11 +1,10 @@
 test_that("basic sql created correctly", {
-  check_sql <- glue::glue_sql(
-    "SELECT column_name, data_type, CHARACTER_MAXIMUM_LENGTH
-  FROM INFORMATION_SCHEMA.COLUMNS
-  WHERE TABLE_CATALOG = 'test_db'
-  AND TABLE_SCHEMA = 'test_schema'
-  AND TABLE_NAME = 'test_tbl'"
-  )
+  check_sql <- glue::glue_sql("
+  SELECT column_name, data_type, CHARACTER_MAXIMUM_LENGTH \\
+  FROM INFORMATION_SCHEMA.COLUMNS \\
+  WHERE TABLE_CATALOG = 'test_db' \\
+  AND TABLE_SCHEMA = 'test_schema' \\
+  AND TABLE_NAME = 'test_tbl'")
 
   expect_equal(
     col_query("test_db", "test_schema", "test_tbl"),

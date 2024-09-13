@@ -5,8 +5,8 @@
 \title{Read a SQL Server table into an R dataframe.}
 \usage{
 read_table_from_db(
-  database,
   server,
+  database,
   schema,
   table_name,
   columns = NULL,
@@ -16,9 +16,9 @@ read_table_from_db(
 )
 }
 \arguments{
-\item{database}{Database containing table to read.}
-
 \item{server}{Server instance where SQL Server database running.}
+
+\item{database}{Database containing table to read.}
 
 \item{schema}{Name of database schema containing table to read.}
 
@@ -56,8 +56,9 @@ use the \code{\link[=execute_sql]{execute_sql()}} function instead.
 \examples{
 \dontrun{
 read_table_from_db(
-  database = "my_database",
   server = "my_server",
+  database = "my_database",
+  schema = "my_schema",
   table_name = "my_table",
   columns = c("column1", "column2"),
   filter_stmt = "column1 < 5 & column2 == 'b'"
