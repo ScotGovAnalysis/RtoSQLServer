@@ -3,9 +3,7 @@
 # Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 on:
   pull_request:
-    branches:
-      - main
-      - develop
+    branches: [main, develop]
 
 name: Style
 
@@ -70,9 +68,11 @@ jobs:
           then
             git config --local user.name "$GITHUB_ACTOR"
             git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
-            git checkout ${{ github.ref_name }}  # Explicitly check out the triggering branch
+            git checkout ${{ github.event.pull_request.head.ref || github.ref_name }}
             git commit ${FILES_TO_COMMIT[*]} -m "Style code (GHA)"
             git pull --ff-only
+            git push origin HEAD:${{ github.event.pull_request.head.ref || github.ref_name }}
           else
             echo "No changes to commit."
           fi
+
