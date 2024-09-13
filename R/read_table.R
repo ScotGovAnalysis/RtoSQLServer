@@ -87,7 +87,8 @@ create_read_sql <- function(schema,
   if (!is.null(filter_stmt)) {
     filter_stmt <- format_filter(filter_stmt)
     glue::glue_sql(glue::glue(initial_sql, " WHERE {filter_stmt};"),
-                   .con = DBI::ANSI())
+      .con = DBI::ANSI()
+    )
   } else {
     glue::glue_sql(glue::glue(initial_sql, ";"), .con = DBI::ANSI())
   }
