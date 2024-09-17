@@ -109,12 +109,13 @@ compatible_cols <- function(existing_col_type,
 check_table_exists <- function(server,
                                database,
                                schema,
-                               table_name) {
+                               table_name,
+                               include_views = TRUE) {
   all_tables <- show_schema_tables(
     database = database,
     server = server,
     schema = schema,
-    include_views = TRUE
+    include_views = include_views
   )
   # return TRUE if exists or else false
   nrow(all_tables[all_tables$table == table_name, ]) == 1
