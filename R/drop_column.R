@@ -24,11 +24,13 @@ create_drop_column_sql <- function(schema, table_name, column_name) {
 #' @examples
 #' \dontrun{
 #' # Drop the Species column from test_iris table
-#' drop_column(server = "my_server",
-#' database = "my_database",
-#' schema = "my_schema",
-#' table_name = "test_iris",
-#' column_name = "Species")
+#' drop_column(
+#'   server = "my_server",
+#'   database = "my_database",
+#'   schema = "my_schema",
+#'   table_name = "test_iris",
+#'   column_name = "Species"
+#' )
 #' }
 drop_column <- function(server, database, schema, table_name, column_name) {
   if (!check_table_exists(
@@ -51,10 +53,31 @@ drop_column <- function(server, database, schema, table_name, column_name) {
     table_name
   )$column_name
 
-  if (!column_name %in% table_columns) {
+  # check for various errors or column types that cannot be dropped
+  if (!tolower(column_name) %in% tolower(table_columns)) {
     stop(glue::glue("Column {column_name} does not exist in \\
                     {schema}.{table_name}"))
+  } else if (tolower(column_name) == tolower(get_pk_name(
+    server,
+    database,
+    schema,
+    table_name
+  ))) {
+    stop(glue::glue("Column {column_name} is the primary key in \\
+                    {schema}.{table_name} and cannot be dropped"))
+  } else if (tolower(column_name) == tolower(get_pk_name(
+    server,
+    database,
+    schema,
+    table_name
+  ))) {
+    stop(glue::glue("Column {column_name} is the primary key in \\
+                    {schema}.{table_name} and cannot be dropped"))
+  } else if (tolower(column_name) %in% (c("sysstarttime", "sysendtime"))) {
+    stop(glue::glue("Column {column_name} is a system versioning column \\
+                    and cannot be dropped"))
   }
+
   sql <- create_drop_column_sql(schema, table_name, column_name)
 
   execute_sql(server, database, sql, output = FALSE)

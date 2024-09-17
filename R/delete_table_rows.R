@@ -1,5 +1,5 @@
 delete_sql <- function(schema, table_name) {
-  glue::glue_sql("DELETE FROM {`quoted_schema_tbl(schema, table_name)`};",
+  glue::glue_sql("DELETE FROM {`quoted_schema_tbl(schema, table_name)`}",
                  .con = DBI::ANSI())
 }
 
