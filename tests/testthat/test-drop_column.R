@@ -5,7 +5,9 @@ test_that("drop col sql works", {
   )
 
 
-  expect_equal(create_drop_column_sql("test_schema",
-                                      "test_tbl",
-                                      "val_col"), test_sql)
+  expect_equal(create_drop_column_sql(
+    "test_schema",
+    "test_tbl",
+    "val_col"
+  ), test_sql)
 })
