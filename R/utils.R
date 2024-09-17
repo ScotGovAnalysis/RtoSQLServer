@@ -23,7 +23,9 @@ create_sqlserver_connection <- function(server, database, timeout = 10) {
 
 r_to_sql_character_sizes <- function(max_string) {
   max_string <- as.numeric(max_string)
-  if (max_string <= 50) {
+  if (max_string == 0){ # 0 length string default to 255
+    "nvarchar(255)"
+  } else if (max_string > 0 && max_string <= 50) {
     "nvarchar(50)"
   } else if (max_string > 50 && max_string <= 255) {
     "nvarchar(255)"
@@ -50,7 +52,9 @@ r_to_sql_data_type <- function(col_v) {
   r_data_type <- class(col_v)[1]
   if (r_data_type %in% c("character", "factor", "ordered")) {
     col_v <- as.character(col_v) # to ensure factor cols are character
+    if (length(col_v) > 0){
     max_string <- max(nchar(col_v), na.rm = TRUE)
+    } else {max_string <- 255}
   }
   switch(r_data_type,
     "numeric" = "float",
