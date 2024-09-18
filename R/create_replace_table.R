@@ -407,13 +407,13 @@ clean_table_name <- function(table_name) {
   return(new_name)
 }
 
-rename_reserved_column <- function(column_name, table_name) {
+rename_reserved_column <- function(column_name, table_name, suffix="_old") {
   if (tolower(column_name) %in% c(
     paste0(table_name, "key"),
     paste0(table_name, "versionkey"),
     "sysstarttime", "sysendtime"
   )) {
-    paste0(column_name, "_old")
+    paste0(column_name, suffix)
   } else {
     column_name
   }
