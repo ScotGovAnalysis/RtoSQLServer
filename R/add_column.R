@@ -44,16 +44,16 @@ validate_column_type <- function(sample_value) {
 #' @param column_name The name of the column to be added.
 #' @param sql_data_type The SQL datatype for the column as a character string.
 #' For example `"nvarchar(255)"`
-#' (optional, will be inferred from `column_data` if not provided). Use
+#' (optional, can be inferred from `sample_value` alternatively). Use
 #' [`db_table_metadata()`] to see the data types for existing tables/columns
-#'  in the database or refer to MS SQL Server data type guidance.
+#'  in the database, or refer to MS SQL Server guidance on data types.
 #' @param sample_value Existing R data frame column,
-#'  or value that should define the datatype of the column
-#' (optional and superseded by `sql_data_type` if specified). Some example
+#'  or a value that defines the datatype of the column. The input
+#'  should be of the correct R class for its type, for example, strings as
+#'  character, numbers as numeric, dates as Date, date times as POSIXct/POSIXlt.
+#' Optional and superseded by `sql_data_type` if specified. Some example
 #' valid inputs: `iris$Species`, `"a sample string"`, `numeric()`,
-#'  `as.Date("2024-01-01"`). Note this does not load the input values into
-#'  the new column, it is just used to infer the data type it should be.
-
+#'  `as.Date("2024-01-01"`).
 #'
 #' @export
 #'
