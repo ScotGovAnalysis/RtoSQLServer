@@ -2,8 +2,9 @@ create_add_column_sql <- function(schema,
                                   table_name,
                                   column_name,
                                   column_type) {
+  schema_tbl <- quoted_schema_tbl(schema, table_name)
   glue::glue_sql(
-    "ALTER TABLE {quoted_schema_tbl(schema, table_name)} ADD \\
+    "ALTER TABLE {schema_tbl} ADD \\
     {DBI::dbQuoteIdentifier(DBI::ANSI(), column_name)} \\
     {DBI::SQL(column_type)} NULL;",
     .con = DBI::ANSI()
@@ -27,6 +28,18 @@ validate_column_type <- function(sample_value) {
       stop("Invalid input: Unable to determine the class of column_type.")
     }
   )
+}
+
+clean_new_column_name <- function(table_name, column_name){
+  initial_name <- column_name
+  column_name <- substr(column_name, start = 1, stop = 126)
+  column_name <- rename_reserved_column(column_name, table_name, suffix="_new")
+  column_name <- gsub(pattern = "\\.", replacement = "_", column_name)
+  if (column_name != initial_name){
+    warning(glue::glue("Column name {initial_name} is invalid \\
+                       using {column_name} instead."), call. = FALSE)
+  }
+  column_name
 }
 
 
@@ -74,8 +87,8 @@ add_column <- function(server,
                        schema,
                        table_name,
                        column_name,
-                       sample_value = NULL,
-                       sql_data_type = NULL) {
+                       sql_data_type = NULL,
+                       sample_value = NULL) {
   if (!check_table_exists(
     server,
     database,
@@ -98,14 +111,18 @@ add_column <- function(server,
 
   # Ensure the column does not already exist
   if (tolower(column_name) %in% tolower(table_columns)) {
-    stop(glue::glue("Column {column_name} already exists in {schema}.{table_name}."))
+    stop(glue::glue("Column {column_name} already exists \\
+                    in {schema}.{table_name}."))
   }
+
+  # Clean invalid column name
+  column_name <- clean_new_column_name(table_name, column_name)
 
   # Infer SQL datatype from R data if not provided
   if (is.null(sql_data_type)) {
     if (is.null(sample_value)) {
-      stop("You must provide either `sample_value`
-           for data type inference or `sql_data_type` directly.")
+      stop(glue::glue("You must provide either `sample_value` \\
+           for data type inference or `sql_data_type` directly."))
     }
     validate_column_type(sample_value)
     sql_data_type <- r_to_sql_data_type(sample_value)
@@ -118,6 +135,7 @@ add_column <- function(server,
   execute_sql(server, database, sql, output = FALSE)
 
   message(glue::glue(
-    "Column {column_name} of type {sql_data_type} added to {schema}.{table_name}."
+    "Column {column_name} of type {sql_data_type} \\
+    added to {schema}.{table_name}."
   ))
 }
