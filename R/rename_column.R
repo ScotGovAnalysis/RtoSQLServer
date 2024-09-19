@@ -16,6 +16,7 @@ rename_column_sql <- function(schema,
 #'
 #' Renames a specified column in a table. The function checks if the table
 #' and the column exist in the schema before attempting to rename the column.
+#' In MS SQL Server this is done using `EXEC sp_rename`.
 #'
 #' @param server Server and instance where SQL Server database found.
 #' @param database Database containing the table in which the column
