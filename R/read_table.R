@@ -58,7 +58,7 @@ cols_select_format <- function(select_list,
   if (cast_datetime2) {
     # Need to know the datetime2 cols to cast them
     datetime2_cols_to_cast <- table_metadata[table_metadata$data_type ==
-      "datetime2", "column_name"]
+                                               "datetime2", "column_name"]
     if (length(datetime2_cols_to_cast) == 0) {
       datetime2_cols_to_cast <- NULL
     }

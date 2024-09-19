@@ -44,7 +44,7 @@ missing_col_warning <- function(compare_col_df) {
 # Column in to load dataframe not compatible with existing SQL table
 mismatch_datatype_error <- function(compare_col_df) {
   incompatible_df <- compare_col_df[compare_col_df$col_issue
-  == "incompatible", ]
+                                    == "incompatible", ]
   if (nrow(incompatible_df) > 0) {
     error_message <- glue::glue_collapse(glue::glue_data(
       incompatible_df,
@@ -309,7 +309,7 @@ populate_staging_table <- function(db_params,
 
 create_insert_sql <- function(db_params, metadata_df) {
   metadata_df <- metadata_df[metadata_df$column_name !=
-    paste0(db_params$table_name, "ID"), ]
+                               paste0(db_params$table_name, "ID"), ]
 
   glue::glue_sql(
     "INSERT INTO \\

@@ -65,8 +65,7 @@ compatible_cols <- function(existing_col_type,
   } else if (existing_col_type == to_load_col_type) {
     return("compatible")
   } else if (!(grepl("nvarchar", existing_col_type) &&
-    grepl("nvarchar", to_load_col_type)
-  )) {
+    grepl("nvarchar", to_load_col_type))) {
     return("incompatible")
   } else {
     # Extract the nvarchar column size, e.g. 255 from nvarchar(255)
@@ -78,7 +77,8 @@ compatible_cols <- function(existing_col_type,
       return("resize") # If existing not max but to load is then must resize
     } else if (as.numeric(to_load_col_size)
     <= as.numeric(existing_col_size)) {
-      return("compatible") # If neither is max, but existing greater
+      return("compatible")
+      # If neither is max, but existing greater
       # than or equal to load then will be fine
     } else {
       return("resize") # If neither is max, but existing smaller
