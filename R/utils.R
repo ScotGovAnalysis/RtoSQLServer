@@ -1,26 +1,3 @@
-create_sqlserver_connection <- function(server, database, timeout = 10) {
-  tryCatch(
-    {
-      odbc::dbConnect(
-        odbc::odbc(),
-        Driver = "SQL Server",
-        Trusted_Connection = "True",
-        DATABASE = database,
-        SERVER = server,
-        timeout = timeout
-      )
-    },
-    error = function(cond) {
-      stop(glue::glue(
-        "Failed to create connection to database: \\
-        {database} on server: {server} \\
-        \n{cond}"
-      ), call. = FALSE)
-    }
-  )
-}
-
-
 r_to_sql_character_sizes <- function(max_string) {
   max_string <- as.numeric(max_string)
   if (max_string == 0){ # 0 length string default to 255
