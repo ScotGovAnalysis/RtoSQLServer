@@ -30,12 +30,12 @@ validate_column_type <- function(sample_value) {
   )
 }
 
-clean_new_column_name <- function(table_name, column_name){
+clean_new_column_name <- function(table_name, column_name) {
   initial_name <- column_name
   column_name <- substr(column_name, start = 1, stop = 126)
-  column_name <- rename_reserved_column(column_name, table_name, suffix="_new")
+  column_name <- rename_reserved_column(column_name, table_name, suffix = "_new")
   column_name <- gsub(pattern = "\\.", replacement = "_", column_name)
-  if (column_name != initial_name){
+  if (column_name != initial_name) {
     warning(glue::glue("Column name {initial_name} is invalid \\
                        using {column_name} instead."), call. = FALSE)
   }
