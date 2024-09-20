@@ -1,0 +1,33 @@
+url: ~
+template:
+  bootstrap: 5
+  bslib:
+    base_font: {google: "Roboto"}
+
+reference:
+  - title: Write
+    contents:
+      - write_dataframe_to_db
+
+  - title: Read
+    contents:
+      - read_table_from_db
+
+  - title: Modify
+    contents:
+      - add_column
+      - delete_table_rows
+      - drop_column
+      - drop_table_from_db
+      - rename_table
+      - rename_column
+
+  - title: Metadata
+    contents:
+      - db_table_metadata
+      - show_schema_tables
+
+  - title: Database other
+    contents:
+      - create_sqlserver_connection
+      - execute_sql
