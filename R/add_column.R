@@ -47,8 +47,8 @@ clean_new_column_name <- function(table_name, column_name) {
 
 #' Add a Column to an existing database table.
 #'
-#' Adds a specified column to a table, with datatype mapped from R
-#'  or explicitly specified by the user.
+#' Adds a specified column to a table. The column data type must be mapped
+#' from an R object, or the database column data type explicitly specified.
 #' Checks if the table exists in the schema before attempting to add the column.
 #'
 #' @param server Server and instance where SQL Server database found.
@@ -74,14 +74,14 @@ clean_new_column_name <- function(table_name, column_name) {
 #'
 #' @examples
 #' \dontrun{
-#' # Add a Species column to test_iris table
+#' # Add a Species_new column to test_iris table
 #' add_column(
 #'   server = "my_server",
 #'   database = "my_database",
 #'   schema = "my_schema",
 #'   table_name = "test_iris",
-#'   column_name = "Species",
-#'   column_data = character(0)
+#'   column_name = "Species_new",
+#'   sample_value = character(0)
 #' )
 #' }
 add_column <- function(server,
