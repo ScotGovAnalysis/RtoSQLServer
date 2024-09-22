@@ -22,11 +22,6 @@ missing_col_add <- function(compare_col_df, db_params) {
       column_name,
       data_type
     )
-
-    message(glue::glue(
-      "Added column {column_name} with datatype {data_type} \\
-        to table {db_params$table_name}."
-    ))
   })
 }
 
@@ -148,6 +143,8 @@ check_existing_table <- function(db_params,
 
   # try to add columns
   missing_col_add(compare_col_df, db_params)
+  # then check again
+  compare_col_df <- compare_columns(db_params, dataframe)
   # incase not added log and fail
   is_missing <- missing_col_error(compare_col_df)
   is_incompatible <- mismatch_datatype_error(compare_col_df)
