@@ -14,7 +14,7 @@ r_to_sql_character_sizes <- function(max_string) {
 }
 
 df_to_metadata <- function(dataframe) {
-  col_types <- sapply(dataframe, r_to_sql_data_type)
+  col_types <- unlist(lapply(dataframe, r_to_sql_data_type))
   df <- data.frame(
     column_name = names(col_types), data_type = unname(col_types),
     stringsAsFactors = FALSE
