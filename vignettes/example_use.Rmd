@@ -1,0 +1,175 @@
+---
+title: "Example workflow"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Example workflow}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  eval = FALSE,
+  comment = "#>"
+)
+```
+
+RtoSQLServer is used to load R data frames into MS SQL Server and for modification of existing MS SQL Server tables using R. This page outlines some of the main functions.
+
+## Preliminary setup 
+
+A test data frame is created for these examples. 
+```{r setup}
+library(RtoSQLServer)
+
+# Make a test dataframe with n rows
+test_n_rows <- 123456
+test_df <- data.frame(
+  colour_cat = sample(c("red", "amber", "green"), test_n_rows, replace = TRUE), 
+  val = runif(test_n_rows)
+  )
+```
+
+RtoSQLServer functions create a connection to the database and disconnect it
+at the end of that function's process. Each function requires server, database arguments and often a schema argument too.
+
+```{r connection}
+# Set database connection details for use in functions:
+server <- "server\\instance"
+database <- "my_database_name"
+schema <- "my_schema_name"
+```
+## Write a data frame to database
+
+We can load the `test_df` data frame into the MS SQL Server database using the
+`write_dataframe_to_db()` function. Here we have set a 10K batch size so the source R data frame is loaded into the staging table in batches of this size. We do not include arguments `append_to_existing` or `versioned_table` as we want to use the default `FALSE` for each.
+
+See [Table loading method](load_method.html) for a detailed description of how a data frame is loaded into a table using RtoSQLServer. 
+
+```{r write}
+# load data frame into MS SQL Server database
+write_dataframe_to_db(
+  server = server,
+  database = database,
+  schema = schema,
+  table_name = "test_r_tbl",
+  dataframe = test_df,
+  batch_size = 1e4,
+)
+```
+
+## Get table metadata
+
+Once the table is loaded we can check its columns, its column data types and get some summary info using `db_table_metadata()`.
+
+```{r metadata}
+# get table metadata including summary stats (getting the extra stats is
+# slower for large tables)
+db_table_metadata(
+  server = server,
+  database = database,
+  schema = schema,
+  table_name = "test_r_tbl",
+  summary_stats = TRUE
+)
+```
+
+## Read database table into R
+We can read a database table back into an R data frame using `read_table_from_db()`. 
+
+It is possible to read a subset of table columns by using a character vector of column names in the `columns` argument. A filter can also be specified for `filter_stmt` to read a subset of rows. The filter should be written in R, not SQL syntax. See the [column and row filtering article](read_filter.html) for more information.
+
+```{r read-table}
+# read all rows and columns from test_r_tbl into data frame
+db_df <- read_table_from_db(
+  server = server,
+  database = database,
+  schema = schema,
+  table_name = "test_r_tbl",
+)
+```
+
+## Append rows to existing table
+
+Eventually we might have more rows to load into the database table. We can do this using `write_dataframe_to_db()` specifying `append_to_existing = TRUE`.
+
+```{r extra-df}
+# Make another test dataframe to load with append option
+# An extra column is added to this data frame to demo functionality
+test_n_rows <- 1234
+test_df2 <- data.frame(
+  colour_cat = sample(c("blue", "purple", "pink"), test_n_rows, replace = TRUE), 
+  val = runif(test_n_rows),
+  extra_col = "a"
+  )
+```
+In this case the `test_df2` data frame has an extra column. When this is loaded with the `append_to_existing = TRUE` option the extra column will be added to the existing table using `add_column()` and populated with the source data frame values. Of course, the existing records in the database table will be NULL for this new column.
+
+```{r append-load}
+write_dataframe_to_db(
+  server = server,
+  database = database,
+  schema = schema,
+  table_name = "test_r_tbl",
+  dataframe = test_df2,
+  batch_size = 1e3,
+  append_to_existing = TRUE
+)
+```
+
+## Drop table column
+
+If we decide we do not want the newly added column we can use `drop_column()` to delete it from the database table.
+
+```{r drop-col}
+
+drop_column(
+  server = server,
+  database = database,
+  schema = schema,
+  table_name = "test_r_tbl",
+  column_name = "extra_col"
+)
+```
+
+## Delete table rows
+
+We can also delete a subset of rows from our database table using `delete_table_rows()` and specifying a filter for the `filter_stmt` argument. The syntax for the filter is the same R format as for `read_table_from_db()`.
+
+Be careful when deleting rows that your filter is correct and not going to delete more rows than you wish. Testing it as a `filter_stmt` argument to `read_table_from_db()` first can be a good idea.
+
+```{r delete-rows}
+delete_table_rows(
+  server = server,
+  database = database,
+  schema = schema,
+  table_name = "test_r_tbl",
+  filter_stmt = "colour_cat == 'blue' & val > 0.5"
+)
+```
+
+## Drop a table
+
+To delete the table completely from the database schema, use `drop_table_from_db()`.
+
+```{r drop-table}
+drop_table_from_db(server = server, 
+                   database = database,
+                   schema = schema,
+                   table_name = "test_r_tbl")
+```
+
+## Show tables (and views) in a schema
+
+If want to see what tables (and views) remain in the schema use `show_schema_tables()`.
+
+```{r show-schema-tables}
+show_schema_tables(server = server,
+                   database = database,
+                   schema = schema,
+                   include_views = TRUE)
+```
+
+## Views
+Views are stored queries in the database that appear as tables and can be read with `read_table_from_db()`. They can be useful if you regularly need to join the same tables together or apply the same column selections or row filters on the data you wish to read into R. You can write a `CREATE VIEW` SQL statement and use `execute_sql()` in R to run the SQL to create a view. A create view function might be added to RtoSQLServer in future.

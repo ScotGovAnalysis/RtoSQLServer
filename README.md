@@ -10,8 +10,8 @@ date)](https://img.shields.io/github/v/release/ScotGovAnalysis/sgplot)](https://
 [![R-CMD-check](https://github.com/DataScienceScotland/RtoSQLServer/workflows/R-CMD-check/badge.svg)](https://github.com/DataScienceScotland/RtoSQLServer/actions)
 <!-- badges: end -->
 
-Load R dataframes into a MS SQL Server database. Manage MS SQL Server
-tables with R.
+Load R data frames into an MS SQL Server database and modify MS SQL
+Server tables with R.
 
 ## Installation
 
@@ -41,29 +41,40 @@ remotes::install_local("C:/temp/RtoSQLServer-main.zip", upgrade="never")
 ## Functionality
 
 As well as loading R dataframes into SQL Server databases, functions are
-also currently available to:
+currently available to:
 
-- Read a database table into an R dataframe, optionally specifying a
-  subset of table columns or row filter.
-- Rename and drop a table from the database.
-- Add, drop, rename columns from existing database tables.
-- Read existing table metadata (columns, data types, summary info).
-- List all tables and views in a schema.
-- Create an MS SQL Server database connection object for use with DBI or
-  dbplyr packages.
-- Run any other input sql in the database and return a dataframe if a
-  select statement.
+- [Read](reference/read_table_from_db.html) a database table into an R
+  dataframe, optionally specifying a subset of table columns or row
+  filter.
+- [Rename](reference/rename_table.html) and
+  [drop](reference/drop_table_from_db.html) a table from the database.
+- [Add](reference/add_column.html), [drop](reference/drop_column.html),
+  [rename](reference/rename_column.html) columns from existing database
+  tables.
+- Read existing [table metadata](reference/db_table_metadata.html)
+  (columns, data types, summary info).
+- [List all tables](reference/show_schema_tables.html) and views in a
+  schema.
+- Create an MS SQL Server [database connection
+  object](reference/create_sqlserver_connection.html) for use with DBI
+  or dbplyr packages.
+- Run any other input [sql in the database](reference/execute_sql.html)
+  and return a data frame if a select statement.
 
-## Example Usage
+## Basic use
 
-Here is an example using the main functions:
+See [example use guidance](articles/example_use.html) for a detailed
+example of the main functionality.
 
 ``` r
+# Loading data frame example
+library(RtoSQLServer)
+
 # Make a test dataframe with n rows
-test_n_rows <- 1234567
+test_n_rows <- 123456
 test_df <- data.frame(a = rep("a", test_n_rows), b = rep("b", test_n_rows))
 
-# Set database connection details for use in functions:
+# Set database connection details:
 server <- "server\\instance"
 database <- "my_database_name"
 schema <- "my_schema_name"
@@ -74,60 +85,6 @@ write_dataframe_to_db(
   database = database,
   schema = schema,
   table_name = "test_r_tbl",
-  dataframe = test_df,
-  append_to_existing = FALSE,
-  batch_size = 1e5,
-  versioned_table = FALSE
-)
-
-# Read the SQL Server table into an R dataframe
-read_df <- read_table_from_db(
-  server = server,
-  database = database,
-  schema = schema,
-  table_name = "test_r_tbl"
-)
-
-# To return the names and creation date of all
-# existing tables and views in a schema
-# into an R dataframe
-
-schema_objects_df <- show_schema_tables(
-  server = server,
-  database = database,
-  schema = schema,
-  include_views = TRUE
-)
-
-# To return information about existing database table
-# column names, datatype and optionally summary info
-# use db_table_metadata
-
-db_table_metadata(
-  server = server,
-  database = database,
-  schema = schema,
-  table_name = "test_r_tbl",
-  summary_stats = FALSE
-)
-
-# (use summary_stats = TRUE if want to know value ranges,
-# distinct counts, number of NULL records,
-# but this is slower)
-
-add_column(server = server,
-           database = database,
-           schema = schema,
-           table_name = "test_r_tbl",
-           column_name = "my_new_col",
-           )
-
-
-# Drop a table from the database
-drop_table_from_db(
-  server = server,
-  database = database,
-  schema = schema,
-  table_name = "test_r_tbl"
+  dataframe = test_df
 )
 ```

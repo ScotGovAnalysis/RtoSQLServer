@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-When loading an R dataframe into SQL Server using `write_dataframe_to_db`, the following steps are used:
+When loading an R dataframe into SQL Server using `write_dataframe_to_db()`, the following steps are used:
 
 1. The R dataframe is loaded into a staging table in the database in batches of n rows at a time.
 
