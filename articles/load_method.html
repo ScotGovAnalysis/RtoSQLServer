@@ -102,10 +102,10 @@ one.</li>
 <li>If argument <code>append_to_existing = TRUE</code>:
 <ul>
 <li>Check that staging table columns and existing target table columns
-are the same. If not, cancel loading and give a warning.<br>
+are the same. If not, add any extra columns to existing SQL Server
+table.<br>
 </li>
-<li>If check passes, insert all rows from staging table into target
-table.</li>
+<li>Insert all rows from staging table into target table.</li>
 </ul>
 </li>
 </ul>
