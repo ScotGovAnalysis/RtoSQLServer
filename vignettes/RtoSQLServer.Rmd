@@ -43,7 +43,7 @@ schema <- "my_schema_name"
 ## Write a data frame to database
 
 We can load the `test_df` data frame into the MS SQL Server database using the
-`write_dataframe_to_db()` function. Here we have set a 10K batch size so the source R data frame is loaded into the staging table in batches of this size. We do not include arguments `append_to_existing` or `versioned_table` as we want to use the default `FALSE` for each.
+`write_dataframe_to_db()` function. Here we have set a 10K batch size so the source R data frame is loaded into the staging table in batches of this size. In this example, we do not include arguments `append_to_existing` or `versioned_table` as we want to use the default of `FALSE` for each.
 
 See [Table loading method](load_method.html) for a detailed description of how a data frame is loaded into a table using RtoSQLServer. 
 
