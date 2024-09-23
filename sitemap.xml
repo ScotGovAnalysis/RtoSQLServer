@@ -1,0 +1,25 @@
+<urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
+<url><loc>https://scotgovanalysis.github.io/RtoSQLServer/404.html</loc></url>
+<url><loc>https://scotgovanalysis.github.io/RtoSQLServer/LICENSE-text.html</loc></url>
+<url><loc>https://scotgovanalysis.github.io/RtoSQLServer/articles/example_use.html</loc></url>
+<url><loc>https://scotgovanalysis.github.io/RtoSQLServer/articles/index.html</loc></url>
+<url><loc>https://scotgovanalysis.github.io/RtoSQLServer/articles/load_method.html</loc></url>
+<url><loc>https://scotgovanalysis.github.io/RtoSQLServer/articles/read_filter.html</loc></url>
+<url><loc>https://scotgovanalysis.github.io/RtoSQLServer/articles/why_use.html</loc></url>
+<url><loc>https://scotgovanalysis.github.io/RtoSQLServer/authors.html</loc></url>
+<url><loc>https://scotgovanalysis.github.io/RtoSQLServer/index.html</loc></url>
+<url><loc>https://scotgovanalysis.github.io/RtoSQLServer/reference/add_column.html</loc></url>
+<url><loc>https://scotgovanalysis.github.io/RtoSQLServer/reference/create_sqlserver_connection.html</loc></url>
+<url><loc>https://scotgovanalysis.github.io/RtoSQLServer/reference/db_table_metadata.html</loc></url>
+<url><loc>https://scotgovanalysis.github.io/RtoSQLServer/reference/delete_table_rows.html</loc></url>
+<url><loc>https://scotgovanalysis.github.io/RtoSQLServer/reference/drop_column.html</loc></url>
+<url><loc>https://scotgovanalysis.github.io/RtoSQLServer/reference/drop_table_from_db.html</loc></url>
+<url><loc>https://scotgovanalysis.github.io/RtoSQLServer/reference/execute_sql.html</loc></url>
+<url><loc>https://scotgovanalysis.github.io/RtoSQLServer/reference/index.html</loc></url>
+<url><loc>https://scotgovanalysis.github.io/RtoSQLServer/reference/read_table_from_db.html</loc></url>
+<url><loc>https://scotgovanalysis.github.io/RtoSQLServer/reference/rename_column.html</loc></url>
+<url><loc>https://scotgovanalysis.github.io/RtoSQLServer/reference/rename_table.html</loc></url>
+<url><loc>https://scotgovanalysis.github.io/RtoSQLServer/reference/show_schema_tables.html</loc></url>
+<url><loc>https://scotgovanalysis.github.io/RtoSQLServer/reference/write_dataframe_to_db.html</loc></url>
+</urlset>
+
