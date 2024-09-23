@@ -6,7 +6,7 @@
 <!-- badges: start -->
 
 [![GitHub release (latest by
-date)](https://img.shields.io/github/v/release/ScotGovAnalysis/sgplot)](https://github.com/ScotGovAnalysis/sgplot/releases/latest)
+date)](https://img.shields.io/github/v/release/ScotGovAnalysis/RtoSQLServer)](https://github.com/ScotGovAnalysis/RtoSQLServer/releases/latest)
 [![R-CMD-check](https://github.com/DataScienceScotland/RtoSQLServer/workflows/R-CMD-check/badge.svg)](https://github.com/DataScienceScotland/RtoSQLServer/actions)
 <!-- badges: end -->
 
