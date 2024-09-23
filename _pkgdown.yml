@@ -5,6 +5,20 @@ template:
   bslib:
     base_font: {google: "Roboto"}
 
+navbar:
+  components:
+    articles:
+      text: Articles
+      menu:
+        - text: Example workflow
+          href: articles/example_use.html
+        - text: Read table with column or row filtering
+          href: articles/read_filter.html
+        - text: Table loading method description
+          href: articles/load_method.html
+        - text: Why use this package?
+          href: articles/why_use.html
+
 reference:
   - title: Write
     contents:
