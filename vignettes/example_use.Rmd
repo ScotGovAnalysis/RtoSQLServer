@@ -26,9 +26,9 @@ library(RtoSQLServer)
 # Make a test dataframe with n rows
 test_n_rows <- 123456
 test_df <- data.frame(
-  colour_cat = sample(c("red", "amber", "green"), test_n_rows, replace = TRUE), 
+  colour_cat = sample(c("red", "amber", "green"), test_n_rows, replace = TRUE),
   val = runif(test_n_rows)
-  )
+)
 ```
 
 RtoSQLServer functions create a connection to the database and disconnect it
@@ -99,10 +99,10 @@ Eventually we might have more rows to load into the database table. We can do th
 # An extra column is added to this data frame to demo functionality
 test_n_rows <- 1234
 test_df2 <- data.frame(
-  colour_cat = sample(c("blue", "purple", "pink"), test_n_rows, replace = TRUE), 
+  colour_cat = sample(c("blue", "purple", "pink"), test_n_rows, replace = TRUE),
   val = runif(test_n_rows),
   extra_col = "a"
-  )
+)
 ```
 In this case the `test_df2` data frame has an extra column. When this is loaded with the `append_to_existing = TRUE` option the extra column will be added to the existing table using `add_column()` and populated with the source data frame values. Of course, the existing records in the database table will be NULL for this new column.
 
@@ -123,7 +123,6 @@ write_dataframe_to_db(
 If we decide we do not want the newly added column we can use `drop_column()` to delete it from the database table.
 
 ```{r drop-col}
-
 drop_column(
   server = server,
   database = database,
@@ -154,10 +153,12 @@ delete_table_rows(
 To delete the table completely from the database schema, use `drop_table_from_db()`.
 
 ```{r drop-table}
-drop_table_from_db(server = server, 
-                   database = database,
-                   schema = schema,
-                   table_name = "test_r_tbl")
+drop_table_from_db(
+  server = server,
+  database = database,
+  schema = schema,
+  table_name = "test_r_tbl"
+)
 ```
 
 ## Show tables (and views) in a schema
@@ -165,10 +166,12 @@ drop_table_from_db(server = server,
 If want to see what tables (and views) remain in the schema use `show_schema_tables()`.
 
 ```{r show-schema-tables}
-show_schema_tables(server = server,
-                   database = database,
-                   schema = schema,
-                   include_views = TRUE)
+show_schema_tables(
+  server = server,
+  database = database,
+  schema = schema,
+  include_views = TRUE
+)
 ```
 
 ## Views

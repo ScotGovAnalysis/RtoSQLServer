@@ -34,8 +34,9 @@ clean_new_column_name <- function(table_name, column_name) {
   initial_name <- column_name
   column_name <- substr(column_name, start = 1, stop = 126)
   column_name <- rename_reserved_column(column_name,
-                                        table_name,
-                                        suffix = "_new")
+    table_name,
+    suffix = "_new"
+  )
   column_name <- gsub(pattern = "\\.", replacement = "_", column_name)
   if (column_name != initial_name) {
     warning(glue::glue("Column name {initial_name} is invalid \\
@@ -65,7 +66,8 @@ clean_new_column_name <- function(table_name, column_name) {
 #' @param sample_value Existing R data frame column,
 #'  or a value that defines the datatype of the column. The input
 #'  should be of the correct R class for its type, for example, strings as
-#'  character, numbers as numeric, dates as Date, date times as POSIXct/POSIXlt.
+#'  character, numbers as `numeric`, dates as `Date`, date times as `POSIXct`
+#'  or `POSIXlt`.
 #' Optional and superseded by `sql_data_type` if specified. Some example
 #' valid inputs: `iris$Species`, `"a sample string"`, `numeric()`,
 #'  `as.Date("2024-01-01"`).

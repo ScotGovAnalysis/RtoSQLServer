@@ -16,10 +16,11 @@ table_view_sql <- function(schema) {
   order by type, name;", .con = DBI::ANSI())
 }
 
-#' Show all tables (and optionally views) in a schema.
+#' Show all tables (and optionally views) in a schema
 #'
 #' Returns a data frame of table name, creation date and optionally whether
-#' table or view. Queries MS SQL Server sys.tables to extract this information.
+#' table or view. Queries MS SQL Server sys.tables or
+#' sys.objects to extract this information.
 #'
 #' @param server Server instance where SQL Server database running.
 #' @param database Database containing schema to list tables from.

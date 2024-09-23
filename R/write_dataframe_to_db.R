@@ -493,7 +493,11 @@ clean_row_names <- function(dataframe) {
 }
 
 
-#' Write an R dataframe to a SQL Server table
+#' Write an R data frame to a SQL Server table
+#'
+#' R data frame rows are initially loaded into a staging table in batches.
+#' See `vignette("load_method")` for more information. The
+#' data frame column data types are mapped to equivalents in SQL Server.
 #'
 #' Can create table optionally with system versioning on. However, extra
 #' permissions may be required to drop or overwrite

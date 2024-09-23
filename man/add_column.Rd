@@ -35,7 +35,8 @@ in the database, or refer to MS SQL Server guidance on data types.}
 \item{sample_value}{Existing R data frame column,
 or a value that defines the datatype of the column. The input
 should be of the correct R class for its type, for example, strings as
-character, numbers as numeric, dates as Date, date times as POSIXct/POSIXlt.
+character, numbers as \code{numeric}, dates as \code{Date}, date times as \code{POSIXct}
+or \code{POSIXlt}.
 Optional and superseded by \code{sql_data_type} if specified. Some example
 valid inputs: \code{iris$Species}, \code{"a sample string"}, \code{numeric()},
 \verb{as.Date("2024-01-01"}).}

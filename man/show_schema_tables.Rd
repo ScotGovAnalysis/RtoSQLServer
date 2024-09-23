@@ -2,7 +2,7 @@
 % Please edit documentation in R/show_schema_tables.R
 \name{show_schema_tables}
 \alias{show_schema_tables}
-\title{Show all tables (and optionally views) in a schema.}
+\title{Show all tables (and optionally views) in a schema}
 \usage{
 show_schema_tables(server, database, schema, include_views = FALSE)
 }
@@ -22,7 +22,8 @@ table or view.
 }
 \description{
 Returns a data frame of table name, creation date and optionally whether
-table or view. Queries MS SQL Server sys.tables to extract this information.
+table or view. Queries MS SQL Server sys.tables or
+sys.objects to extract this information.
 }
 \examples{
 \dontrun{

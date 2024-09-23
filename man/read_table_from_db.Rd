@@ -40,7 +40,7 @@ through \code{deparse1(substitute())}, for example
 
 \item{include_pk}{Whether to include primary key column in output dataframe.
 A primary key  column is added automatically when a table is loaded into the
-database using \code{create_replace_table} as <table_name>ID. Defaults to FALSE.}
+database using \code{create_replace_table()} as <table_name>ID. Defaults to FALSE.}
 
 \item{cast_datetime2}{Cast \code{datetime2} data type columns to \code{datetime}.
 This is to help older ODBC drivers where datetime2 columns are read into R
@@ -50,6 +50,11 @@ as character when should be POSIXct. Defaults to TRUE.}
 Dataframe of table.
 }
 \description{
+The SQL Server table (or view) can have column or row filters applied
+before it is read into an R data frame. This can help if reading from
+a large table and not all the data is required in your R session.
+}
+\details{
 If you are confident in writing SQL you may prefer to
 use the \code{\link[=execute_sql]{execute_sql()}} function instead.
 }
