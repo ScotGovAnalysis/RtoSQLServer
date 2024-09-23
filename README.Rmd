@@ -56,7 +56,7 @@ As well as loading R dataframes into SQL Server databases, functions are current
 - Run any other input [sql in the database](https://scotgovanalysis.github.io/RtoSQLServer/reference/execute_sql.html) and return a data frame if a select statement.  
 
 ## Example
-See [Get started](articles/RtoSQLServer.html) for examples of the main functionality.
+See [Get started](https://scotgovanalysis.github.io/RtoSQLServer/articles/RtoSQLServer.html) for examples of the main functionality.
 ```{r eval=FALSE}
 # Loading data frame example
 library(RtoSQLServer)

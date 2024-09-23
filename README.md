@@ -70,8 +70,9 @@ currently available to:
 
 ## Example
 
-See [Get started](articles/RtoSQLServer.html) for examples of the main
-functionality.
+See [Get
+started](https://scotgovanalysis.github.io/RtoSQLServer/articles/RtoSQLServer.html)
+for examples of the main functionality.
 
 ``` r
 # Loading data frame example
