@@ -2,9 +2,14 @@ Package: RtoSQLServer
 Title: Load R Dataframes into SQL Server Database Tables
 Version: 0.2.3
 Authors@R: c(
-    person("Tom", "Wilson", email = "thomas.wilson@gov.scot", role = "cre"))
-Description: What the package does (one paragraph).
+    person("Scottish Government", , , "statistics.enquiries@gov.scot", role = c("cph", "fnd")),
+    person("Tom", "Wilson", email = "thomas.wilson@gov.scot", role = "cre")
+    )
+Description: Load R data frames into MS SQL Server databases and modify tables with R.
 License: MIT + file LICENSE
+URL: 
+  https://ScotGovAnalysis.github.io/RtoSQLServer,
+  https://github.com/ScotGovAnalysis/RtoSQLServer
 Encoding: UTF-8
 LazyData: true
 Imports: 

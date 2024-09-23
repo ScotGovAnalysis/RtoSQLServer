@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 <!-- badges: end -->
 
 Load R data frames into an MS SQL Server database and modify MS SQL Server tables
-with R. For more detailed help, see [the package website](https://scotgovanalysis.github.io/RtoSQLServer).
+with R. For help documentation, see [the package website](https://scotgovanalysis.github.io/RtoSQLServer).
 
 ## Installation
 
@@ -55,8 +55,8 @@ As well as loading R dataframes into SQL Server databases, functions are current
 - Create an MS SQL Server [database connection object](https://scotgovanalysis.github.io/RtoSQLServer/reference/create_sqlserver_connection.html) for use with DBI or dbplyr packages.
 - Run any other input [sql in the database](https://scotgovanalysis.github.io/RtoSQLServer/reference/execute_sql.html) and return a data frame if a select statement.  
 
-## Basic use
-See [example use guidance](articles/example_use.html) for a detailed example of the main functionality.
+## Example
+See [Get started](articles/RtoSQLServer.html) for examples of the main functionality.
 ```{r eval=FALSE}
 # Loading data frame example
 library(RtoSQLServer)

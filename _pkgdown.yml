@@ -5,13 +5,41 @@ template:
   bslib:
     base_font: {google: "Roboto"}
 
+development:
+  mode: auto
+
+authors:
+  Tom Wilson:
+    html: "Tom Wilson&nbsp;&nbsp;\
+    <a href='mailto:thomas.wilson@gov.scot'>\
+    <i class='fas fa-envelope' aria-hidden='true'></i>\
+    <span class='visually-hidden'>Email Tom Wilson></span></a>&nbsp;&nbsp;\
+    <a href='https://github.com/tomwilsonsco'>\
+    <i class='fab fa-github' aria-hidden='true'></i>\
+    <span class='visually-hidden'>Tom Wilson GitHub profile></span></a>"
+  Scottish Government:
+    html: "Scottish Government&nbsp;&nbsp;\
+    <a href='mailto:statistics.enquiries@gov.scot'>\
+    <i class='fas fa-envelope' aria-hidden='true'></i>\
+    <span class='visually-hidden'>Email Scottish Government></span></a>\
+    &nbsp;&nbsp;\
+    <a href='https://github.com/scotgovanalysis'>\
+    <i class='fab fa-github' aria-hidden='true'></i>\
+    <span class='visually-hidden'>Scottish Government GitHub profile></span>\
+    </a>"
+  sidebar:
+    roles: [cre, aut]
+  footer:
+    roles: [cph]
+    text: "Developed by the"
+
 navbar:
   components:
     articles:
       text: Articles
       menu:
-        - text: Example workflow
-          href: articles/example_use.html
+        - text: Get started
+          href: articles/RtoSQLServer.html
         - text: Read table with column or row filtering
           href: articles/read_filter.html
         - text: Table loading method description

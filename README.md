@@ -11,7 +11,7 @@ date)](https://img.shields.io/github/v/release/ScotGovAnalysis/sgplot)](https://
 <!-- badges: end -->
 
 Load R data frames into an MS SQL Server database and modify MS SQL
-Server tables with R. For more detailed help, see [the package
+Server tables with R. For help documentation, see [the package
 website](https://scotgovanalysis.github.io/RtoSQLServer).
 
 ## Installation
@@ -68,10 +68,10 @@ currently available to:
   database](https://scotgovanalysis.github.io/RtoSQLServer/reference/execute_sql.html)
   and return a data frame if a select statement.
 
-## Basic use
+## Example
 
-See [example use guidance](articles/example_use.html) for a detailed
-example of the main functionality.
+See [Get started](articles/RtoSQLServer.html) for examples of the main
+functionality.
 
 ``` r
 # Loading data frame example

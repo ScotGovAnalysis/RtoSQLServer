@@ -1,8 +1,8 @@
 ---
-title: "Example workflow"
+title: "Introduction to RtoSQLServer"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Example workflow}
+  %\VignetteIndexEntry{Introduction to RtoSQLServer}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
