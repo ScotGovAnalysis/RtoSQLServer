@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-RtoSQLServer is used to load R data frames into MS SQL Server and for modification of existing MS SQL Server tables using R. This page outlines some of the main functions.
+RtoSQLServer is used to load R data frames into MS SQL Server and to modify existing MS SQL Server tables using R. This page outlines some of the main functions.
 
 ## Preliminary setup 
 
