@@ -7,7 +7,25 @@ process_fail <- function(message, db_params) {
   stop(glue::glue(message, .sep = " "), call. = FALSE)
 }
 
-# Column in to load dataframe, but not existing SQL table
+missing_col_add <- function(compare_col_df, db_params) {
+  missing_df <- compare_col_df[compare_col_df$col_issue == "missing sql", ]
+
+  lapply(seq_len(nrow(missing_df)), function(i) {
+    column_name <- missing_df[i, "column_name"]
+    data_type <- missing_df[i, "df_data_type"]
+
+    add_column(
+      db_params$server,
+      db_params$database,
+      db_params$schema,
+      db_params$table_name,
+      column_name,
+      data_type
+    )
+  })
+}
+
+
 missing_col_error <- function(compare_col_df) {
   missing_df <- compare_col_df[compare_col_df$col_issue == "missing sql", ]
   if (nrow(missing_df) > 0) {
@@ -16,7 +34,7 @@ missing_col_error <- function(compare_col_df) {
       "Column {column_name} not found in existing table."
     ), sep = "\n")
 
-    error_message <- glue::glue(
+    glue::glue(
       error_message,
       "Use option append_to_existing=FALSE to overwrite.",
       .sep = "\n"
@@ -54,7 +72,7 @@ mismatch_datatype_error <- function(compare_col_df) {
       .sep = " "
     ), sep = "\n")
 
-    error_message <- glue::glue(
+    glue::glue(
       error_message,
       "Use option append_to_existing=FALSE to overwrite.",
       .sep = "\n"
@@ -123,6 +141,11 @@ check_existing_table <- function(db_params,
                                  dataframe) {
   compare_col_df <- compare_columns(db_params, dataframe)
 
+  # try to add columns
+  missing_col_add(compare_col_df, db_params)
+  # then check again
+  compare_col_df <- compare_columns(db_params, dataframe)
+  # incase not added log and fail
   is_missing <- missing_col_error(compare_col_df)
   is_incompatible <- mismatch_datatype_error(compare_col_df)
   is_warning <- missing_col_warning(compare_col_df)
@@ -407,13 +430,13 @@ clean_table_name <- function(table_name) {
   return(new_name)
 }
 
-rename_reserved_column <- function(column_name, table_name) {
+rename_reserved_column <- function(column_name, table_name, suffix = "_old") {
   if (tolower(column_name) %in% c(
     paste0(table_name, "key"),
     paste0(table_name, "versionkey"),
     "sysstarttime", "sysendtime"
   )) {
-    paste0(column_name, "_old")
+    paste0(column_name, suffix)
   } else {
     column_name
   }
@@ -424,9 +447,17 @@ clean_column_names <- function(input_df, table_name) {
   column_names <- colnames(input_df)
   # Truncate long column names (126 not
   # 128 so room for make.unique numbering in case results in duplicates)
-  column_names <- sapply(column_names, substr, start = 1, stop = 126)
+  column_names <- unlist(lapply(column_names,
+    substr,
+    start = 1,
+    stop = 126
+  ))
   # Rename any column names that are SQL Server reserved
-  column_names <- sapply(column_names, rename_reserved_column, table_name)
+  column_names <- unlist(lapply(
+    column_names,
+    rename_reserved_column,
+    table_name
+  ))
   # . is exceptable in R dataframe column name not good for SQL select
   column_names <- unlist(lapply(column_names, gsub,
     pattern = "\\.",
@@ -462,7 +493,11 @@ clean_row_names <- function(dataframe) {
 }
 
 
-#' Write an R dataframe to a SQL Server table
+#' Write an R data frame to a SQL Server table
+#'
+#' R data frame rows are initially loaded into a staging table in batches.
+#' See `vignette("load_method")` for more information. The
+#' data frame column data types are mapped to equivalents in SQL Server.
 #'
 #' Can create table optionally with system versioning on. However, extra
 #' permissions may be required to drop or overwrite

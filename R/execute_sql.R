@@ -1,5 +1,4 @@
-#' Connect, execute SQL in SQL Server database and then disconnect from
-#' database.
+#' Connect, execute SQL in SQL Server database and then disconnect
 #'
 #' @param server Server instance where SQL Server database running.
 #' @param database SQL Server database in which SQL executed.
@@ -14,7 +13,7 @@
 #' sql_to_run <- "select test_column, other_column from my_test_table
 #' where other_column > 10"
 #' execute_sql(
-#'   database = my_database, server = my_server,
+#'   database = "my_database", server = "my_server",
 #'   sql = sql_to_run, output = TRUE
 #' )
 #' }

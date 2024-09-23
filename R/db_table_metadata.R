@@ -70,7 +70,7 @@ get_metadata <- function(server,
     return(columns_info)
   }
 
-  sql_parts <- lapply(1:nrow(columns_info),
+  sql_parts <- lapply(seq_len(nrow(columns_info)),
     get_table_stats,
     columns_info = columns_info,
     schema = schema,

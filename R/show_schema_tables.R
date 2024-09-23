@@ -3,7 +3,7 @@ table_sql <- function(schema) {
                  create_date AS 'creation_date' \\
                  FROM sys.tables \\
                  WHERE SCHEMA_NAME(schema_id) = {schema} \\
-                 order by 2", .con = DBI::ANSI())
+                 order by 2;", .con = DBI::ANSI())
 }
 
 table_view_sql <- function(schema) {
@@ -13,13 +13,14 @@ table_view_sql <- function(schema) {
   FROM sys.objects \\
   WHERE type IN ('U', 'V')  -- 'U'ser tables, 'V'iews \\
   AND SCHEMA_NAME(schema_id) = {schema} \\
-  order by type, name", .con = DBI::ANSI())
+  order by type, name;", .con = DBI::ANSI())
 }
 
-#' Show all tables (and optionally views) in a schema.
+#' Show all tables (and optionally views) in a schema
 #'
 #' Returns a data frame of table name, creation date and optionally whether
-#' table or view. Queries MS SQL Server sys.tables to extract this information.
+#' table or view. Queries MS SQL Server sys.tables or
+#' sys.objects to extract this information.
 #'
 #' @param server Server instance where SQL Server database running.
 #' @param database Database containing schema to list tables from.

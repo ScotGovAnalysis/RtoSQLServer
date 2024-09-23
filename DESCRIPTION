@@ -1,10 +1,8 @@
 Package: RtoSQLServer
 Title: Load R Dataframes into SQL Server Database Tables
-Version: 0.2.1
+Version: 0.2.3
 Authors@R: c(
-    person("Tom", "Wilson", email = "thomas.wilson@gov.scot", role = "cre"),
-    person("Miles", "Drake", email = "miles.drake@gov.scot", role = "aut"),
-    person("Tom", "Crines", email = "thomas.crines@gov.scot", role = "aut"))
+    person("Tom", "Wilson", email = "thomas.wilson@gov.scot", role = "cre"))
 Description: What the package does (one paragraph).
 License: MIT + file LICENSE
 Encoding: UTF-8
@@ -20,4 +18,7 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1
 Suggests: 
     testthat (>= 2.1.0),
-    mockery
+    mockery,
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

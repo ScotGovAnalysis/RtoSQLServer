@@ -1,29 +1,8 @@
-create_sqlserver_connection <- function(server, database, timeout = 10) {
-  tryCatch(
-    {
-      odbc::dbConnect(
-        odbc::odbc(),
-        Driver = "SQL Server",
-        Trusted_Connection = "True",
-        DATABASE = database,
-        SERVER = server,
-        timeout = timeout
-      )
-    },
-    error = function(cond) {
-      stop(glue::glue(
-        "Failed to create connection to database: \\
-        {database} on server: {server} \\
-        \n{cond}"
-      ), call. = FALSE)
-    }
-  )
-}
-
-
 r_to_sql_character_sizes <- function(max_string) {
   max_string <- as.numeric(max_string)
-  if (max_string <= 50) {
+  if (max_string == 0) { # 0 length string default to 255
+    "nvarchar(255)"
+  } else if (max_string > 0 && max_string <= 50) {
     "nvarchar(50)"
   } else if (max_string > 50 && max_string <= 255) {
     "nvarchar(255)"
@@ -35,12 +14,12 @@ r_to_sql_character_sizes <- function(max_string) {
 }
 
 df_to_metadata <- function(dataframe) {
-  col_types <- sapply(dataframe, r_to_sql_data_type)
+  col_types <- unlist(lapply(dataframe, r_to_sql_data_type))
   df <- data.frame(
     column_name = names(col_types), data_type = unname(col_types),
     stringsAsFactors = FALSE
   )
-  # db_table_metdata stored procedure does not specify size of datetime2 cols
+  # db_table_metdata does not specify size of datetime2 cols
   df[df$data_type == "datetime2(3)", "data_type"] <- "datetime2"
   df
 }
@@ -50,7 +29,11 @@ r_to_sql_data_type <- function(col_v) {
   r_data_type <- class(col_v)[1]
   if (r_data_type %in% c("character", "factor", "ordered")) {
     col_v <- as.character(col_v) # to ensure factor cols are character
-    max_string <- max(nchar(col_v), na.rm = TRUE)
+    if (length(col_v) > 0) {
+      max_string <- max(nchar(col_v), na.rm = TRUE)
+    } else {
+      max_string <- 255
+    }
   }
   switch(r_data_type,
     "numeric" = "float",
@@ -82,8 +65,7 @@ compatible_cols <- function(existing_col_type,
   } else if (existing_col_type == to_load_col_type) {
     return("compatible")
   } else if (!(grepl("nvarchar", existing_col_type) &&
-    grepl("nvarchar", to_load_col_type)
-  )) {
+    grepl("nvarchar", to_load_col_type))) {
     return("incompatible")
   } else {
     # Extract the nvarchar column size, e.g. 255 from nvarchar(255)
@@ -95,7 +77,8 @@ compatible_cols <- function(existing_col_type,
       return("resize") # If existing not max but to load is then must resize
     } else if (as.numeric(to_load_col_size)
     <= as.numeric(existing_col_size)) {
-      return("compatible") # If neither is max, but existing greater
+      return("compatible")
+      # If neither is max, but existing greater
       # than or equal to load then will be fine
     } else {
       return("resize") # If neither is max, but existing smaller
@@ -109,12 +92,13 @@ compatible_cols <- function(existing_col_type,
 check_table_exists <- function(server,
                                database,
                                schema,
-                               table_name) {
+                               table_name,
+                               include_views = TRUE) {
   all_tables <- show_schema_tables(
     database = database,
     server = server,
     schema = schema,
-    include_views = TRUE
+    include_views = include_views
   )
   # return TRUE if exists or else false
   nrow(all_tables[all_tables$table == table_name, ]) == 1

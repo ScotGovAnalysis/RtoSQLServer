@@ -97,8 +97,12 @@ create_read_sql <- function(schema,
 
 #' Read a SQL Server table into an R dataframe.
 #'
+#' The SQL Server table (or view) can have column or row filters applied
+#' before it is read into an R data frame. This can help if reading from
+#' a large table and not all the data is required in your R session.
+#'
 #' If you are confident in writing SQL you may prefer to
-#' use the [RtoSQLServer::execute_sql()] function instead.
+#' use the [`execute_sql()`] function instead.
 #'
 #'
 #' @param server Server instance where SQL Server database running.
@@ -122,7 +126,7 @@ create_read_sql <- function(schema,
 
 #' @param include_pk Whether to include primary key column in output dataframe.
 #' A primary key  column is added automatically when a table is loaded into the
-#' database using `create_replace_table` as <table_name>ID. Defaults to FALSE.
+#' database using `create_replace_table()` as <table_name>ID. Defaults to FALSE.
 #'
 #' @return Dataframe of table.
 #' @export
