@@ -100,9 +100,9 @@ requires server, database arguments and often a schema argument too.</p>
 <p>We can load the <code>test_df</code> data frame into the MS SQL
 Server database using the <code><a href="../reference/write_dataframe_to_db.html">write_dataframe_to_db()</a></code> function.
 Here we have set a 10K batch size so the source R data frame is loaded
-into the staging table in batches of this size. We do not include
-arguments <code>append_to_existing</code> or
-<code>versioned_table</code> as we want to use the default
+into the staging table in batches of this size. In this example, we do
+not include arguments <code>append_to_existing</code> or
+<code>versioned_table</code> as we want to use the default of
 <code>FALSE</code> for each.</p>
 <p>See <a href="load_method.html">Table loading method</a> for a
 detailed description of how a data frame is loaded into a table using
