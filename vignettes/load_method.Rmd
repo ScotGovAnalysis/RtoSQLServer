@@ -31,7 +31,7 @@ When loading an R dataframe into SQL Server using `write_dataframe_to_db()`, the
         - Insert all rows from staging table into target table.  
 
      - If argument `append_to_existing = TRUE`:  
-        - Check that staging table columns and existing target table columns are the same. If not, cancel loading and give a warning.  
-        - If check passes, insert all rows from staging table into target table.  
+        - Check that staging table columns and existing target table columns are the same. If not, add any extra columns to existing SQL Server table.  
+        - Insert all rows from staging table into target table.  
 
 4. Delete the staging table.
