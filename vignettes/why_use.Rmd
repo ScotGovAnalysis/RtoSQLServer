@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 The `RtoSQLServer` package relies on [`DBI`](https://dbi.r-dbi.org/) and [`odbc`](https://github.com/r-dbi/odbc) packages for its database functionality, however you should consider using it instead of `DBI` or `odbc` for the following reasons:
 
 ## Importing large dataframes
-A key benefit of the package is to ensure the data loading process is more robust than using `DBI` / `odbc` packages alone.  
+A key benefit of the package is to ensure the data loading process is more robust than using `DBI` and `odbc` packages alone.  
 
 When loading large dataframes from R into MS SQL Server using `DBI` it was found that the loading process can hang and never complete.   
 
