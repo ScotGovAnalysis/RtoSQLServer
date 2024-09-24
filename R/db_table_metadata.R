@@ -85,7 +85,7 @@ get_metadata <- function(server,
 }
 
 
-#' Return metadata about an existing database table.
+#' Return metadata about an existing database table
 #'
 #' Returns a dataframe of information about an existing table.
 #' This includes the name of each column, its datatype and

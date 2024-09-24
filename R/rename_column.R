@@ -12,7 +12,7 @@ rename_column_sql <- function(schema,
   )
 }
 
-#' Rename a column in an existing database table.
+#' Rename a column in an existing database table
 #'
 #' Renames a specified column in a table. The function checks if the table
 #' and the column exist in the schema before attempting to rename the column.
