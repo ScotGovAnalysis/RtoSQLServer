@@ -75,9 +75,9 @@ of <code>DBI</code> or <code>odbc</code> for the following reasons:</p>
 <div class="section level2">
 <h2 id="importing-large-dataframes">Importing large dataframes<a class="anchor" aria-label="anchor" href="#importing-large-dataframes"></a>
 </h2>
-<p>The main reason to use the package is to ensure the data loading
-process is more robust than using <code>DBI</code> / <code>odbc</code>
-packages alone.</p>
+<p>A key benefit of the package is to ensure the data loading process is
+more robust than using <code>DBI</code> and <code>odbc</code> packages
+alone.</p>
 <p>When loading large dataframes from R into MS SQL Server using
 <code>DBI</code> it was found that the loading process can hang and
 never complete.</p>
@@ -138,7 +138,7 @@ length of string in an R character column vector is used to select the
 size of the SQL Server <code>nvarchar()</code> database column.</p>
 </div>
 <div class="section level2">
-<h2 id="extra-functionality">Extra functionality<a class="anchor" aria-label="anchor" href="#extra-functionality"></a>
+<h2 id="extra-functionality-to-help-non-database-specialists">Extra functionality to help non-database specialists<a class="anchor" aria-label="anchor" href="#extra-functionality-to-help-non-database-specialists"></a>
 </h2>
 <p><code>RtoSQLServer</code> has functions to modify existing tables.
 The <code><a href="../reference/drop_column.html">drop_column()</a></code>, <code><a href="../reference/rename_column.html">rename_column()</a></code>,
