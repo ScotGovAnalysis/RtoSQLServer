@@ -2,7 +2,7 @@
 % Please edit documentation in R/delete_table_rows.R
 \name{delete_table_rows}
 \alias{delete_table_rows}
-\title{Delete rows from an existing database table.}
+\title{Delete rows from an existing database table}
 \usage{
 delete_table_rows(server, database, schema, table_name, filter_stmt = NULL)
 }

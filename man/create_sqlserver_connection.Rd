@@ -2,7 +2,7 @@
 % Please edit documentation in R/create_sqlserver_connection.R
 \name{create_sqlserver_connection}
 \alias{create_sqlserver_connection}
-\title{Create a connection to a SQL Server database.}
+\title{Create a connection to a SQL Server database}
 \usage{
 create_sqlserver_connection(server, database, timeout = 10)
 }
@@ -20,7 +20,7 @@ from the \code{odbc} package.
 }
 \description{
 Establishes a connection to a SQL Server database
-using the ODBC driver. It uses Windows authentication. Use
+using the ODBC driver. This function uses Windows authentication only. Use
 \code{\link[DBI:dbDisconnect]{DBI::dbDisconnect()}} to disconnect this connection once no longer in use.
 }
 \examples{

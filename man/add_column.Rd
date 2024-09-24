@@ -2,7 +2,7 @@
 % Please edit documentation in R/add_column.R
 \name{add_column}
 \alias{add_column}
-\title{Add a Column to an existing database table.}
+\title{Add a Column to an existing database table}
 \usage{
 add_column(
   server,
@@ -42,9 +42,9 @@ valid inputs: \code{iris$Species}, \code{"a sample string"}, \code{numeric()},
 \verb{as.Date("2024-01-01"}).}
 }
 \description{
-Adds a specified column to a table. The column data type must be mapped
-from an R object, or the database column data type explicitly specified.
-Checks if the table exists in the schema before attempting to add the column.
+Adds a specified column to a table. The column data type can be mapped
+from an R object, or else the database column data type must be
+explicitly specified.
 }
 \examples{
 \dontrun{

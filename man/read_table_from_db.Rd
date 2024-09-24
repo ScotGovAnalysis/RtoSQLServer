@@ -2,7 +2,7 @@
 % Please edit documentation in R/read_table_from_db.R
 \name{read_table_from_db}
 \alias{read_table_from_db}
-\title{Read a SQL Server table into an R dataframe.}
+\title{Read a SQL Server table into an R dataframe}
 \usage{
 read_table_from_db(
   server,
@@ -52,7 +52,8 @@ Dataframe of table.
 \description{
 The SQL Server table (or view) can have column or row filters applied
 before it is read into an R data frame. This can help if reading from
-a large table and not all the data is required in your R session.
+a large table and not all the data is required in your R session. See
+\code{vignette("read_filter")} for more information.
 }
 \details{
 If you are confident in writing SQL you may prefer to

@@ -2,7 +2,7 @@
 % Please edit documentation in R/rename_table.R
 \name{rename_table}
 \alias{rename_table}
-\title{Rename a table in the database.}
+\title{Rename a table in the database}
 \usage{
 rename_table(server, database, schema, old_table_name, new_table_name)
 }

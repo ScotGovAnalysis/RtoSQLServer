@@ -2,7 +2,7 @@
 % Please edit documentation in R/db_table_metadata.R
 \name{db_table_metadata}
 \alias{db_table_metadata}
-\title{Return metadata about an existing database table.}
+\title{Return metadata about an existing database table}
 \usage{
 db_table_metadata(server, database, schema, table_name, summary_stats = FALSE)
 }

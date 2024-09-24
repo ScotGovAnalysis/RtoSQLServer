@@ -2,7 +2,7 @@
 % Please edit documentation in R/drop_column.R
 \name{drop_column}
 \alias{drop_column}
-\title{Drop a Column from an existing database table.}
+\title{Drop a Column from an existing database table}
 \usage{
 drop_column(server, database, schema, table_name, column_name)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/rename_column.R
 \name{rename_column}
 \alias{rename_column}
-\title{Rename a column in an existing database table.}
+\title{Rename a column in an existing database table}
 \usage{
 rename_column(
   server,
