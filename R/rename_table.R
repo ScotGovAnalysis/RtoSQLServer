@@ -10,7 +10,7 @@ rename_table_sql <- function(schema,
   )
 }
 
-#' Rename a table in the database.
+#' Rename a table in the database
 #'
 #' Renames a specified table. The function checks if the table exists
 #' in the schema before attempting to rename it.

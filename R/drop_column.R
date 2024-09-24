@@ -7,7 +7,7 @@ create_drop_column_sql <- function(schema, table_name, column_name) {
 }
 
 
-#' Drop a Column from an existing database table.
+#' Drop a Column from an existing database table
 #'
 #' Drops a specified column from a table.
 #' Checks if the table exists in the schema and if the column is present in the

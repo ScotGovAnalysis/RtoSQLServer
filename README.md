@@ -19,15 +19,15 @@ website](https://scotgovanalysis.github.io/RtoSQLServer).
 If you are working within the Scottish Government, the package can be
 installed in the same way as other R packages internally.
 
-The R package can be installed directly from Github or locally from
-zip.  
+Alternatively, the package can be installed directly from Github or
+locally from zip.  
 To install directly from GitHub:
 
 ``` r
 remotes::install_github("DataScienceScotland/rtosqlserver", upgrade = "never")
 ```
 
-If the above does not work, install by downloading:
+If the above does not work, install from manual download:
 
 1.  Download the [zip of the
     repository](https://github.com/DataScienceScotland/RtoSQLServer/archive/refs/heads/main.zip)
@@ -41,8 +41,9 @@ remotes::install_local("C:/temp/RtoSQLServer-main.zip", upgrade="never")
 
 ## Functionality
 
-As well as loading R dataframes into SQL Server databases, functions are
-currently available to:
+As well as [loading R dataframes into SQL
+Server](https://scotgovanalysis.github.io/RtoSQLServer/reference/write_dataframe_to_db.html)
+databases, functions are currently available to:
 
 - [Read](https://scotgovanalysis.github.io/RtoSQLServer/reference/read_table_from_db.html)
   a database table into an R dataframe, optionally specifying a subset
@@ -87,7 +88,7 @@ server <- "server\\instance"
 database <- "my_database_name"
 schema <- "my_schema_name"
 
-# Write the test dataframe to a SQL Server table in 100K batches (by default system versioning is FALSE)
+# Write the test dataframe to a SQL Server table
 write_dataframe_to_db(
   server = server,
   database = database,

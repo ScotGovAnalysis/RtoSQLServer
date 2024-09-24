@@ -20,7 +20,7 @@ add_filter_sql <- function(initial_sql, filter_stmt) {
 }
 
 
-#' Delete rows from an existing database table.
+#' Delete rows from an existing database table
 #'
 #' Can either delete all rows from the input table or just a subset
 #' by specifying a filter. If using a filter, recommended to test it

@@ -1,7 +1,7 @@
-#' Create a connection to a SQL Server database.
+#' Create a connection to a SQL Server database
 #'
 #' Establishes a connection to a SQL Server database
-#' using the ODBC driver. It uses Windows authentication. Use
+#' using the ODBC driver. This function uses Windows authentication only. Use
 #' [`DBI::dbDisconnect()`] to disconnect this connection once no longer in use.
 #'
 #' @param server Server and instance where SQL Server database found.

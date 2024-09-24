@@ -46,11 +46,11 @@ clean_new_column_name <- function(table_name, column_name) {
 }
 
 
-#' Add a Column to an existing database table.
+#' Add a Column to an existing database table
 #'
-#' Adds a specified column to a table. The column data type must be mapped
-#' from an R object, or the database column data type explicitly specified.
-#' Checks if the table exists in the schema before attempting to add the column.
+#' Adds a specified column to a table. The column data type can be mapped
+#' from an R object, or else the database column data type must be
+#' explicitly specified.
 #'
 #' @param server Server and instance where SQL Server database found.
 #' @param database Database containing the table to which the column
