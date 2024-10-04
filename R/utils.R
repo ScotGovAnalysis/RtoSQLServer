@@ -101,7 +101,7 @@ check_table_exists <- function(server,
     include_views = include_views
   )
   # return TRUE if exists or else false
-  nrow(all_tables[all_tables$table == table_name, ]) == 1
+  nrow(all_tables[all_tables$table == table_name, ]) >= 1
 }
 
 # Prevent SQL injection with quoted schema table name construction
