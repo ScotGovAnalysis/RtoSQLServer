@@ -15,7 +15,7 @@ test_that("table and view sql created correctly", {
                          type_desc AS 'object_type', \\
                          create_date AS 'creation_date' \\
                          FROM sys.objects \\
-                         WHERE type IN ('U', 'V')  -- 'U'ser tables, 'V'iews \\
+                         WHERE type IN ('U', 'V') \\
                          AND SCHEMA_NAME(schema_id) = 'test_schema' \\
                          order by type, name;")
 

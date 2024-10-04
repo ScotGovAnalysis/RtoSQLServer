@@ -12,7 +12,7 @@ table_view_sql <- function(schema) {
   type_desc AS 'object_type', \\
   create_date AS 'creation_date' \\
   FROM sys.objects \\
-  WHERE type IN ('U', 'V')  \\
+  WHERE type IN ('U', 'V') \\
   AND SCHEMA_NAME(schema_id) = {schema} \\
   order by type, name;", .con = DBI::ANSI())
 }
