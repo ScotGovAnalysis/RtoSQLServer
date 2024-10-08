@@ -94,6 +94,18 @@ create_read_sql <- function(schema,
   }
 }
 
+max_to_end <- function(metadata){
+  long_types <- c("varchar(max)",
+                  "nvarchar(max)",
+                  "image",
+                  "text",
+                  "ntext",
+                  "varbinary(max)")
+  not_max <- metadata[! metadata$data_type %in% long_types, ]$column_name
+  is_max <- metadata[metadata$data_type %in% long_types, ]$column_name
+  c(not_max, is_max)
+}
+
 
 #' Read a SQL Server table into an R dataframe
 #'
@@ -179,6 +191,16 @@ read_table_from_db <- function(server,
     include_pk
   )
 
+
+  table_metadata <- table_metadata[table_metadata$column_name
+                                   %in% select_list, ]
+
+  # To deal with https://github.com/r-dbi/odbc/issues/309
+  # related with older odbc drivers and long column datatypes
+  select_list <- max_to_end(table_metadata)
+
+  original_positions <- match(table_metadata$column_name, select_list)
+
   read_sql <- create_read_sql(
     schema,
     select_list,
@@ -193,5 +215,5 @@ read_table_from_db <- function(server,
       server, sql = read_sql, output = TRUE
   )
   message(glue::glue("returned {nrow(df)} rows to data frame"))
-  df
+  df[, original_positions, drop = FALSE]
 }
