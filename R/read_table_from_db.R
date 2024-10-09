@@ -197,11 +197,13 @@ read_table_from_db <- function(server,
   table_metadata <- table_metadata[table_metadata$column_name
     %in% select_list, ]
 
+  select_list_original <- select_list
+
   # To deal with https://github.com/r-dbi/odbc/issues/309
   # related with older odbc drivers and long column datatypes
   select_list <- max_to_end(table_metadata)
 
-  original_positions <- match(table_metadata$column_name, select_list)
+  original_positions <- match(select_list_original, select_list)
 
   read_sql <- create_read_sql(
     schema,
