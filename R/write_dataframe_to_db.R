@@ -542,6 +542,8 @@ write_dataframe_to_db <- function(server,
                                   append_to_existing = FALSE,
                                   batch_size = 1e5,
                                   versioned_table = FALSE) {
+  # Clean table_name in case special characters included
+  table_name <- clean_table_name(table_name)
   # Put db params in list for convernience in internal fn calls
   db_params <- list(
     server = server,
@@ -555,8 +557,6 @@ write_dataframe_to_db <- function(server,
   start_time <- Sys.time()
   # Make sure starting with df not tbl etc
   dataframe <- data.frame(dataframe)
-  # Clean table_name in case special characters included
-  table_name <- clean_table_name(table_name)
   # Clean df column names
   dataframe <- clean_column_names(dataframe, table_name)
   # Replace NaN values with NA
