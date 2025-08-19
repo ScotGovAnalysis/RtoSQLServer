@@ -1,12 +1,12 @@
 pandoc: 3.1.11
-pkgdown: 2.1.1
+pkgdown: 2.1.3
 pkgdown_sha: ~
 articles:
   load_method: load_method.html
   read_filter: read_filter.html
   RtoSQLServer: RtoSQLServer.html
   why_use: why_use.html
-last_built: 2024-10-09T07:39Z
+last_built: 2025-08-19T09:26Z
 urls:
   reference: https://scotgovanalysis.github.io/RtoSQLServer/reference
   article: https://scotgovanalysis.github.io/RtoSQLServer/articles
