@@ -6,7 +6,7 @@ articles:
   read_filter: read_filter.html
   RtoSQLServer: RtoSQLServer.html
   why_use: why_use.html
-last_built: 2025-10-01T10:41Z
+last_built: 2025-10-01T10:45Z
 urls:
   reference: https://scotgovanalysis.github.io/RtoSQLServer/reference
   article: https://scotgovanalysis.github.io/RtoSQLServer/articles
