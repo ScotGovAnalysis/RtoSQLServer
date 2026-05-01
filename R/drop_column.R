@@ -65,14 +65,6 @@ drop_column <- function(server, database, schema, table_name, column_name) {
   ))) {
     stop(glue::glue("Column {column_name} is the primary key in \\
                     {schema}.{table_name} and cannot be dropped"))
-  } else if (tolower(column_name) == tolower(get_pk_name(
-    server,
-    database,
-    schema,
-    table_name
-  ))) {
-    stop(glue::glue("Column {column_name} is the primary key in \\
-                    {schema}.{table_name} and cannot be dropped"))
   } else if (tolower(column_name) %in% (c("sysstarttime", "sysendtime"))) {
     stop(glue::glue("Column {column_name} is a system versioning column \\
                     and cannot be dropped"))
