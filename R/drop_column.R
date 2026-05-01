@@ -57,7 +57,7 @@ drop_column <- function(server, database, schema, table_name, column_name) {
   if (!tolower(column_name) %in% tolower(table_columns)) {
     stop(glue::glue("Column {column_name} does not exist in \\
                     {schema}.{table_name}"))
-  } else if (tolower(column_name) == tolower(get_pk_name(
+  } else if (tolower(column_name) %in% tolower(get_pk_name(
     server,
     database,
     schema,
