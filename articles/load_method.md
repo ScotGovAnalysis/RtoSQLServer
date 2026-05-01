@@ -1,0 +1,31 @@
+# Table loading method description
+
+When loading an R dataframe into SQL Server using
+[`write_dataframe_to_db()`](https://scotgovanalysis.github.io/RtoSQLServer/reference/write_dataframe_to_db.md),
+the following steps are used:
+
+1.  The R dataframe is loaded into a staging table in the database in
+    batches of n rows at a time.
+
+2.  Create target table in the database and load from staging to target.
+
+    - If table of the specified name does NOT already exist in the
+      database schema:
+
+      - Create target table in the database.  
+      - Insert all rows from staging table to target table.
+
+    - If table of same name does already exist in the database schema:
+
+      - If argument `append_to_existing = FALSE` (this will result in an
+        overwrite):
+        - Drop the existing copy of the target table and create a new
+          one.
+        - Insert all rows from staging table into target table.
+      - If argument `append_to_existing = TRUE`:
+        - Check that staging table columns and existing target table
+          columns are the same. If not, add any extra columns to
+          existing SQL Server table.  
+        - Insert all rows from staging table into target table.
+
+3.  Delete the staging table.
